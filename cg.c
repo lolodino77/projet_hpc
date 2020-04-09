@@ -30,6 +30,10 @@
 
 #include "mmio.h"
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #define THRESHOLD 1e-8		// maximum tolerance threshold
 
 struct csr_matrix_t {
