@@ -104,7 +104,6 @@ struct csr_matrix_t *load_mm(FILE * f)//construct
 		err(1, "Cannot allocate (triplet) sparse matrix");
 
 	/* Parse and load actual entries */
-	#pragma omp parallel for
 	for (int u = 0; u < nnz; u++) {
 		int i, j;
 		double x;
@@ -140,7 +139,6 @@ struct csr_matrix_t *load_mm(FILE * f)//construct
 	/* the following is essentially a bucket sort */
 
 	/* Count the number of entries in each row */
-	#pragma omp parallel for
 	for (int i = 0; i < n; i++)
 		w[i] = 0;
 	for (int u = 0; u < nnz; u++) {
@@ -153,7 +151,6 @@ struct csr_matrix_t *load_mm(FILE * f)//construct
 
 	/* Compute row pointers (prefix-sum) */
 	int sum = 0;
-	#pragma omp parallel for
 	for (int i = 0; i < n; i++) {
 		Ap[i] = sum;
 		sum += w[i];
