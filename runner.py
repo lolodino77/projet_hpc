@@ -18,6 +18,7 @@ params['proof'] = 0x65dec1542f679f51
 # Paramètres du calcul (à adapter)
 #bcsstk13
 #cfd2
+#cfd1
 params['matrix'] = "cfd2"
 params['users'] = ["3800623"]
 
