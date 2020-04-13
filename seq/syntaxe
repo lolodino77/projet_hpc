@@ -1,0 +1,116 @@
+mpicc -o tp1ex2 tp1ex2.c
+mpirun -n 2 -hostfile serviteurs --map-by node ./test
+
+display image.ras
+
+//cd /nfs/home/sasl/eleves/main/3800623/mpi
+
+gcc mandel.c -lm -o seq
+gcc heatsink.c -O3 -lm -o heatsink
+mpicc mandel.c -lm -o seq
+
+gcc heatsink.c -O3 -lm -o heatsink
+./heatsink >> steady_state.txt
+
+mpicc heatsink_parallel.c -O3 -lm -o heatsink_parallel
+mpirun -n 7 -hostfile serviteurs --map-by node ./heatsink_parallel > steady_state_parallel.txt
+mpiexec --n {cores} --hostfile nodes.txt --display-map ./cg --matrix {matrix}.mtx --seed {seed}
+python3 rendu_picture_steady.py steady_state.txt 38 2 30
+python3 rendu_picture_steady.py steady_state_parallel.txt 38 2 30
+
+export PATH=/nfs/home/sasl/shared/main/ISEC/openssl:$PATH
+export http_proxy=proxyweb.upmc.fr:3128
+export PATH=/nfs/home/sasl/shared/main/ISEC:$PATH
+
+
+gcc -fopenmp ex1_pi.c -o ex1
+
+ssh-agent bash
+ssh-add
+ssh-agent -k
+
+status.MPI_SOURCE
+status.MPI_TAG
+
+
+
+pc4005
+pc4015
+pc4016
+pc4017
+pc4005
+pc4020
+pc4021
+pc4018
+pc4011
+pc4012
+
+
+
+
+#pragma omp parallel for reduction(+:s)
+    for(int i = 0;i < Nint;i++){
+            s += 1/(1 + (i/N)*(i/N));
+}
+
+gcc heatsink.c -O3 -lm -o heatsink
+gcc ex1_pi.c -o ex1
+gcc -fopenmp ex1_pi.c -o ex1
+
+
+export http_proxy="proxy.ufr-info-p6.jussieu.fr:3128"
+export https_proxy="proxy.ufr-info-p6.jussieu.fr:3128"
+export OMP_NUM_THREADS=4
+
+gcc -fopenmp matmul.c -o matmul 
+gcc matmul.c -o matmul 
+
+
+path des matrices sur ordi de la PPTI (premier ssh)
+/Infos/lmd/2019/master/ue/MU4IN903-2020fev
+
+
+# Comment exécuter le solveur :
+#   {matrix} sera remplacé par la valeur ci-dessus.
+#   {nodes}  sera remplacé par la valeur ci-dessus.
+#   {cores}  sera remplacé par la valeur ci-dessus.
+#   {seed}   sera remplacé par la valeur fournie par le serveur.
+#   On peut ajouter toutes les options qu'on veut, utiliser mpiexec, etc.
+command_line = "./cg --matrix {matrix}.mtx --seed {seed}"
+#command_line = "zcat matrices/{matrix}.mtx.gz | ./cg --seed {seed}"
+#command_line = "mpiexec --n {cores} --hostfile nodes.txt --display-map ./cg --matrix {matrix}.mtx --seed {seed}"
+#command_line = "mpiexec --n {nodes} -hostfile nodes.txt --map-by ppr:1:node ./cg --matrix {matrix}.mtx --seed {seed}"
+./cg --matrix bcsstk13.mtx --
+seed 42
+
+apt install openmpi-bin libopenmpi-dev
+zcat /Infos/lmd/2019/master/ue/MU4IN903-2020fev/cfd1.mtx.gz | ./cg
+
+
+
+
+
+
+
+
+
+
+//pi
+//N = 10000000, seq = 0.129459 sec, par = 0.066962 sec
+//N = 100000, seq = 0.005512 sec, par = 0.00374198 //gain de temps a partir de la
+//N = 10000, seq = 0.000693083 sec, par = 0.000963926 sec
+//N = 2000, seq = 0.000267029 sec, par = 0.000499964 sec 
+//N = 500, seq = 0.00018096 sec, par = 0.000583887 sec
+Temps total de calcul: 3.18359 sec
+Temps total de calcul: 0.829198 sec
+
+//prod mat
+//For n=2: total computation time (with gettimeofday()) : seq = 3.09944e-07 s, par = 0.0015625 s => plus lent
+//For n=250: total computation time (with gettimeofday()) : seq = 0.425719 s, par = 0.274766 s => plus rapide
+//For n=450: total computation time (with gettimeofday()) : seq = 0.0629303 s, par = 0.00462251 s => plus rapide
+
+//mandel
+//seq = 4.15971 sec, par = 1.39012 sec
+3.68	0.65
+
+
