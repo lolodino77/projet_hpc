@@ -6,9 +6,6 @@
 #include <sys/time.h>
 #define NB_TIMES 10
 
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 
 double my_gettimeofday()
 {
@@ -26,7 +23,6 @@ int main(int argc, char **argv){
 	//printf("N = %d\n", N);
 	int T[N];
 	int i;
-	#pragma omp parallel for
 	for(i = 0;i<N;i++){
 		T[i] = 3;
 	}
