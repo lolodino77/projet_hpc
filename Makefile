@@ -14,3 +14,8 @@ cg.o : cg.c mmio.h
 .PHONY: clean
 clean :
 	rm -rf *.o cg
+
+git :
+	git add -A *
+	git commit -a -m"$m"
+	git push -u origin master
