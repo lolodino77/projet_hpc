@@ -27,6 +27,7 @@
 #include <math.h>
 #include <getopt.h>
 #include <sys/time.h>
+#include <mpi.h>
 
 #include "mmio.h"
 
@@ -320,6 +321,15 @@ struct option longopts[6] = {
 
 int main(int argc, char **argv)
 {
+	int my_rank;
+	int p;
+	MPI_Init(&argc,&argv);
+	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+	MPI_Comm_size(MPI_COMM_WORLD, &p);
+	MPI_Status status;
+	int tag = 0;
+	int dest;
+	int source;	
 	/* Parse command-line options */
 	long long seed = 0;
 	char *rhs_filename = NULL;
