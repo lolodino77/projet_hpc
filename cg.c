@@ -62,7 +62,7 @@ double PRF(int i, unsigned long long seed)
 {
 	unsigned long long y = i, x = 0xBaadCafe, b = 0xDeadBeef, a = seed;
 	R(x, y, b);
-	#pragma omp parallel for
+	
 	for (int i = 0; i < 31; i++) {
 		R(a, b, i);
 		R(x, y, b);
@@ -199,7 +199,7 @@ void extract_diagonal(const struct csr_matrix_t *A, double *d)
 	int *Ap = A->Ap;
 	int *Aj = A->Aj;
 	double *Ax = A->Ax;
-	#pragma omp parallel for
+	
 	for (int i = 0; i < n; i++) {
 		d[i] = 0.0;
 		for (int u = Ap[i]; u < Ap[i + 1]; u++)
@@ -215,7 +215,7 @@ void sp_gemv(const struct csr_matrix_t *A, const double *x, double *y)
 	int *Ap = A->Ap;
 	int *Aj = A->Aj;
 	double *Ax = A->Ax;
-	#pragma omp parallel for
+	
 	for (int i = 0; i < n; i++) {
 		y[i] = 0;
 		for (int u = Ap[i]; u < Ap[i + 1]; u++) {
@@ -232,7 +232,7 @@ void sp_gemv(const struct csr_matrix_t *A, const double *x, double *y)
 double dot(const int n, const double *x, const double *y)
 {
 	double sum = 0.0;
-	#pragma omp parallel for
+	
 	for (int i = 0; i < n; i++)
 		sum += x[i] * y[i];
 	return sum;
@@ -272,16 +272,16 @@ void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, const do
 	 */
 
 	/* We use x == 0 --- this avoids the first matrix-vector product. */
-	#pragma omp parallel for
+	
 	for (int i = 0; i < n; i++)
 		x[i] = 0.0;
-	#pragma omp parallel for
+	
 	for (int i = 0; i < n; i++)	// r <-- b - Ax == b
 		r[i] = b[i];
-	#pragma omp parallel for
+	
 	for (int i = 0; i < n; i++)	// z <-- M^(-1).r
 		z[i] = r[i] / d[i];
-	#pragma omp parallel for
+	
 	for (int i = 0; i < n; i++)	// p <-- z
 		p[i] = z[i];
 
@@ -294,13 +294,13 @@ void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, const do
 		double old_rz = rz;
 		sp_gemv(A, p, q);	/* q <-- A.p */
 		double alpha = old_rz / dot(n, p, q);
-		#pragma omp parallel for
+		
 		for (int i = 0; i < n; i++)	// x <-- x + alpha*p
 			x[i] += alpha * p[i];
-		#pragma omp parallel for
+		
 		for (int i = 0; i < n; i++)	// r <-- r - alpha*q
 			r[i] -= alpha * q[i];
-		#pragma omp parallel for
+		
 		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
 			z[i] = r[i] / d[i];
 		rz = dot(n, r, z);	// restore invariant : rz = dot(r, z)
@@ -418,7 +418,7 @@ int main(int argc, char **argv)
 			err(1, "cannot open solution file %s", solution_filename);
 		fprintf(stderr, "[IO] writing solution to %s\n", solution_filename);
 	}
-	#pragma omp parallel for
+	
 	for (int i = 0; i < n; i++)
 		fprintf(f_x, "%a\n", x[i]);
 	return EXIT_SUCCESS;
