@@ -189,13 +189,12 @@ struct csr_matrix_t *load_mm(FILE * f)//construct
 /*************************** Matrix accessors *********************************/
 
 /* Copy the diagonal of A into the vector d. */
-void extract_diagonal(const struct csr_matrix_t *A, double *d)
+void extract_diagonal(const struct csr_matrix_t *A, double *d, int n, int i_ini)
 {
-	int n = A->n;
 	int *Ap = A->Ap;
 	int *Aj = A->Aj;
 	double *Ax = A->Ax;
-	for (int i = 0; i < n; i++) {
+	for (int i = i_ini; i < n; i++) {
 		d[i] = 0.0;
 		for (int u = Ap[i]; u < Ap[i + 1]; u++)
 			if (i == Aj[u])
@@ -204,13 +203,13 @@ void extract_diagonal(const struct csr_matrix_t *A, double *d)
 }
 
 /* Matrix-vector product (with A in CSR format) : y = Ax */
-void sp_gemv(const struct csr_matrix_t *A, const double *x, double *y)
+void sp_gemv(const struct csr_matrix_t *A, const double *x, double *y, int n, int i_ini)
 {
 	int n = A->n;
 	int *Ap = A->Ap;
 	int *Aj = A->Aj;
 	double *Ax = A->Ax;
-	for (int i = 0; i < n; i++) {
+	for (int i = i_ini; i < n; i++) {
 		y[i] = 0;
 		for (int u = Ap[i]; u < Ap[i + 1]; u++) {
 			int j = Aj[u];
@@ -240,15 +239,18 @@ double norm(const int n, const double *x)
 /*********************** conjugate gradient algorithm *************************/
 
 /* Solve Ax == b (the solution is written in x). Scratch must be preallocated of size 6n */
-void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, const double epsilon, double *scratch)
+void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, const double epsilon, double *scratch, int n, int i_ini)
 {
-	int n = A->n;
 	int nz = A->nz;
 
 	fprintf(stderr, "[CG] Starting iterative solver\n");
 	fprintf(stderr, "     ---> Working set : %.1fMbyte\n", 1e-6 * (12.0 * nz + 52.0 * n));
 	fprintf(stderr, "     ---> Per iteration: %.2g FLOP in sp_gemv() and %.2g FLOP in the rest\n", 2. * nz, 12. * n);
 
+	//	double *mem = malloc(7 * n * sizeof(double));
+	// double *x = mem;	/* solution vector */
+	// double *b = mem + n;	/* right-hand side */
+	//	double *scratch = mem + 2 * n;	/* workspace for cg_solve() */
 	double *r = scratch;	        // residue
 	double *z = scratch + n;	// preconditioned-residue
 	double *p = scratch + 2 * n;	// search direction
@@ -256,7 +258,7 @@ void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, const do
 	double *d = scratch + 4 * n;	// diagonal entries of A (Jacobi preconditioning)
 
 	/* Isolate diagonal */
-	extract_diagonal(A, d);
+	extract_diagonal(A, d, n, i_ini);
 
 	/* 
 	 * This function follows closely the pseudo-code given in the (english)
@@ -268,7 +270,7 @@ void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, const do
 	for (int i = 0; i < n; i++)
 		x[i] = 0.0;
 	for (int i = 0; i < n; i++)	// r <-- b - Ax == b
-		r[i] = b[i];
+		r[i] = b[i_ini + i];
 	for (int i = 0; i < n; i++)	// z <-- M^(-1).r
 		z[i] = r[i] / d[i];
 	for (int i = 0; i < n; i++)	// p <-- z
@@ -281,7 +283,7 @@ void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, const do
 	while (norm(n, r) > epsilon) {
 		/* loop invariant : rz = dot(r, z) */
 		double old_rz = rz;
-		sp_gemv(A, p, q);	/* q <-- A.p */
+		sp_gemv(A, p, q, n, i_ini);	/* q <-- A.p */
 		double alpha = old_rz / dot(n, p, q);
 		for (int i = 0; i < n; i++)	// x <-- x + alpha*p
 			x[i] += alpha * p[i];
@@ -321,15 +323,21 @@ struct option longopts[6] = {
 
 int main(int argc, char **argv)
 {
-	int my_rank;
-	int p;
+	int my_rank; //rank of the process
+	int nbProc; //number of process
+	int i_ini = 0; //indice duquel on part pour calculer une partie du vecteur solution x
+	int i_block = 0; //numero du bloc courant
+	enum tagType {INDICE, TRAITEMENT, STOP};
+
 	MPI_Init(&argc,&argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
-	MPI_Comm_size(MPI_COMM_WORLD, &p);
+	MPI_Comm_size(MPI_COMM_WORLD, &nbProc);
 	MPI_Status status;
 	int tag = 0;
 	int dest;
 	int source;	
+	int bTmp = 0;
+
 	/* Parse command-line options */
 	long long seed = 0;
 	char *rhs_filename = NULL;
@@ -370,6 +378,10 @@ int main(int argc, char **argv)
 
 	/* Allocate memory */
 	int n = A->n;
+	int ratio = 40
+	int n_cellsPerBlock = n/ratio; //nombre d'elements par bloc de la matrice A
+	int nbOfBlock = n/n_cellsPerBlock;
+
 	double *mem = malloc(7 * n * sizeof(double));
 	if (mem == NULL)
 		err(1, "cannot allocate dense vectors");
@@ -393,27 +405,84 @@ int main(int argc, char **argv)
 			b[i] = PRF(i, seed);
 	}
 
-	/* solve Ax == b */
-	cg_solve(A, b, x, THRESHOLD, scratch);
 
-	/* Check result */
-	if (safety_check) {
-		double *y = scratch;
-		sp_gemv(A, x, y);	// y = Ax
-		for (int i = 0; i < n; i++)	// y = Ax - b
-			y[i] -= b[i];
-		fprintf(stderr, "[check] max error = %2.2e\n", norm(n, y));
+	/* solve Ax == b with MPI, witn nbProc processors*/
+	if(my_rank == 0){
+		/* Premier tour des ordres envoyes aux esclaves */
+		for(i = 1;i < nbProc;i++){
+			dest = i;
+			MPI_Send(&i_block, 1, MPI_INT, dest, INDICE, MPI_COMM_WORLD);
+			i_block += 1;			
+		}
+
+		/* Envoi des ordres */
+		while(i_block != nbOfBlock){
+			MPI_Recv(&bTmp, 1, MPI_INT, MPI_ANY_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);	
+			MPI_Recv(x_part, sizeof(unsigned char)*w*h_div, MPI_UNSIGNED_CHAR, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+			idTmp = status.MPI_SOURCE;
+			dest = status.MPI_SOURCE;
+			MPI_Send(&i_block, 1, MPI_INT, dest, INDICE, MPI_COMM_WORLD);
+			i_block += 1;
+			
+			/* Remplissage grace au travail d'un sous-tableau */
+			for(i = 0;i<n_cellsPerBlock;i++){
+				x[bTmp*n_cellsPerBlock + i] = x_part[i];
+			}
+		}
+
+		/* Reception des derniers travaux des esclaves */
+		for(i = 1;i < p;i++){
+			MPI_Recv(&bTmp, 1, MPI_INT, MPI_ANY_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);	
+			MPI_Recv(x_part, sizeof(unsigned char)*w*h_div, MPI_UNSIGNED_CHAR, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+			idTmp = status.MPI_SOURCE;
+			for(j= 0;j<n_cellsPerBlock;j++){
+				(x + bTmp*n_cellsPerBlock)[j] = x_part[j];
+			}	
+			// MPI_Send(&xmin, 1, MPI_INT, idTmp, STOP, MPI_COMM_WORLD);			
+		}
+		/* Check result */
+		if (safety_check) {
+			double *y = scratch;
+			sp_gemv(A, x, y);	// y = Ax
+			for (int i = 0; i < n; i++)	// y = Ax - b
+				y[i] -= b[i];
+			fprintf(stderr, "[check] max error = %2.2e\n", norm(n, y));
+		}
+
+		/* Dump the solution vector */
+		FILE *f_x = stdout;
+		if (solution_filename != NULL) {
+			f_x = fopen(solution_filename, "w");
+			if (f_x == NULL)
+				err(1, "cannot open solution file %s", solution_filename);
+			fprintf(stderr, "[IO] writing solution to %s\n", solution_filename);
+		}
+		for (int i = 0; i < n; i++)
+			fprintf(f_x, "%a\n", x[i]);
+		return EXIT_SUCCESS;
+	}
+	else{
+		double *x_part = malloc(n_cellsPerBlock*sizeof(double)); /* a part of the vector x */
+		while(1){
+			MPI_Recv(&i_block, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+			tagFin = status.MPI_TAG;
+			if(tagFin == STOP){
+				break;
+			}
+
+			/* Calcul */
+			cg_solve(A, b, x_part, THRESHOLD, scratch, n_cellsPerBlock, i_ini);
+			dest = 0;
+			bTmp = i_block;
+			MPI_Send(&bTmp, 1, MPI_INT, dest, TRAITEMENT, MPI_COMM_WORLD);
+			MPI_Send(x_part, sizeof(unsigned char)*w*((h_div)), MPI_UNSIGNED_CHAR, dest, TRAITEMENT, MPI_COMM_WORLD);	
+		}
 	}
 
-	/* Dump the solution vector */
-	FILE *f_x = stdout;
-	if (solution_filename != NULL) {
-		f_x = fopen(solution_filename, "w");
-		if (f_x == NULL)
-			err(1, "cannot open solution file %s", solution_filename);
-		fprintf(stderr, "[IO] writing solution to %s\n", solution_filename);
-	}
-	for (int i = 0; i < n; i++)
-		fprintf(f_x, "%a\n", x[i]);
-	return EXIT_SUCCESS;
+	/* Affichage de la sortie */
+	fin = my_gettimeofday();
+	fprintf(stderr, "Temps total de calcul du processeur %d : %g sec\n", my_rank, fin - debut);
+	//printf("my_rank = %d, fini\n",my_rank);
+
+	MPI_Finalize();
 }
