@@ -434,7 +434,7 @@ int main(int argc, char **argv)
 		while(i_block != nbOfBlock){
 			MPI_Recv(&bTmp, 1, MPI_INT, MPI_ANY_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);	
 			MPI_Recv(x_part, n_cellsPerBlock*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
-			idTmp = status.MPI_SOURCE;
+			// idTmp = status.MPI_SOURCE;
 			dest = status.MPI_SOURCE;
 			MPI_Send(&i_block, 1, MPI_INT, dest, INDICE, MPI_COMM_WORLD);
 			i_block += 1;
@@ -453,7 +453,7 @@ int main(int argc, char **argv)
 			for(int j = 0;j<n_cellsPerBlock;j++){
 				(x + bTmp*n_cellsPerBlock)[j] = x_part[j];
 			}	
-			// MPI_Send(&xmin, 1, MPI_INT, idTmp, STOP, MPI_COMM_WORLD);			
+			MPI_Send(&xmin, 1, MPI_INT, idTmp, STOP, MPI_COMM_WORLD);			
 		}
 		/* Check result */
 		if (safety_check) {
