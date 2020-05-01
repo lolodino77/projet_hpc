@@ -429,13 +429,13 @@ int main(int argc, char **argv)
 			i_block += 1;
 			
 			/* Remplissage grace au travail d'un sous-tableau */
-			for(i = 0;i<n_cellsPerBlock;i++){
+			for(int i = 0;i<n_cellsPerBlock;i++){
 				x[bTmp*n_cellsPerBlock + i] = x_part[i];
 			}
 		}
 
 		/* Reception des derniers travaux des esclaves */
-		for(i = 1;i < nbProc;i++){
+		for(int i = 1;i < nbProc;i++){
 			MPI_Recv(&bTmp, 1, MPI_INT, MPI_ANY_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);	
 			MPI_Recv(x_part, n_cellsPerBlock*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
 			idTmp = status.MPI_SOURCE;
