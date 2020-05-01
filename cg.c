@@ -205,7 +205,6 @@ void extract_diagonal(const struct csr_matrix_t *A, double *d, int n, int i_ini)
 /* Matrix-vector product (with A in CSR format) : y = Ax */
 void sp_gemv(const struct csr_matrix_t *A, const double *x, double *y, int n, int i_ini)
 {
-	int n = A->n;
 	int *Ap = A->Ap;
 	int *Aj = A->Aj;
 	double *Ax = A->Ax;
@@ -337,6 +336,10 @@ int main(int argc, char **argv)
 	int dest;
 	int source;	
 	int bTmp = 0;
+	int idTmp;
+	int tagFin;
+	double debut, fin;
+
 
 	/* Parse command-line options */
 	long long seed = 0;
@@ -378,10 +381,11 @@ int main(int argc, char **argv)
 
 	/* Allocate memory */
 	int n = A->n;
-	int ratio = 40
+	int ratio = 40;
 	int n_cellsPerBlock = n/ratio; //nombre d'elements par bloc de la matrice A
 	int nbOfBlock = n/n_cellsPerBlock;
 
+	double *x_part = malloc(n_cellsPerBlock*sizeof(double)); /* a part of the vector x */
 	double *mem = malloc(7 * n * sizeof(double));
 	if (mem == NULL)
 		err(1, "cannot allocate dense vectors");
@@ -409,7 +413,7 @@ int main(int argc, char **argv)
 	/* solve Ax == b with MPI, witn nbProc processors*/
 	if(my_rank == 0){
 		/* Premier tour des ordres envoyes aux esclaves */
-		for(i = 1;i < nbProc;i++){
+		for(int i = 1;i < nbProc;i++){
 			dest = i;
 			MPI_Send(&i_block, 1, MPI_INT, dest, INDICE, MPI_COMM_WORLD);
 			i_block += 1;			
@@ -418,7 +422,7 @@ int main(int argc, char **argv)
 		/* Envoi des ordres */
 		while(i_block != nbOfBlock){
 			MPI_Recv(&bTmp, 1, MPI_INT, MPI_ANY_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);	
-			MPI_Recv(x_part, sizeof(unsigned char)*w*h_div, MPI_UNSIGNED_CHAR, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+			MPI_Recv(x_part, n_cellsPerBlock*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
 			idTmp = status.MPI_SOURCE;
 			dest = status.MPI_SOURCE;
 			MPI_Send(&i_block, 1, MPI_INT, dest, INDICE, MPI_COMM_WORLD);
@@ -431,11 +435,11 @@ int main(int argc, char **argv)
 		}
 
 		/* Reception des derniers travaux des esclaves */
-		for(i = 1;i < p;i++){
+		for(i = 1;i < nbProc;i++){
 			MPI_Recv(&bTmp, 1, MPI_INT, MPI_ANY_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);	
-			MPI_Recv(x_part, sizeof(unsigned char)*w*h_div, MPI_UNSIGNED_CHAR, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+			MPI_Recv(x_part, n_cellsPerBlock*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
 			idTmp = status.MPI_SOURCE;
-			for(j= 0;j<n_cellsPerBlock;j++){
+			for(int j = 0;j<n_cellsPerBlock;j++){
 				(x + bTmp*n_cellsPerBlock)[j] = x_part[j];
 			}	
 			// MPI_Send(&xmin, 1, MPI_INT, idTmp, STOP, MPI_COMM_WORLD);			
@@ -443,7 +447,9 @@ int main(int argc, char **argv)
 		/* Check result */
 		if (safety_check) {
 			double *y = scratch;
-			sp_gemv(A, x, y);	// y = Ax
+			//sp_gemv(const struct csr_matrix_t *A, const double *x, double *y, int n, int i_ini)
+			//sp_gemv(A, p, q, n, i_ini);
+			sp_gemv(A, x, y, n, 0);	// y = Ax
 			for (int i = 0; i < n; i++)	// y = Ax - b
 				y[i] -= b[i];
 			fprintf(stderr, "[check] max error = %2.2e\n", norm(n, y));
@@ -462,7 +468,6 @@ int main(int argc, char **argv)
 		return EXIT_SUCCESS;
 	}
 	else{
-		double *x_part = malloc(n_cellsPerBlock*sizeof(double)); /* a part of the vector x */
 		while(1){
 			MPI_Recv(&i_block, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 			tagFin = status.MPI_TAG;
@@ -475,7 +480,7 @@ int main(int argc, char **argv)
 			dest = 0;
 			bTmp = i_block;
 			MPI_Send(&bTmp, 1, MPI_INT, dest, TRAITEMENT, MPI_COMM_WORLD);
-			MPI_Send(x_part, sizeof(unsigned char)*w*((h_div)), MPI_UNSIGNED_CHAR, dest, TRAITEMENT, MPI_COMM_WORLD);	
+			MPI_Send(x_part, n_cellsPerBlock*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
 		}
 	}
 
