@@ -453,7 +453,7 @@ int main(int argc, char **argv)
 			for(int j = 0;j<n_cellsPerBlock;j++){
 				(x + bTmp*n_cellsPerBlock)[j] = x_part[j];
 			}	
-			MPI_Send(idTmp, 1, MPI_INT, idTmp, STOP, MPI_COMM_WORLD);			
+			MPI_Send(&idTmp, 1, MPI_INT, idTmp, STOP, MPI_COMM_WORLD);			
 		}
 		/* Check result */
 		if (safety_check) {
