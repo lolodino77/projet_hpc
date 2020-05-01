@@ -35,6 +35,13 @@
 
 #define THRESHOLD 1e-8		// maximum tolerance threshold
 
+double my_gettimeofday()
+{
+	struct timeval tmp_time;
+	gettimeofday(&tmp_time, NULL);
+	return tmp_time.tv_sec + (tmp_time.tv_usec * 1.0e-6L);
+}
+
 struct csr_matrix_t {
 	int n;			// dimension
 	int nz;			// number of non-zero entries
