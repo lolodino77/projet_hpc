@@ -342,6 +342,8 @@ int main(int argc, char **argv)
 	int tagFin;
 	double debut, fin;
 
+	debut = my_gettimeofday();
+
 
 	/* Parse command-line options */
 	long long seed = 0;
