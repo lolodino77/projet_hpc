@@ -23,6 +23,8 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>		/* chronometrage */
+#include <string.h>		/* pour memset */
 #include <err.h>
 #include <math.h>
 #include <getopt.h>
