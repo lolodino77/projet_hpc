@@ -57,13 +57,13 @@ int main(int argc, char** argv) {
 
     MPI_Bcast(&A->n, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(&A->nz, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Bcast(&A->Ap, 5, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Bcast(&A->Aj, 5, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Bcast(&A->Ax, 5, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(A->Ap, 5, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(A->Aj, 5, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(A->Ax, 5, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     //printf("apres broadcast (%d) : A->n = %d, A->nz = %d\n", my_rank, A->n, A->nz);
 	printf("rank = %d\n", my_rank);
-	for(int i = 0;i < 5;i++){printf("A->Ap[i] = %d, A->Aj[i] = %d, A->Ax[i] = %d\n", A->Ap[i], A->Aj[i], A->Ax[i]);}
+	for(int i = 0;i < 5;i++){printf("A->Ap[i] = %d, A->Aj[i] = %d, A->Ax[i] = %lf\n", A->Ap[i], A->Aj[i], A->Ax[i]);}
 
     // Finalize the MPI environment.
     MPI_Finalize();
