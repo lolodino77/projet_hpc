@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
     if(my_rank == 0){
         n = 10000;
     }
-    MPI_Bcast(n, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
     printf("apres broadcast : n = ", n);
     // Finalize the MPI environment.
