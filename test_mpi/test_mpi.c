@@ -11,12 +11,14 @@ struct csr_matrix_t {
 };
 
 int main(int argc, char** argv) {
-    int n = 0;
-    // MPI_Aint displacements[2] = {};
-    // int block_lengths[2] = {};
-    // MPI_Datatype types[2] = {};
+    // int n = 0;
+    // int count = 5;
+    // MPI_Aint displacements[5] = {};
+    // int array_of_blocklengths[] = {1, 1};
+    // MPI_Datatype types[5] = {MPI_INT, MPI_INT, MPI_INT, MPI_INT, MPI_DOUBLE};
     // MPI_Datatype MPI_csr_matrix_t;    
-    // struct csr_matrix_t *A = malloc(sizeof(*A)); 
+    // MPI_Type_create_struct(count, array_of_blocklengths, array_of_displacements,
+    //                     array_of_types, &MPI_csr_matrix_t);
 
     // Initialize the MPI environment
     MPI_Init(NULL, NULL);
@@ -38,17 +40,28 @@ int main(int argc, char** argv) {
     printf("Hello world from processor %s, rank %d out of %d processors\n",
            processor_name, my_rank, world_size);
 
-    // printf("avant broadcast : A->n = %d, A->nz = %d\n", A->n, A->nz);
-
+    struct csr_matrix_t *A = malloc(sizeof(*A)); 
     if(my_rank == 0){
-        n = 10000;
-        A->n = 9;
+        A->n = 10;
         A->nz = 10;
+        A->Ap = malloc(5*sizeof(int));
+        A->Aj = malloc(5*sizeof(int));
+        A->Ax = malloc(5*sizeof(double));
+        for(int i = 0;i < 5;i++){
+            A->Ap = 10;
+            A->Aj = 10;
+            A->Ax = 10;    
+        }
     }
-    MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Bcast(&A, 1, MPI_csr_matrix_t, 0, MPI_COMM_WORLD);
+    printf("avant broadcast (%d) : A->n = %d, A->nz = %d\n", my_rank ,A->n, A->nz);
 
-    // printf("apres broadcast : A->n = %d, A->nz = %d\n", A->n, A->nz);
+    MPI_Bcast(&A->n, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&A->nz, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&A->Ap, 5, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&A->Aj, 5, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&A->Ax, 5, MPI_INT, 0, MPI_COMM_WORLD);
+
+    printf("apres broadcast : A->n = %d, A->nz = %d\n", A->n, A->nz);
     printf("n = %d\n", n);
     // Finalize the MPI environment.
     MPI_Finalize();
