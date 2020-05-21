@@ -394,8 +394,8 @@ int main(int argc, char **argv)
 	else{
 		struct csr_matrix_t *A = malloc(sizeof(*A));
 	}
-    MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    	
+    MPI_Bcast(&A, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
 
 	/* Allocate memory */
 	int n = A->n;
