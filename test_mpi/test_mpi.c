@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
     }
     MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-    printf("\napres broadcast : n = %d", n);
+    printf("apres broadcast : n = %d\n", n);
     // Finalize the MPI environment.
     MPI_Finalize();
 }
