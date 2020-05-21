@@ -48,12 +48,12 @@ int main(int argc, char** argv) {
         A->Aj = malloc(5*sizeof(int));
         A->Ax = malloc(5*sizeof(double));
         for(int i = 0;i < 5;i++){
-            A->Ap = 10;
-            A->Aj = 10;
-            A->Ax = 10;    
+            A->Ap[i] = 10;
+            A->Aj[i] = 10;
+            A->Ax[i] = 2.5;
         }
     }
-    printf("avant broadcast (%d) : A->n = %d, A->nz = %d\n", my_rank ,A->n, A->nz);
+    //printf("avant broadcast (%d) : A->n = %d, A->nz = %d\n", my_rank ,A->n, A->nz);
 
     MPI_Bcast(&A->n, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(&A->nz, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -61,8 +61,10 @@ int main(int argc, char** argv) {
     MPI_Bcast(&A->Aj, 5, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(&A->Ax, 5, MPI_INT, 0, MPI_COMM_WORLD);
 
-    printf("apres broadcast : A->n = %d, A->nz = %d\n", A->n, A->nz);
-    printf("n = %d\n", n);
+    //printf("apres broadcast (%d) : A->n = %d, A->nz = %d\n", my_rank, A->n, A->nz);
+	printf("rank = %d\n", my_rank);
+	for(int i = 0;i < 5;i++){printf("A->Ap[i] = %d, A->Aj[i] = %d, A->Ax[i] = %d\n", A->Ap[i], A->Aj[i], A->Ax[i]);}
+
     // Finalize the MPI environment.
     MPI_Finalize();
 }
