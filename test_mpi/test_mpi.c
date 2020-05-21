@@ -1,8 +1,17 @@
 #include <mpi.h>
 #include <stdio.h>
 
+struct csr_matrix_t {
+    int n;          // dimension
+    int nz;         // number of non-zero entries
+    int *Ap;        // row pointers
+    int *Aj;        // column indices
+    double *Ax;     // actual coefficient
+};
+
 int main(int argc, char** argv) {
     int n = 0;
+    struct csr_matrix_t *A = malloc(sizeof(*A)); 
 
     // Initialize the MPI environment
     MPI_Init(NULL, NULL);
@@ -24,12 +33,17 @@ int main(int argc, char** argv) {
     printf("Hello world from processor %s, rank %d out of %d processors\n",
            processor_name, my_rank, world_size);
 
+    printf("avant broadcast : A->n = %d, A->nz = %d\n", A->n, A->nz);
+
     if(my_rank == 0){
         n = 10000;
+        A->n = 9;
+        A->nz = 10;
     }
     MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&A, 1, csr_matrix_t, 0, MPI_COMM_WORLD);
 
-    printf("apres broadcast : n = %d\n", n);
+    printf("apres broadcast : A->n = %d, A->nz = %d\n", A->n, A->nz);
     // Finalize the MPI environment.
     MPI_Finalize();
 }

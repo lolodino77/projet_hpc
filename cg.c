@@ -331,6 +331,7 @@ struct option longopts[6] = {
 
 int main(int argc, char **argv)
 {
+	/* Initialisation de variables */
 	int my_rank; //rank of the process
 	int nbProc; //number of process
 	int i_ini = 0; //indice duquel on part pour calculer une partie du vecteur solution x
@@ -348,9 +349,7 @@ int main(int argc, char **argv)
 	int idTmp;
 	int tagFin;
 	double debut, fin;
-
 	debut = my_gettimeofday();
-
 
 	/* Parse command-line options */
 	long long seed = 0;
@@ -381,14 +380,22 @@ int main(int argc, char **argv)
 		}
 	}
 
+	/****Broadcast de la matrice A /****
 	/* Load the matrix */
-	FILE *f_mat = stdin;
-	if (matrix_filename) {
-		f_mat = fopen(matrix_filename, "r");
-		if (f_mat == NULL)
-			err(1, "cannot matrix file %s", matrix_filename);
+	if(my_rank == 0){
+		FILE *f_mat = stdin;
+		if (matrix_filename) {
+			f_mat = fopen(matrix_filename, "r");
+			if (f_mat == NULL)
+				err(1, "cannot matrix file %s", matrix_filename);
+		}
+		struct csr_matrix_t *A = load_mm(f_mat);		
 	}
-	struct csr_matrix_t *A = load_mm(f_mat);
+	else{
+		struct csr_matrix_t *A = malloc(sizeof(*A));
+	}
+    MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    	
 
 	/* Allocate memory */
 	int n = A->n;
