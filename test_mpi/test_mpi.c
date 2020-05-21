@@ -41,12 +41,12 @@ int main(int argc, char** argv) {
            processor_name, my_rank, world_size);
 
     struct csr_matrix_t *A = malloc(sizeof(*A)); 
+    A->Ap = malloc(5*sizeof(int));
+    A->Aj = malloc(5*sizeof(int));
+    A->Ax = malloc(5*sizeof(double));
     if(my_rank == 0){
         A->n = 10;
         A->nz = 10;
-        A->Ap = malloc(5*sizeof(int));
-        A->Aj = malloc(5*sizeof(int));
-        A->Ax = malloc(5*sizeof(double));
         for(int i = 0;i < 5;i++){
             A->Ap[i] = 10;
             A->Aj[i] = 10;
