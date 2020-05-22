@@ -380,7 +380,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	/****Broadcast de la matrice A /****
+	/* Broadcast de la matrice A /*
 	/* Load the matrix */
 	int n = 0;
 	int nnz = 0;
@@ -406,7 +406,7 @@ int main(int argc, char **argv)
 		A->Aj = malloc(2 * nnz*sizeof(int));
 		A->Ax = malloc(2 * nnz*sizeof(double));
     }
-    MPI_Bcast(&A->nz, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    // MPI_Bcast(&A->nz, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(A->Ap, n+1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(A->Aj, 2*nnz, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(A->Ax, 2*nnz, MPI_INT, 0, MPI_COMM_WORLD);
