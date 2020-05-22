@@ -385,13 +385,14 @@ int main(int argc, char **argv)
 	}
 
 	printf("hello i am process %s number %d\n", processor_name, my_rank);
-	/* Broadcast de la matrice A /*
-	/* Load the matrix */
+
+/* Broadcast de la matrice A */
 	int n = 0;
 	int nnz = 0;
 	int *nnz2 = malloc(sizeof(int));
 	struct csr_matrix_t *A = malloc(sizeof(*A));
 
+	/* Load the matrix */
 	if(my_rank == 0){
 		FILE *f_mat = stdin;
 		if (matrix_filename) {
@@ -413,16 +414,11 @@ int main(int argc, char **argv)
     }
     printf("nnz = %d\n", nnz);
     MPI_Bcast(&A->nz, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    printf("test1\n");
     MPI_Bcast(A->Ap, n+1, MPI_INT, 0, MPI_COMM_WORLD);
-    printf("test2\n");
-
     MPI_Bcast(A->Aj, 2*nnz, MPI_INT, 0, MPI_COMM_WORLD); //bug la
-    printf("test3\n");
-
     MPI_Bcast(A->Ax, 2*nnz, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    printf("test4\n");
 
+    printf("%d %d %lf %d %d %lf", A->Ap[0], A->Aj[0], A->Ax[0], A->Ap[50], A->Aj[50], A->Ax[50]);
 	/* Allocate memory */
 	int ratio = 40;
 	int n_cellsPerBlock = n/ratio; //nombre d'elements par bloc de la matrice A
@@ -451,7 +447,6 @@ int main(int argc, char **argv)
 		for (int i = 0; i < n; i++)
 			b[i] = PRF(i, seed);
 	}
-    printf("test5\n");
 
 
 	/* solve Ax == b with MPI, witn nbProc processors*/
