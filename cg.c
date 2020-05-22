@@ -399,7 +399,7 @@ int main(int argc, char **argv)
 	}
     MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(&nnz, 1, MPI_INT, 0, MPI_COMM_WORLD);
-	else{
+	if(my_rank != 0){
 		struct csr_matrix_t *A = malloc(sizeof(*A));
 		A->n = n;
 		A->Ap = malloc((n+1)*sizeof(int));
