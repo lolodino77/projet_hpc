@@ -404,7 +404,7 @@ int main(int argc, char **argv)
 		nnz = *sum;		
 	}
     MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
-	printf("before load A\n");
+	printf("%s : before load A\n", processor_name);
     MPI_Bcast(&nnz, 1, MPI_INT, 0, MPI_COMM_WORLD);
 	if(my_rank != 0){
 		A->n = n;
