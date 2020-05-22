@@ -81,7 +81,7 @@ double PRF(int i, unsigned long long seed)
 /*************************** Matrix IO ****************************************/
 
 /* Load MatrixMarket sparse symetric matrix from the file descriptor f */
-struct csr_matrix_t *load_mm(FILE * f, int *sum)//construct
+struct csr_matrix_t *load_mm(FILE * f, int *nnz2)//construct
 {
 	MM_typecode matcode;
 	int n, m, nnz;
@@ -98,6 +98,7 @@ struct csr_matrix_t *load_mm(FILE * f, int *sum)//construct
 		errx(1, "Matrix type [%s] not supported (only real symmetric are OK)", mm_typecode_to_str(matcode));
 	if (mm_read_mtx_crd_size(f, &n, &m, &nnz) != 0)
 		errx(1, "Cannot read matrix size");
+	*nnz2 = nnz;
 	fprintf(stderr, "[IO] Loading [%s] %d x %d with %d nz in triplet format\n", mm_typecode_to_str(matcode), n, n, nnz);
 	fprintf(stderr, "     ---> for this, I will allocate %.1f MByte\n", 1e-6 * (40.0 * nnz + 8.0 * n));
 
@@ -388,7 +389,7 @@ int main(int argc, char **argv)
 	/* Load the matrix */
 	int n = 0;
 	int nnz = 0;
-	int *sum = malloc(sizeof(int));
+	int *nnz2 = malloc(sizeof(int));
 	*sum = 0;
 	struct csr_matrix_t *A = malloc(sizeof(*A));
 
@@ -399,9 +400,9 @@ int main(int argc, char **argv)
 			if (f_mat == NULL)
 				err(1, "cannot matrix file %s", matrix_filename);
 		}
-		A = load_mm(f_mat, sum);
+		A = load_mm(f_mat, nnz2);
 		n = A->n;
-		nnz = *sum;		
+		nnz = *nnz2;
 	}
     MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(&nnz, 1, MPI_INT, 0, MPI_COMM_WORLD);
