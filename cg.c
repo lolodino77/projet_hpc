@@ -401,9 +401,9 @@ int main(int argc, char **argv)
     MPI_Bcast(&nnz, 1, MPI_INT, 0, MPI_COMM_WORLD);
 	else{
 		struct csr_matrix_t *A = malloc(sizeof(*A));
-		int *Ap = malloc((n + 1) * sizeof(*Ap));
-		int *Aj = malloc(2 * nnz * sizeof(*Ap));
-		double *Ax = malloc(2 * nnz * sizeof(*Ax));
+		int A->Ap = malloc((n + 1) * sizeof(*Ap));
+		int A->Aj = malloc(2 * nnz * sizeof(*Ap));
+		double A->Ax = malloc(2 * nnz * sizeof(*Ax));
 
 		A->n = n;
 		A->Ap = malloc((n+1)*sizeof(int));
