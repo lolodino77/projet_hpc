@@ -412,10 +412,15 @@ int main(int argc, char **argv)
 		A->Ax = malloc(2 * nnz*sizeof(double));
     }
     MPI_Bcast(&A->nz, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    printf("test\n");
+    printf("test1\n");
     MPI_Bcast(A->Ap, n+1, MPI_INT, 0, MPI_COMM_WORLD);
+    printf("test2\n");
+
     MPI_Bcast(A->Aj, 2*nnz, MPI_INT, 0, MPI_COMM_WORLD);
+    printf("test2\n");
+
     MPI_Bcast(A->Ax, 2*nnz, MPI_INT, 0, MPI_COMM_WORLD);
+    printf("test3\n");
 
 	/* Allocate memory */
 	int ratio = 40;
@@ -445,6 +450,7 @@ int main(int argc, char **argv)
 		for (int i = 0; i < n; i++)
 			b[i] = PRF(i, seed);
 	}
+    printf("test4\n");
 
 
 	/* solve Ax == b with MPI, witn nbProc processors*/
