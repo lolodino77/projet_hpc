@@ -394,7 +394,7 @@ int main(int argc, char **argv)
 			if (f_mat == NULL)
 				err(1, "cannot matrix file %s", matrix_filename);
 		}
-		csr_matrix_t *A = load_mm(f_mat, sum);
+		*A = load_mm(f_mat, sum);
 		n = A->n;
 		nnz = *sum;		
 	}
