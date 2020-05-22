@@ -411,7 +411,7 @@ int main(int argc, char **argv)
 		A->Aj = malloc(2 * nnz*sizeof(int));
 		A->Ax = malloc(2 * nnz*sizeof(double));
     }
-    print("nnz = %d\n", nnz);
+    printf("nnz = %d\n", nnz);
     MPI_Bcast(&A->nz, 1, MPI_INT, 0, MPI_COMM_WORLD);
     printf("test1\n");
     MPI_Bcast(A->Ap, n+1, MPI_INT, 0, MPI_COMM_WORLD);
