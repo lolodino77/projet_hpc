@@ -385,6 +385,7 @@ int main(int argc, char **argv)
 	int n = 0;
 	int nnz = 0;
 	int *sum;
+	struct csr_matrix_t *A = malloc(sizeof(*A));
 
 	if(my_rank == 0){
 		FILE *f_mat = stdin;
@@ -393,20 +394,19 @@ int main(int argc, char **argv)
 			if (f_mat == NULL)
 				err(1, "cannot matrix file %s", matrix_filename);
 		}
-		struct csr_matrix_t *A = load_mm(f_mat, sum);
+		csr_matrix_t *A = load_mm(f_mat, sum);
 		n = A->n;
 		nnz = *sum;		
 	}
     MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(&nnz, 1, MPI_INT, 0, MPI_COMM_WORLD);
 	if(my_rank != 0){
-		struct csr_matrix_t *A = malloc(sizeof(*A));
 		A->n = n;
 		A->Ap = malloc((n+1)*sizeof(int));
 		A->Aj = malloc(2 * nnz*sizeof(int));
 		A->Ax = malloc(2 * nnz*sizeof(double));
     }
-    // MPI_Bcast(&A->nz, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&A->nz, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(A->Ap, n+1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(A->Aj, 2*nnz, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(A->Ax, 2*nnz, MPI_INT, 0, MPI_COMM_WORLD);
