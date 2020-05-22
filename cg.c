@@ -417,10 +417,10 @@ int main(int argc, char **argv)
     printf("test2\n");
 
     MPI_Bcast(A->Aj, 2*nnz, MPI_INT, 0, MPI_COMM_WORLD);
-    printf("test2\n");
+    printf("test3\n");
 
     MPI_Bcast(A->Ax, 2*nnz, MPI_INT, 0, MPI_COMM_WORLD);
-    printf("test3\n");
+    printf("test4\n");
 
 	/* Allocate memory */
 	int ratio = 40;
@@ -450,7 +450,7 @@ int main(int argc, char **argv)
 		for (int i = 0; i < n; i++)
 			b[i] = PRF(i, seed);
 	}
-    printf("test4\n");
+    printf("test5\n");
 
 
 	/* solve Ax == b with MPI, witn nbProc processors*/
