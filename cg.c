@@ -380,7 +380,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	printf("hello\n");
+	printf("hello i am process %d\n", my_rank);
 	/* Broadcast de la matrice A /*
 	/* Load the matrix */
 	int n = 0;
@@ -400,8 +400,10 @@ int main(int argc, char **argv)
 		n = A->n;
 		nnz = *sum;		
 	}
+	printf("before broadcast\n");
     MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(&nnz, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	printf("after broadcast\n");
 	if(my_rank != 0){
 		A->n = n;
 		A->Ap = malloc((n+1)*sizeof(int));
