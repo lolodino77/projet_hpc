@@ -346,9 +346,9 @@ int main(int argc, char **argv)
     int name_len;
     MPI_Get_processor_name(processor_name, &name_len);
 	MPI_Status status;
-	int tag = 0;
+	// int tag = 0;
 	int dest;
-	int source;	
+	// int source;	
 	int bTmp = 0;
 	int idTmp;
 	int tagFin;
