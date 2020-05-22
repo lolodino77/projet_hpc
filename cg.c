@@ -410,9 +410,9 @@ int main(int argc, char **argv)
 		A->Ap = malloc((n+1)*sizeof(int));
 		A->Aj = malloc(2 * nnz*sizeof(int));
 		A->Ax = malloc(2 * nnz*sizeof(double));
-		printf("%s : before load\n", processor_name);
     }
     MPI_Bcast(&A->nz, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    printf(1);
     MPI_Bcast(A->Ap, n+1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(A->Aj, 2*nnz, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(A->Ax, 2*nnz, MPI_INT, 0, MPI_COMM_WORLD);
