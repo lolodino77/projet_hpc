@@ -341,6 +341,9 @@ int main(int argc, char **argv)
 	MPI_Init(&argc,&argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &nbProc);
+    char processor_name[MPI_MAX_PROCESSOR_NAME];
+    int name_len;
+    MPI_Get_processor_name(processor_name, &name_len);
 	MPI_Status status;
 	int tag = 0;
 	int dest;
@@ -380,7 +383,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	printf("hello i am process %d\n", my_rank);
+	printf("hello i am process %s number %d\n", processor_name, my_rank);
 	/* Broadcast de la matrice A /*
 	/* Load the matrix */
 	int n = 0;
