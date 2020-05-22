@@ -409,6 +409,7 @@ int main(int argc, char **argv)
 		A->Ap = malloc((n+1)*sizeof(int));
 		A->Aj = malloc(2 * nnz*sizeof(int));
 		A->Ax = malloc(2 * nnz*sizeof(double));
+    }
     MPI_Bcast(&A->nz, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(Ap, n+1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(Aj, 2*nnz, MPI_INT, 0, MPI_COMM_WORLD);
