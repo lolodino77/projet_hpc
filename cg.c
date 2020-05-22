@@ -418,7 +418,8 @@ int main(int argc, char **argv)
     MPI_Bcast(A->Aj, 2*nnz, MPI_INT, 0, MPI_COMM_WORLD); //bug la
     MPI_Bcast(A->Ax, 2*nnz, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-    printf("%d %d %lf %d %d %lf", A->Ap[0], A->Aj[0], A->Ax[0], A->Ap[50], A->Aj[50], A->Ax[50]);
+    printf("%d %d %lf %d %d %lf\n", A->Ap[0], A->Aj[0], A->Ax[0], A->Ap[50], A->Aj[50], A->Ax[50]);
+    printf("afficher\n");
 	/* Allocate memory */
 	int ratio = 40;
 	int n_cellsPerBlock = n/ratio; //nombre d'elements par bloc de la matrice A
