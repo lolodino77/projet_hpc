@@ -411,9 +411,9 @@ int main(int argc, char **argv)
 		A->Ax = malloc(2 * nnz*sizeof(double));
     }
     MPI_Bcast(&A->nz, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Bcast(Ap, n+1, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Bcast(Aj, 2*nnz, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Bcast(Ax, 2*nnz, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(A->Ap, n+1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(A->Aj, 2*nnz, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(A->Ax, 2*nnz, MPI_INT, 0, MPI_COMM_WORLD);
 
 	/* Allocate memory */
 	int ratio = 40;
