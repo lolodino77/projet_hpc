@@ -384,7 +384,7 @@ int main(int argc, char **argv)
 	/* Load the matrix */
 	int n = 0;
 	int nnz = 0;
-	int *sum;
+	int *sum = &(int)(0);
 	struct csr_matrix_t *A = malloc(sizeof(*A));
 
 	if(my_rank == 0){
