@@ -156,7 +156,7 @@ struct csr_matrix_t *load_mm(FILE * f, int *nnz2)//construct
 	}
 
 	/* Compute row pointers (prefix-sum) */
-	sum = 0;
+	int sum = 0;
 	for (int i = 0; i < n; i++) {
 		Ap[i] = sum;
 		sum += w[i];
@@ -390,7 +390,6 @@ int main(int argc, char **argv)
 	int n = 0;
 	int nnz = 0;
 	int *nnz2 = malloc(sizeof(int));
-	sum = 0;
 	struct csr_matrix_t *A = malloc(sizeof(*A));
 
 	if(my_rank == 0){
