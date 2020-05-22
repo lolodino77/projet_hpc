@@ -380,6 +380,7 @@ int main(int argc, char **argv)
 		}
 	}
 
+	printf("hello\n");
 	/* Broadcast de la matrice A /*
 	/* Load the matrix */
 	int n = 0;
