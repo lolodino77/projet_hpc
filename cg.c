@@ -404,13 +404,13 @@ int main(int argc, char **argv)
 		nnz = *sum;		
 	}
     MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
-	printf("%s : before load\n", processor_name);
     MPI_Bcast(&nnz, 1, MPI_INT, 0, MPI_COMM_WORLD);
 	if(my_rank != 0){
 		A->n = n;
 		A->Ap = malloc((n+1)*sizeof(int));
 		A->Aj = malloc(2 * nnz*sizeof(int));
 		A->Ax = malloc(2 * nnz*sizeof(double));
+		printf("%s : before load\n", processor_name);
     }
     MPI_Bcast(&A->nz, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(A->Ap, n+1, MPI_INT, 0, MPI_COMM_WORLD);
