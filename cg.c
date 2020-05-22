@@ -81,7 +81,7 @@ double PRF(int i, unsigned long long seed)
 /*************************** Matrix IO ****************************************/
 
 /* Load MatrixMarket sparse symetric matrix from the file descriptor f */
-struct csr_matrix_t *load_mm(FILE * f)//construct
+struct csr_matrix_t *load_mm(FILE * f, int *sum)//construct
 {
 	MM_typecode matcode;
 	int n, m, nnz;
@@ -155,13 +155,13 @@ struct csr_matrix_t *load_mm(FILE * f)//construct
 	}
 
 	/* Compute row pointers (prefix-sum) */
-	int sum = 0;
+	*sum = 0;
 	for (int i = 0; i < n; i++) {
-		Ap[i] = sum;
-		sum += w[i];
+		Ap[i] = *sum;
+		*sum += w[i];
 		w[i] = Ap[i];
 	}
-	Ap[n] = sum;
+	Ap[n] = *sum;
 
 	/* Dispatch entries in the right rows */
 	for (int u = 0; u < nnz; u++) {
@@ -188,7 +188,7 @@ struct csr_matrix_t *load_mm(FILE * f)//construct
 	fprintf(stderr, "     ---> CSR matrix size = %.1fMbyte\n", 1e-6 * (24. * nnz + 4. * n));
 
 	A->n = n;
-	A->nz = sum;
+	A->nz = *sum;
 	A->Ap = Ap;
 	A->Aj = Aj;
 	A->Ax = Ax;
@@ -382,6 +382,10 @@ int main(int argc, char **argv)
 
 	/****Broadcast de la matrice A /****
 	/* Load the matrix */
+	int n = 0;
+	int nnz = 0;
+	int *sum;
+
 	if(my_rank == 0){
 		FILE *f_mat = stdin;
 		if (matrix_filename) {
@@ -389,16 +393,28 @@ int main(int argc, char **argv)
 			if (f_mat == NULL)
 				err(1, "cannot matrix file %s", matrix_filename);
 		}
-		struct csr_matrix_t *A = load_mm(f_mat);		
+		struct csr_matrix_t *A = load_mm(f_mat, sum);
+		n = A->n;
+		nnz = *sum;		
 	}
+    MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&nnz, 1, MPI_INT, 0, MPI_COMM_WORLD);
 	else{
 		struct csr_matrix_t *A = malloc(sizeof(*A));
-	}
-    MPI_Bcast(&A, 1, MPI_INT, 0, MPI_COMM_WORLD);
+		int *Ap = malloc((n + 1) * sizeof(*Ap));
+		int *Aj = malloc(2 * nnz * sizeof(*Ap));
+		double *Ax = malloc(2 * nnz * sizeof(*Ax));
 
+		A->n = n;
+		A->Ap = malloc((n+1)*sizeof(int));
+		A->Aj = malloc(2 * nnz*sizeof(int));
+		A->Ax = malloc(2 * nnz*sizeof(double));
+    MPI_Bcast(&A->nz, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(Ap, n+1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(Aj, 2*nnz, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(Ax, 2*nnz, MPI_INT, 0, MPI_COMM_WORLD);
 
 	/* Allocate memory */
-	int n = A->n;
 	int ratio = 40;
 	int n_cellsPerBlock = n/ratio; //nombre d'elements par bloc de la matrice A
 	int nbOfBlock = n/n_cellsPerBlock;
