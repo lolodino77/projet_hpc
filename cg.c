@@ -399,14 +399,14 @@ int main(int argc, char **argv)
 			if (f_mat == NULL)
 				err(1, "cannot matrix file %s", matrix_filename);
 		}
+		printf("before load A\n");
 		A = load_mm(f_mat, sum);
+		printf("after load A\n");
 		n = A->n;
 		nnz = *sum;		
 	}
-	printf("before broadcast\n");
     MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(&nnz, 1, MPI_INT, 0, MPI_COMM_WORLD);
-	printf("after broadcast\n");
 	if(my_rank != 0){
 		A->n = n;
 		A->Ap = malloc((n+1)*sizeof(int));
