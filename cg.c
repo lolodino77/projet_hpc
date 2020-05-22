@@ -156,13 +156,13 @@ struct csr_matrix_t *load_mm(FILE * f, int *nnz2)//construct
 	}
 
 	/* Compute row pointers (prefix-sum) */
-	*sum = 0;
+	sum = 0;
 	for (int i = 0; i < n; i++) {
-		Ap[i] = *sum;
-		*sum += w[i];
+		Ap[i] = sum;
+		sum += w[i];
 		w[i] = Ap[i];
 	}
-	Ap[n] = *sum;
+	Ap[n] = sum;
 
 	/* Dispatch entries in the right rows */
 	for (int u = 0; u < nnz; u++) {
@@ -189,7 +189,7 @@ struct csr_matrix_t *load_mm(FILE * f, int *nnz2)//construct
 	fprintf(stderr, "     ---> CSR matrix size = %.1fMbyte\n", 1e-6 * (24. * nnz + 4. * n));
 
 	A->n = n;
-	A->nz = *sum;
+	A->nz = sum;
 	A->Ap = Ap;
 	A->Aj = Aj;
 	A->Ax = Ax;
@@ -390,7 +390,7 @@ int main(int argc, char **argv)
 	int n = 0;
 	int nnz = 0;
 	int *nnz2 = malloc(sizeof(int));
-	*sum = 0;
+	sum = 0;
 	struct csr_matrix_t *A = malloc(sizeof(*A));
 
 	if(my_rank == 0){
