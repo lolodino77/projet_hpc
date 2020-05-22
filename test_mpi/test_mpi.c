@@ -1,6 +1,8 @@
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
+//mpicc -o test_mpi test_mpi.c 
+//mpirun -n 5 -hostfile hostfile --map-by node ./test_mpi
 
 struct csr_matrix_t {
     int n;          // dimension
@@ -59,7 +61,7 @@ int main(int argc, char** argv) {
     MPI_Bcast(&A->nz, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(A->Ap, 5, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(A->Aj, 5, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Bcast(A->Ax, 5, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    // MPI_Bcast(A->Ax, 5, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     //printf("apres broadcast (%d) : A->n = %d, A->nz = %d\n", my_rank, A->n, A->nz);
 	printf("rank = %d\n", my_rank);

@@ -1,18 +1,28 @@
+#include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-struct csr_matrix_t {
-    int n;          // dimension
-    int nz;         // number of non-zero entries
-    int *Ap;        // row pointers
-    int *Aj;        // column indices
-    double *Ax;     // actual coefficient
-};
 
-int main(){
-    struct csr_matrix_t *A = malloc(sizeof(*A)); 
-    A->n = 9;
-    A->nz = 10;
-    struct csr_matrix_t *B = A;
-    printf("B->n = %d, B->nz = %d\n", A->n, A->nz);
+int main(int argc, char** argv) {
+    // Initialize the MPI environment
+    MPI_Init(NULL, NULL);
+
+    // Get the number of processes
+    int world_size;
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+
+    // Get the rank of the process
+    int my_rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+
+    // Get the name of the processor
+    char processor_name[MPI_MAX_PROCESSOR_NAME];
+    int name_len;
+    MPI_Get_processor_name(processor_name, &name_len);
+
+    // Print off a hello world message
+    printf("Hello world from processor %s, rank %d out of %d processors\n",
+           processor_name, my_rank, world_size);
+
+    MPI_Finalize();
 }
