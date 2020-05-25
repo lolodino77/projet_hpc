@@ -336,9 +336,7 @@ int main(int argc, char **argv)
 	int my_rank; //rank of the process
 	int nbProc; //number of process
 	int i_ini = 0; //indice duquel on part pour calculer une partie du vecteur solution x
-	int i_block = 0; //numero du bloc courant
-	enum tagType {INDICE, TRAITEMENT, STOP};
-
+	int i_block = 0; //numero du bloc courant en train d'etre calculé
 	MPI_Init(&argc,&argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &nbProc);
@@ -346,11 +344,9 @@ int main(int argc, char **argv)
     int name_len;
     MPI_Get_processor_name(processor_name, &name_len);
 	MPI_Status status;
-	// int tag = 0;
 	int dest;
-	// int source;	
-	int bTmp = 0;
-	int idTmp;
+	int bTmp = 0; //numero du dernier bloc du vecteur x qui vient d'être calculé
+	int idTmp; //numéro du processus dont le maître vient de recevoir le travail
 	int tagFin;
 	double debut, fin;
 	debut = my_gettimeofday();
@@ -412,22 +408,23 @@ int main(int argc, char **argv)
 		A->Aj = malloc(2 * nnz*sizeof(int));
 		A->Ax = malloc(2 * nnz*sizeof(double));
     }
-    printf("nnz = %d\n", nnz);
     MPI_Bcast(&A->nz, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(A->Ap, n+1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(A->Aj, 2*nnz, MPI_INT, 0, MPI_COMM_WORLD); //bug la
     MPI_Bcast(A->Ax, 2*nnz, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-
     // printf("%d %d %lf %d %d %lf\n", A->Ap[0], A->Aj[0], A->Ax[0], A->Ap[50], A->Aj[50], A->Ax[50]);
-
+  
 	/* Allocate memory */
-	int ratio = 40;
-	int n_cellsPerBlock = n/ratio; //nombre d'elements par bloc de la matrice A
-	int nbOfBlock = n/n_cellsPerBlock;
-
-	double *x_part = malloc(n_cellsPerBlock*sizeof(double)); /* a part of the vector x */
+	// n = taille du vecteur x
+	//n(cfd1) = 70 656 
+	int n_cellsPerBlock = 92;//nombre d'elements par bloc du vecteur x
+								  //bloc = partie du vecteur calculée lors d'un calcul d'un processeur
+	int nbOfBlock = n/n_cellsPerBlock;//nombre de blocs du vecteur x = nb de calculs a effectuer
+	int reste = n % n_cellsPerBlock;//indique si on rajoute un bloc si besoin pour calculer 
+			//le reste du vecteur si la division a un reste
+	double *x_part = malloc(n_cellsPerBlock*sizeof(double)); /* une partie ou bloc du vecteur x */
 	double *mem = malloc(7 * n * sizeof(double));
-	if (mem == NULL)
+	if(mem == NULL)
 		err(1, "cannot allocate dense vectors");
 	double *x = mem;	/* solution vector */
 	double *b = mem + n;	/* right-hand side */
@@ -461,14 +458,15 @@ int main(int argc, char **argv)
 
 		/* Envoi des ordres */
 		while(i_block != nbOfBlock){
+			//le maitre recoit le numéro du dernier bloc calculé
 			MPI_Recv(&bTmp, 1, MPI_INT, MPI_ANY_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);	
+			//le maitre recoit le dernier bloc calculé
 			MPI_Recv(x_part, n_cellsPerBlock*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
-			// idTmp = status.MPI_SOURCE;
 			dest = status.MPI_SOURCE;
 			MPI_Send(&i_block, 1, MPI_INT, dest, INDICE, MPI_COMM_WORLD);
 			i_block += 1;
 			
-			/* Remplissage grace au travail d'un sous-tableau */
+			/* Le maitre recopie le contenu de la partie du vecteur qu'il a reçu */
 			for(int i = 0;i<n_cellsPerBlock;i++){
 				x[bTmp*n_cellsPerBlock + i] = x_part[i];
 			}
@@ -478,10 +476,13 @@ int main(int argc, char **argv)
 		for(int i = 1;i < nbProc;i++){
 			MPI_Recv(&bTmp, 1, MPI_INT, MPI_ANY_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);	
 			MPI_Recv(x_part, n_cellsPerBlock*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+			//On recupère le numéro du processus qui vient d'envoyer son travail au maître
 			idTmp = status.MPI_SOURCE;
+			//On recopie le travail de l'esclave
 			for(int j = 0;j<n_cellsPerBlock;j++){
 				(x + bTmp*n_cellsPerBlock)[j] = x_part[j];
 			}	
+			//On envoie un nouveau travail à l'esclave
 			MPI_Send(&idTmp, 1, MPI_INT, idTmp, STOP, MPI_COMM_WORLD);			
 		}
 		/* Check result */
@@ -507,7 +508,7 @@ int main(int argc, char **argv)
 			fprintf(f_x, "%a\n", x[i]);
 		return EXIT_SUCCESS;
 	}
-	else{
+	else{// si le processus n'est pas le maître mais un esclave :
 		while(1){
 			MPI_Recv(&i_block, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 			tagFin = status.MPI_TAG;
