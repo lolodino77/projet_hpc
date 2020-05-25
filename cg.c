@@ -199,12 +199,12 @@ struct csr_matrix_t *load_mm(FILE * f, int *nnz2)//construct
 /*************************** Matrix accessors *********************************/
 
 /* Copy the diagonal of A into the vector d. */
-void extract_diagonal(const struct csr_matrix_t *A, double *d, int n, int i_ini)
+void extract_diagonal(const struct csr_matrix_t *A, double *d, int n_part, int i_ini)
 {
 	int *Ap = A->Ap;
 	int *Aj = A->Aj;
 	double *Ax = A->Ax;
-	for (int i = i_ini; i < n; i++) {
+	for (int i = i_ini; i < i_ini + n_part; i++) {
 		d[i] = 0.0;
 		for (int u = Ap[i]; u < Ap[i + 1]; u++)
 			if (i == Aj[u])
@@ -213,15 +213,15 @@ void extract_diagonal(const struct csr_matrix_t *A, double *d, int n, int i_ini)
 }
 
 /* Matrix-vector product (with A in CSR format) : y = Ax */
-void sp_gemv(const struct csr_matrix_t *A, const double *x, double *y, int n, int i_ini)
+void sp_gemv(const struct csr_matrix_t *A, const double *x, double *y, int n_part, int i_ini)
 {
 	int *Ap = A->Ap;
 	int *Aj = A->Aj;
 	double *Ax = A->Ax;
-	for (int i = i_ini; i < n; i++) {
+	for (int i = i_ini; i < i_ini + n_part; i++) {
 		y[i] = 0;
 		for (int u = Ap[i]; u < Ap[i + 1]; u++) {
-			int j = Aj[u];
+			int j = Aj[u]; //j = Aj[Ap[i]]
 			double A_ij = Ax[u];
 			y[i] += A_ij * x[j];
 		}
@@ -248,26 +248,26 @@ double norm(const int n, const double *x)
 /*********************** conjugate gradient algorithm *************************/
 
 /* Solve Ax == b (the solution is written in x). Scratch must be preallocated of size 6n */
-void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, const double epsilon, double *scratch, int n, int N, int i_ini)
+void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, const double epsilon, double *scratch, int n_part, int n, int i_ini)
 {
 	int nz = A->nz;
 
 	fprintf(stderr, "[CG] Starting iterative solver\n");
-	fprintf(stderr, "     ---> Working set : %.1fMbyte\n", 1e-6 * (12.0 * nz + 52.0 * n));
-	fprintf(stderr, "     ---> Per iteration: %.2g FLOP in sp_gemv() and %.2g FLOP in the rest\n", 2. * nz, 12. * n);
+	fprintf(stderr, "     ---> Working set : %.1fMbyte\n", 1e-6 * (12.0 * nz + 52.0 * n_part));
+	fprintf(stderr, "     ---> Per iteration: %.2g FLOP in sp_gemv() and %.2g FLOP in the rest\n", 2. * nz, 12. * n_part);
 
 	//	double *mem = malloc(7 * n * sizeof(double));
 	// double *x = mem;	/* solution vector */
 	// double *b = mem + n;	/* right-hand side */
 	//	double *scratch = mem + 2 * n;	/* workspace for cg_solve() */
 	double *r = scratch;	        // residue
-	double *z = scratch + N;	// preconditioned-residue
-	double *p = scratch + N + n;	// search direction
-	double *q = scratch + N + 2 * n;	// q == Ap
-	double *d = scratch + N + 3 * n;	// diagonal entries of A (Jacobi preconditioning)
+	double *z = scratch + n_part;	// preconditioned-residue
+	double *p = scratch + 2*n_part;	// search direction
+	double *q = scratch + 3 * n_part;	// q == Ap
+	double *d = scratch + 4 * n_part;	// diagonal entries of A (Jacobi preconditioning)
 
 	/* Isolate diagonal */
-	extract_diagonal(A, d, n, i_ini);
+	extract_diagonal(A, d, n_part, i_ini);
 
 	/* 
 	 * This function follows closely the pseudo-code given in the (english)
@@ -276,33 +276,33 @@ void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, const do
 	 */
 
 	/* We use x == 0 --- this avoids the first matrix-vector product. */
-	for (int i = 0; i < n; i++)
+	for (int i = 0; i < n_part; i++)
 		x[i] = 0.0;
-	for (int i = 0; i < n; i++)	// r <-- b - Ax == b
+	for (int i = 0; i < n_part; i++)	// r <-- b - Ax == b
 		r[i] = b[i_ini + i];
-	for (int i = 0; i < n; i++)	// z <-- M^(-1).r
+	for (int i = 0; i < n_part; i++)	// z <-- M^(-1).r
 		z[i] = r[i] / d[i];
-	for (int i = 0; i < n; i++)	// p <-- z
+	for (int i = 0; i < n_part; i++)	// p <-- z
 		p[i] = z[i];
 
-	double rz = dot(n, r, z);
+	double rz = dot(n_part, r, z);
 	double start = wtime();
 	double last_display = start;
 	int iter = 0;
-	while (norm(N, r) > epsilon){ ///////PAS SUR SUR QUELLE CONDITION METTRE
+	while (norm(n_part, r) > epsilon){ ///////PAS SUR SUR QUELLE CONDITION METTRE
 		/* loop invariant : rz = dot(r, z) */
 		double old_rz = rz;
-		sp_gemv(A, p, q, n, i_ini);	/* q <-- A.p */
-		double alpha = old_rz / dot(n, p, q);
-		for (int i = 0; i < n; i++)	// x <-- x + alpha*p
+		sp_gemv(A, p, q, n_part, i_ini);	/* q <-- A.p */
+		double alpha = old_rz / dot(n_part, p, q);
+		for (int i = 0; i < n_part; i++)	// x <-- x + alpha*p
 			x[i] += alpha * p[i];
-		for (int i = i_ini; i < n; i++)	// r <-- r - alpha*q
+		for (int i = 0; i < n_part; i++)	// r <-- r - alpha*q
 			r[i] -= alpha * q[i]; //A*p
-		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
+		for (int i = 0; i < n_part; i++)	// z <-- M^(-1).r
 			z[i] = r[i] / d[i];
-		rz = dot(n, r, z);	// restore invariant : rz = dot(r, z)
+		rz = dot(n_part, r, z);	// restore invariant : rz = dot(r, z)
 		double beta = rz / old_rz;
-		for (int i = 0; i < n; i++)	// p <-- z + beta*p
+		for (int i = 0; i < n_part; i++)	// p <-- z + beta*p
 			p[i] = z[i] + beta * p[i];
 		iter++;
 		double t = wtime();
@@ -483,7 +483,7 @@ int main(int argc, char **argv)
 			for(int j = 0;j<n_cellsPerBlock;j++){
 				(x + bTmp*n_cellsPerBlock)[j] = x_part[j];
 			}	
-			//On envoie un nouveau travail à l'esclave
+			//On dit à l'esclave de ne plus travailler
 			MPI_Send(&idTmp, 1, MPI_INT, idTmp, STOP, MPI_COMM_WORLD);			
 		}
 		/* Check result */
