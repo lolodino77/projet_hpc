@@ -248,7 +248,7 @@ double norm(const int n, const double *x)
 /*********************** conjugate gradient algorithm *************************/
 
 /* Solve Ax == b (the solution is written in x). Scratch must be preallocated of size 6n */
-void cg_solve(const struct csr_matrix_t *A, const double *b, double *x_part, const double epsilon, double *scratch, int n, int N, int i_ini)
+void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, const double epsilon, double *scratch, int n, int N, int i_ini)
 {
 	int nz = A->nz;
 
