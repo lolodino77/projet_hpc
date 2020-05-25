@@ -248,7 +248,7 @@ double norm(const int n, const double *x)
 /*********************** conjugate gradient algorithm *************************/
 
 /* Solve Ax == b (the solution is written in x). Scratch must be preallocated of size 6n */
-void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, const double epsilon, double *scratch, int n, int i_ini)
+void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, double *x_part, const double epsilon, double *scratch, int n, int N, int i_ini)
 {
 	int nz = A->nz;
 
@@ -261,10 +261,10 @@ void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, const do
 	// double *b = mem + n;	/* right-hand side */
 	//	double *scratch = mem + 2 * n;	/* workspace for cg_solve() */
 	double *r = scratch;	        // residue
-	double *z = scratch + n;	// preconditioned-residue
-	double *p = scratch + 2 * n;	// search direction
-	double *q = scratch + 3 * n;	// q == Ap
-	double *d = scratch + 4 * n;	// diagonal entries of A (Jacobi preconditioning)
+	double *z = scratch + N;	// preconditioned-residue
+	double *p = scratch + N + n;	// search direction
+	double *q = scratch + N + 2 * n;	// q == Ap
+	double *d = scratch + N + 3 * n;	// diagonal entries of A (Jacobi preconditioning)
 
 	/* Isolate diagonal */
 	extract_diagonal(A, d, n, i_ini);
@@ -289,7 +289,7 @@ void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, const do
 	double start = wtime();
 	double last_display = start;
 	int iter = 0;
-	while (norm(n, r) > epsilon) { ///////PAS SUR SUR QUELLE CONDITION METTRE
+	while (norm(N, r) > epsilon){ ///////PAS SUR SUR QUELLE CONDITION METTRE
 		/* loop invariant : rz = dot(r, z) */
 		double old_rz = rz;
 		sp_gemv(A, p, q, n, i_ini);	/* q <-- A.p */
@@ -297,7 +297,7 @@ void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, const do
 		for (int i = 0; i < n; i++)	// x <-- x + alpha*p
 			x[i] += alpha * p[i];
 		for (int i = 0; i < n; i++)	// r <-- r - alpha*q
-			r[i] -= alpha * q[i];
+			r[i] -= alpha * q[i]; //A*p
 		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
 			z[i] = r[i] / d[i];
 		rz = dot(n, r, z);	// restore invariant : rz = dot(r, z)
@@ -417,7 +417,7 @@ int main(int argc, char **argv)
   
 	/* Allocate memory */
 	// n = taille du vecteur x
-	//n(cfd1) = 70 656 
+	//n(cfd1) = 70 656 = n
 	int n_cellsPerBlock = 92;//nombre d'elements par bloc du vecteur x
 								  //bloc = partie du vecteur calculée lors d'un calcul d'un processeur
 	int nbOfBlock = n/n_cellsPerBlock;//nombre de blocs du vecteur x = nb de calculs a effectuer
