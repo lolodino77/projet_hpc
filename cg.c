@@ -299,7 +299,7 @@ void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, const do
 	for (int i = 0; i < n; i++)	// p <-- z
 		p[i] = z[i];
 
-	double rz = dot(n, r, z);
+	double rz = dot_part(r, z, i_ini, n_part);
 	double start = wtime();
 	double last_display = start;
 	int iter = 0;
@@ -307,16 +307,16 @@ void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, const do
 		/* loop invariant : rz = dot(r, z) */
 		double old_rz = rz;
 		sp_gemv(A, p, q, n_part, i_ini);	/* q <-- A.p */
-		double alpha = old_rz / dot_part(n_part, p, q);
+		double alpha = old_rz / dot_part(p, q, i_ini, n_part);
 		for (int i = 0; i < n_part; i++)	// x <-- x + alpha*p
 			x[i] += alpha * p[i];
-		for (int i = 0; i < n_part; i++)	// r <-- r - alpha*q
+		for (int i =i_ini; i < i_ini + n_part; i++)	// r <-- r - alpha*q
 			r[i] -= alpha * q[i]; //A*p
-		for (int i = 0; i < n_part; i++)	// z <-- M^(-1).r
+		for (int i = i_ini; i < i_ini + n_part; i++)	// z <-- M^(-1).r
 			z[i] = r[i] / d[i];
-		rz = dot(n_part, r, z);	// restore invariant : rz = dot(r, z)
+		rz = dot_part(r, z, i_ini, n_part);	// restore invariant : rz = dot(r, z)
 		double beta = rz / old_rz;
-		for (int i = 0; i < n_part; i++)	// p <-- z + beta*p
+		for (int i =i_ini; i < i_ini + n_part; i++)	// p <-- z + beta*p
 			p[i] = z[i] + beta * p[i];
 		iter++;
 		double t = wtime();
