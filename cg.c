@@ -245,6 +245,20 @@ double norm(const int n, const double *x)
 	return sqrt(dot(n, x, x));
 }
 
+double dot_part( const double *x, const double *y, int i_ini, int n_part)
+{
+	double sum = 0.0;
+	for (int i = i_ini; i < i_ini + n_part; i++)
+		sum += x[i] * y[i];
+	return sum;
+}
+
+/* euclidean norm (a.k.a 2-norm) */
+double norm_part( const double *x, int i_ini, int n_part)
+{
+	return sqrt(dot_part(n, x, x, i_ini, n_part));
+}
+
 /*********************** conjugate gradient algorithm *************************/
 
 /* Solve Ax == b (the solution is written in x). Scratch must be preallocated of size 6n */
@@ -261,10 +275,10 @@ void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, const do
 	// double *b = mem + n;	/* right-hand side */
 	//	double *scratch = mem + 2 * n;	/* workspace for cg_solve() */
 	double *r = scratch;	        // residue
-	double *z = scratch + n_part;	// preconditioned-residue
-	double *p = scratch + 2*n_part;	// search direction
-	double *q = scratch + 3 * n_part;	// q == Ap
-	double *d = scratch + 4 * n_part;	// diagonal entries of A (Jacobi preconditioning)
+	double *z = scratch + n;	// preconditioned-residue
+	double *p = scratch + 2*n;	// search direction
+	double *q = scratch + 3 * n;	// q == Ap
+	double *d = scratch + 4 * n;	// diagonal entries of A (Jacobi preconditioning)
 
 	/* Isolate diagonal */
 	extract_diagonal(A, d, n_part, i_ini);
@@ -278,22 +292,22 @@ void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, const do
 	/* We use x == 0 --- this avoids the first matrix-vector product. */
 	for (int i = 0; i < n_part; i++)
 		x[i] = 0.0;
-	for (int i = 0; i < n_part; i++)	// r <-- b - Ax == b
-		r[i] = b[i_ini + i];
-	for (int i = 0; i < n_part; i++)	// z <-- M^(-1).r
+	for (int i = 0; i < n; i++)	// r <-- b - Ax == b
+		r[i] = b[i];
+	for (int i = 0; i < n; i++)	// z <-- M^(-1).r
 		z[i] = r[i] / d[i];
-	for (int i = 0; i < n_part; i++)	// p <-- z
+	for (int i = 0; i < n; i++)	// p <-- z
 		p[i] = z[i];
 
-	double rz = dot(n_part, r, z);
+	double rz = dot(n, r, z);
 	double start = wtime();
 	double last_display = start;
 	int iter = 0;
-	while (norm(n_part, r) > epsilon){ ///////PAS SUR SUR QUELLE CONDITION METTRE
+	while (norm_part(r,i_ini,n_part) > epsilon){ ///////PAS SUR SUR QUELLE CONDITION METTRE
 		/* loop invariant : rz = dot(r, z) */
 		double old_rz = rz;
 		sp_gemv(A, p, q, n_part, i_ini);	/* q <-- A.p */
-		double alpha = old_rz / dot(n_part, p, q);
+		double alpha = old_rz / dot_part(n_part, p, q);
 		for (int i = 0; i < n_part; i++)	// x <-- x + alpha*p
 			x[i] += alpha * p[i];
 		for (int i = 0; i < n_part; i++)	// r <-- r - alpha*q
