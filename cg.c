@@ -256,7 +256,7 @@ double dot_part( const double *x, const double *y, int i_ini, int n_part)
 /* euclidean norm (a.k.a 2-norm) */
 double norm_part( const double *x, int i_ini, int n_part)
 {
-	return sqrt(dot_part(n, x, x, i_ini, n_part));
+	return sqrt(dot_part(x, x, i_ini, n_part));
 }
 
 /*********************** conjugate gradient algorithm *************************/
