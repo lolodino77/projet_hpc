@@ -289,7 +289,7 @@ void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, const do
 	double start = wtime();
 	double last_display = start;
 	int iter = 0;
-	while (norm(n, r) > epsilon) {
+	while (norm(n, r) > epsilon) { ///////PAS SUR SUR QUELLE CONDITION METTRE
 		/* loop invariant : rz = dot(r, z) */
 		double old_rz = rz;
 		sp_gemv(A, p, q, n, i_ini);	/* q <-- A.p */
@@ -349,6 +349,7 @@ int main(int argc, char **argv)
 	int idTmp; //numéro du processus dont le maître vient de recevoir le travail
 	int tagFin;
 	double debut, fin;
+	enum tagType {INDICE, TRAITEMENT, STOP};
 	debut = my_gettimeofday();
 
 	/* Parse command-line options */
@@ -508,7 +509,7 @@ int main(int argc, char **argv)
 			fprintf(f_x, "%a\n", x[i]);
 		return EXIT_SUCCESS;
 	}
-	else{// si le processus n'est pas le maître mais un esclave :
+	else{// si le processus n'est pas le maître mais un esclave
 		while(1){
 			MPI_Recv(&i_block, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 			tagFin = status.MPI_TAG;
