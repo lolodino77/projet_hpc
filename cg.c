@@ -296,7 +296,7 @@ void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, const do
 		double alpha = old_rz / dot(n, p, q);
 		for (int i = 0; i < n; i++)	// x <-- x + alpha*p
 			x[i] += alpha * p[i];
-		for (int i = 0; i < n; i++)	// r <-- r - alpha*q
+		for (int i = i_ini; i < n; i++)	// r <-- r - alpha*q
 			r[i] -= alpha * q[i]; //A*p
 		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
 			z[i] = r[i] / d[i];
@@ -513,6 +513,9 @@ int main(int argc, char **argv)
 		while(1){
 			MPI_Recv(&i_block, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 			tagFin = status.MPI_TAG;
+			// MPI_Recv(&i_ini, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+			// tagFin = status.MPI_TAG;
+			i_ini = i_block * n_cellsPerBlock;
 			if(tagFin == STOP){
 				break;
 			}
@@ -520,6 +523,7 @@ int main(int argc, char **argv)
 			/* Calcul */
 			cg_solve(A, b, x_part, THRESHOLD, scratch, n_cellsPerBlock, n, i_ini);
 			dest = 0;
+			/* Envoi le résultat du calcul au maître et le numéro du bloc calculé */
 			bTmp = i_block;
 			MPI_Send(&bTmp, 1, MPI_INT, dest, TRAITEMENT, MPI_COMM_WORLD);
 			MPI_Send(x_part, n_cellsPerBlock*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
