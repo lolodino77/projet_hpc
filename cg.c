@@ -248,7 +248,7 @@ double norm(const int n, const double *x)
 /*********************** conjugate gradient algorithm *************************/
 
 /* Solve Ax == b (the solution is written in x). Scratch must be preallocated of size 6n */
-void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, double *x_part, const double epsilon, double *scratch, int n, int N, int i_ini)
+void cg_solve(const struct csr_matrix_t *A, const double *b, double *x_part, const double epsilon, double *scratch, int n, int N, int i_ini)
 {
 	int nz = A->nz;
 
@@ -518,7 +518,7 @@ int main(int argc, char **argv)
 			}
 
 			/* Calcul */
-			cg_solve(A, b, x_part, THRESHOLD, scratch, n_cellsPerBlock, i_ini);
+			cg_solve(A, b, x_part, THRESHOLD, scratch, n_cellsPerBlock, n, i_ini);
 			dest = 0;
 			bTmp = i_block;
 			MPI_Send(&bTmp, 1, MPI_INT, dest, TRAITEMENT, MPI_COMM_WORLD);
