@@ -213,7 +213,7 @@ void extract_diagonal(const struct csr_matrix_t *A, double *d, int n_part, int i
 }
 
 /* Matrix-vector product (with A in CSR format) : y = Ax */
-void sp_gemv(const struct csr_matrix_t *A, const double *x, double *y)
+void sp_gemv(const struct csr_matrix_t *A, const double *x, double *y, int n)
 {
 	int *Ap = A->Ap;
 	int *Aj = A->Aj;
@@ -306,7 +306,7 @@ void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, const do
 	while (norm_part(r,i_ini,n_part) > epsilon){ ///////PAS SUR SUR QUELLE CONDITION METTRE
 		/* loop invariant : rz = dot(r, z) */
 		double old_rz = rz;
-		sp_gemv(A, p, q);	/* q <-- A.p */
+		sp_gemv(A, p, q, n);	/* q <-- A.p */
 		double alpha = old_rz / dot_part(p, q, i_ini, n_part);
 		for (int i = 0; i < n_part; i++)	// x <-- x + alpha*p
 			x[i] += alpha * p[i + i_ini];
@@ -505,7 +505,7 @@ int main(int argc, char **argv)
 			double *y = scratch;
 			//sp_gemv(const struct csr_matrix_t *A, const double *x, double *y, int n, int i_ini)
 			//sp_gemv(A, p, q, n, i_ini);
-			sp_gemv(A, x, y, n, 0);	// y = Ax
+			sp_gemv(A, x, y, n);	// y = Ax
 			for (int i = 0; i < n; i++)	// y = Ax - b
 				y[i] -= b[i];
 			fprintf(stderr, "[check] max error = %2.2e\n", norm(n, y));
