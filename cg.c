@@ -213,12 +213,12 @@ void extract_diagonal(const struct csr_matrix_t *A, double *d, int n_part, int i
 }
 
 /* Matrix-vector product (with A in CSR format) : y = Ax */
-void sp_gemv(const struct csr_matrix_t *A, const double *x, double *y, int n_part, int i_ini)
+void sp_gemv(const struct csr_matrix_t *A, const double *x, double *y)
 {
 	int *Ap = A->Ap;
 	int *Aj = A->Aj;
 	double *Ax = A->Ax;
-	for (int i = i_ini; i < i_ini + n_part; i++) {
+	for (int i = 0; i < n; i++) {
 		y[i] = 0;
 		for (int u = Ap[i]; u < Ap[i + 1]; u++) {
 			int j = Aj[u]; //j = Aj[Ap[i]]
@@ -306,17 +306,17 @@ void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, const do
 	while (norm_part(r,i_ini,n_part) > epsilon){ ///////PAS SUR SUR QUELLE CONDITION METTRE
 		/* loop invariant : rz = dot(r, z) */
 		double old_rz = rz;
-		sp_gemv(A, p, q, n_part, i_ini);	/* q <-- A.p */
+		sp_gemv(A, p, q);	/* q <-- A.p */
 		double alpha = old_rz / dot_part(p, q, i_ini, n_part);
 		for (int i = 0; i < n_part; i++)	// x <-- x + alpha*p
-			x[i] += alpha * p[i];
-		for (int i =i_ini; i < i_ini + n_part; i++)	// r <-- r - alpha*q
+			x[i] += alpha * p[i + i_ini];
+		for (int i =0; i < n; i++)	// r <-- r - alpha*q
 			r[i] -= alpha * q[i]; //A*p
-		for (int i = i_ini; i < i_ini + n_part; i++)	// z <-- M^(-1).r
+		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
 			z[i] = r[i] / d[i];
 		rz = dot_part(r, z, i_ini, n_part);	// restore invariant : rz = dot(r, z)
 		double beta = rz / old_rz;
-		for (int i =i_ini; i < i_ini + n_part; i++)	// p <-- z + beta*p
+		for (int i =0; i < n; i++)	// p <-- z + beta*p
 			p[i] = z[i] + beta * p[i];
 		iter++;
 		double t = wtime();
