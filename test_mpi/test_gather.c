@@ -41,5 +41,6 @@ int main(int argc, char** argv) {
     //         printf("%d\n", A_part[i]);
     //     }   
     // }
+    MPI_Finalize();
 
 }
