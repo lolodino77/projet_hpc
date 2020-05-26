@@ -243,8 +243,6 @@ void maitre_esclave_root_produit_scalaire(double* x, double* a, double* b, doubl
 		dest = status.MPI_SOURCE;
 		MPI_Send(&i_block, 1, MPI_INT, dest, tagMission, MPI_COMM_WORLD);
 		i_block += 1;
-		MPI_Send(&a, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
-		MPI_Send(&b, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
 		// if(tagMission == DOT_RZ){
 		// 	MPI_Send(&r, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
 		// 	MPI_Send(&z, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
@@ -255,9 +253,7 @@ void maitre_esclave_root_produit_scalaire(double* x, double* a, double* b, doubl
 		// }
 		
 		/* Le maitre recopie le contenu de la partie du vecteur qu'il a reçu */
-		for(int i = 0;i<n_part;i++){
-			*x += *x_part;
-		}
+		*x += *x_part;
 	}
 
 	/* Reception des derniers travaux des esclaves */
@@ -267,9 +263,7 @@ void maitre_esclave_root_produit_scalaire(double* x, double* a, double* b, doubl
 		//On recupère le numéro du processus (idTmp) qui vient d'envoyer son travail au maître
 		idTmp = status.MPI_SOURCE;
 		//On recopie le travail de l'esclave
-		for(int j = 0;j<n_part;j++){
-			*x += *x_part;
-		}	
+		*x += *x_part;
 		//On dit à l'esclave de ne plus travailler
 		MPI_Send(&idTmp, 1, MPI_INT, idTmp, STOP, MPI_COMM_WORLD);			
 	}
@@ -645,7 +639,7 @@ int main(int argc, char **argv)
 		fprintf(stderr, "     ---> Working set : %.1fMbyte\n", 1e-6 * (12.0 * nz + 52.0 * n));
 		fprintf(stderr, "     ---> Per iteration: %.2g FLOP in sp_gemv() and %.2g FLOP in the rest\n", 2. * nz, 12. * n);
 
-		maitre_esclave_root_produit_scalaire(rz, r, z, rz_part, DOT_RZ, nbProc, n,  n_part, nbOfBlock); // rz = dot(r,z)
+		maitre_esclave_root_produit_scalaire(rz, r, z, rz_part, DOT_RZ, nbProc, n, n_part, nbOfBlock); // rz = dot(r,z)
 		printf("rz = %lf\n", *rz);
 	// 	while (norm(n, r) > THRESHOLD){
 	// 	/* loop invariant : rz = dot(r, z) */
@@ -699,40 +693,45 @@ int main(int argc, char **argv)
 	// 		fprintf(f_x, "%a\n", x[i]);
 	// 	return EXIT_SUCCESS;
 	 }
-	// else{// si le processus n'est pas le maître mais un esclave
-	// 	while(1){
-	// 		MPI_Recv(&i_block, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-	// 		i_ini = i_block * n_part;
+	else{// si le processus n'est pas le maître mais un esclave
 
-	// 		if(status.MPI_TAG == DOT_RZ){
-	// 			/* Calcul d'une partie du produit scalaire (pour une partie des composantes) */
-	// 			MPI_Recv(r, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
-	// 			MPI_Recv(z, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
-	// 			*rz_part = dot_part(r, z, i_ini, n_part);
-	// 			MPI_Send(&rz_part, 1, MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
-	// 		}
-	// 		else if(status.MPI_TAG == DOT_PQ){
-	// 			/* Calcul d'une partie du produit scalaire (pour une partie des composantes) */
-	// 			MPI_Recv(p, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
-	// 			MPI_Recv(q, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
-	// 			*pq_part = dot_part(p, q, i_ini, n_part);
-	// 			MPI_Send(&pq_part, 1, MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
-	// 		}
-	// 		else if(status.MPI_TAG == MATPROD){
-	// 			MPI_Recv(p, n*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
-	// 			void sp_gemv_part(A, p, q_part, n_part, i_ini);
-	// 			MPI_Send(q_part, n_part*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
-	// 		}
-	// 		else if(status.MPI_TAG == STOP){
-	// 			break;
-	// 		}
+		if(status.MPI_TAG == DOT_RZ){
+				/* Calcul d'une partie du produit scalaire (pour une partie des composantes) */
+				MPI_Recv(r, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+				MPI_Recv(z, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+		else if(status.MPI_TAG == DOT_PQ){
+				/* Calcul d'une partie du produit scalaire (pour une partie des composantes) */
+				MPI_Recv(p, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+				MPI_Recv(q, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+		else if(status.MPI_TAG == MATPROD){
+				MPI_Recv(p, n*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);		
 
-	// 		/* Envoi le numéro du bloc calculé */
-	// 		bTmp = i_block; //indice temporaire du dernier bloc traité
-	// 		dest = 0;
-	// 		MPI_Send(&bTmp, 1, MPI_INT, dest, TRAITEMENT, MPI_COMM_WORLD);
-	// 	}
-	// }
+		while(1){
+			MPI_Recv(&i_block, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+			i_ini = i_block * n_part;
+
+			if(status.MPI_TAG == DOT_RZ){
+				*rz_part = dot_part(r, z, i_ini, n_part);
+				MPI_Send(&rz_part, 1, MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
+			}
+			else if(status.MPI_TAG == DOT_PQ){
+				*pq_part = dot_part(p, q, i_ini, n_part);
+				MPI_Send(&pq_part, 1, MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
+			}
+			else if(status.MPI_TAG == MATPROD){
+				void sp_gemv_part(A, p, q_part, n_part, i_ini);
+				MPI_Send(q_part, n_part*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
+			}
+			else if(status.MPI_TAG == STOP){
+				break;
+			}
+
+			/* Envoi le numéro du bloc calculé */
+			bTmp = i_block; //indice temporaire du dernier bloc traité
+			dest = 0;
+			MPI_Send(&bTmp, 1, MPI_INT, dest, TRAITEMENT, MPI_COMM_WORLD);
+		}
+	}
 
 	// /* Affichage de la sortie */
 	// fin = my_gettimeofday();
