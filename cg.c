@@ -219,10 +219,10 @@ void maitre_esclave_root_produit_scalaire(double* x, double* a, double* b, doubl
 
 	for(int i = 1;i < nbProc;i++){
 		dest = i;
-		MPI_Send(&i_block, 1, MPI_INT, dest, tagMission, MPI_COMM_WORLD);
-		i_block += 1;			
 		MPI_Send(&a, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
 		MPI_Send(&b, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
+		MPI_Send(&i_block, 1, MPI_INT, dest, tagMission, MPI_COMM_WORLD);
+		i_block += 1;			
 		// if(tagMission == DOT_RZ){
 		// 	MPI_Send(&r, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
 		// 	MPI_Send(&z, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
@@ -281,11 +281,11 @@ void maitre_esclave_root_produit_matriciel(double* x, double* a, double* x_part,
 	int idTmp;
 	enum tagType {INDICE, TRAITEMENT, STOP, DOT_RZ, DOT_PQ, MATPROD};
 
+	MPI_Send(&a, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
 	for(int i = 1;i < nbProc;i++){
 		dest = i;
 		MPI_Send(&i_block, 1, MPI_INT, dest, tagMission, MPI_COMM_WORLD);
 		i_block += 1;			
-		MPI_Send(&a, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
 	}
 
 	/* Envoi des ordres */
@@ -297,7 +297,6 @@ void maitre_esclave_root_produit_matriciel(double* x, double* a, double* x_part,
 		dest = status.MPI_SOURCE;
 		MPI_Send(&i_block, 1, MPI_INT, dest, tagMission, MPI_COMM_WORLD);
 		i_block += 1;
-		MPI_Send(&a, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
 		
 		/* Le maitre recopie le contenu de la partie du vecteur qu'il a reçu */
 		for(int i = 0;i<n_part;i++){
@@ -697,17 +696,27 @@ int main(int argc, char **argv)
 
 		if(status.MPI_TAG == DOT_RZ){
 				/* Calcul d'une partie du produit scalaire (pour une partie des composantes) */
-				MPI_Recv(r, n*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
-				MPI_Recv(z, n*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
-				// for(int i;i<)
+				MPI_Recv(a, n*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+				MPI_Recv(b, n*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+				for(int i=0;i<n;i++){
+					r[i] = a[i];
+					z[i] = b[i];
+				}
 		}
 		else if(status.MPI_TAG == DOT_PQ){
 				/* Calcul d'une partie du produit scalaire (pour une partie des composantes) */
-				MPI_Recv(p, n*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
-				MPI_Recv(q, n*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+				MPI_Recv(a, n*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+				MPI_Recv(b, n*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+				for(int i=0;i<n;i++){
+					p[i] = a[i];
+					q[i] = b[i];
+				}
 		}
 		else if(status.MPI_TAG == MATPROD){
-				MPI_Recv(p, n*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);		
+				MPI_Recv(a, n*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);		
+				for(int i=0;i<n;i++){
+					p[i] = a[i];
+				}
 		}
 		while(1){
 			MPI_Recv(&i_block, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
