@@ -24,6 +24,7 @@ int main(int argc, char** argv) {
     printf("Hello world from processor %s, rank %d out of %d processors\n",
            processor_name, my_rank, world_size);
 
+    int root = 0;
     int p = 4;
     int sendcount = 5;
     int* A = malloc(p * sendcount * sizeof(int)); // p * sendcount = 4 * 5 = 20
@@ -35,7 +36,7 @@ int main(int argc, char** argv) {
         }
     }
     else{
-        MPI_Gather(A_part, sendcount, MPI_INT, A, p * sendcount, MPI_INT);
+        MPI_Gather(A_part, sendcount, MPI_INT, A, p * sendcount, MPI_INT, root, MPI_COMM_WORLD);
         for(int i = 0;i < p*sendcount;i++){
             printf("%d\n", A_part[i]);
         }   
