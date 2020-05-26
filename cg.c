@@ -543,36 +543,36 @@ int main(int argc, char **argv)
 	printf("hello i am process %s number %d\n", processor_name, my_rank);
 
 /* Broadcast de la matrice A */
-	// int n = 0;
-	// int nnz = 0;
-	// int *nnz2 = malloc(sizeof(int));
-	// struct csr_matrix_t *A = malloc(sizeof(*A));
+	int n = 0;
+	int nnz = 0;
+	int *nnz2 = malloc(sizeof(int));
+	struct csr_matrix_t *A = malloc(sizeof(*A));
 
-	// /* Load the matrix */
-	// if(my_rank == 0){
-	// 	FILE *f_mat = stdin;
-	// 	if (matrix_filename) {
-	// 		f_mat = fopen(matrix_filename, "r");
-	// 		if (f_mat == NULL)
-	// 			err(1, "cannot matrix file %s", matrix_filename);
-	// 	}
-	// 	A = load_mm(f_mat, nnz2);
-	// 	n = A->n;
-	// 	nnz = *nnz2;
-	// }
- //    MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
- //    MPI_Bcast(&nnz, 1, MPI_INT, 0, MPI_COMM_WORLD);
-	// if(my_rank != 0){
-	// 	A->n = n;
-	// 	A->Ap = malloc((n+1)*sizeof(int));
-	// 	A->Aj = malloc(2 * nnz*sizeof(int));
-	// 	A->Ax = malloc(2 * nnz*sizeof(double));
- //    }
- //    MPI_Bcast(&A->nz, 1, MPI_INT, 0, MPI_COMM_WORLD);
- //    MPI_Bcast(A->Ap, n+1, MPI_INT, 0, MPI_COMM_WORLD);
- //    MPI_Bcast(A->Aj, 2*nnz, MPI_INT, 0, MPI_COMM_WORLD); //bug la
- //    MPI_Bcast(A->Ax, 2*nnz, MPI_DOUBLE, 0, MPI_COMM_WORLD);
- //    // printf("%d %d %lf %d %d %lf\n", A->Ap[0], A->Aj[0], A->Ax[0], A->Ap[50], A->Aj[50], A->Ax[50]);
+	/* Load the matrix */
+	if(my_rank == 0){
+		FILE *f_mat = stdin;
+		if (matrix_filename) {
+			f_mat = fopen(matrix_filename, "r");
+			if (f_mat == NULL)
+				err(1, "cannot matrix file %s", matrix_filename);
+		}
+		A = load_mm(f_mat, nnz2);
+		n = A->n;
+		nnz = *nnz2;
+	}
+    MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&nnz, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	if(my_rank != 0){
+		A->n = n;
+		A->Ap = malloc((n+1)*sizeof(int));
+		A->Aj = malloc(2 * nnz*sizeof(int));
+		A->Ax = malloc(2 * nnz*sizeof(double));
+    }
+    MPI_Bcast(&A->nz, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(A->Ap, n+1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(A->Aj, 2*nnz, MPI_INT, 0, MPI_COMM_WORLD); //bug la
+    MPI_Bcast(A->Ax, 2*nnz, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    // printf("%d %d %lf %d %d %lf\n", A->Ap[0], A->Aj[0], A->Ax[0], A->Ap[50], A->Aj[50], A->Ax[50]);
   
 	// /* Allocate memory */
 	// // n = taille du vecteur x
