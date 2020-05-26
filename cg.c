@@ -637,9 +637,15 @@ int main(int argc, char **argv)
 			p[i] = z[i];
 
 	/*Algorithme du gradient conjugué */
+
 		int nz = A->nz;
 		int recvcount = n_part*nbProc;
 		int iter = 0;	
+
+		fprintf(stderr, "[CG] Starting iterative solver\n");
+		fprintf(stderr, "     ---> Working set : %.1fMbyte\n", 1e-6 * (12.0 * nz + 52.0 * n));
+		fprintf(stderr, "     ---> Per iteration: %.2g FLOP in sp_gemv() and %.2g FLOP in the rest\n", 2. * nz, 12. * n);
+
 		maitre_esclave_root_produit_scalaire(rz, r, z, rz_part, DOT_RZ, nbProc, n,  n_part, nbOfBlock); // rz = dot(r,z)
 		while (norm(n, r) > THRESHOLD){
 		/* loop invariant : rz = dot(r, z) */
@@ -668,6 +674,7 @@ int main(int argc, char **argv)
 				last_display = t;
 			}
 		}
+		fprintf(stderr, "\n     ---> Finished in %.1fs and %d iterations\n", wtime() - start, iter);
 	
 		/* Check result */
 		if (safety_check) {
