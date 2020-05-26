@@ -698,7 +698,7 @@ int main(int argc, char **argv)
 	// 	for (int i = 0; i < n; i++)
 	// 		fprintf(f_x, "%a\n", x[i]);
 	// 	return EXIT_SUCCESS;
-	// }
+	 }
 	// else{// si le processus n'est pas le maître mais un esclave
 	// 	while(1){
 	// 		MPI_Recv(&i_block, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
