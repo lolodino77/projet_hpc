@@ -196,6 +196,84 @@ struct csr_matrix_t *load_mm(FILE * f, int *nnz2)//construct
 	return A;
 }
 
+void maitre_esclave_root(int* x){
+/* Premier tour des ordres envoyes aux esclaves */
+	for(int i = 1;i < nbProc;i++){
+		dest = i;
+		MPI_Send(&i_block, 1, MPI_INT, dest, INDICE, MPI_COMM_WORLD);
+		i_block += 1;			
+	}
+
+	/* Envoi des ordres */
+	while(i_block != nbOfBlock){
+		//le maitre recoit le numéro du dernier bloc calculé
+		MPI_Recv(&bTmp, 1, MPI_INT, MPI_ANY_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);	
+		//le maitre recoit le dernier bloc calculé
+		MPI_Recv(x_part, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+		dest = status.MPI_SOURCE;
+		MPI_Send(&i_block, 1, MPI_INT, dest, INDICE, MPI_COMM_WORLD);
+		i_block += 1;
+		
+		/* Le maitre recopie le contenu de la partie du vecteur qu'il a reçu */
+		for(int i = 0;i<n_part;i++){
+			x[bTmp*n_part + i] = x_part[i];
+		}
+	}
+
+	/* Reception des derniers travaux des esclaves */
+	for(int i = 1;i < nbProc;i++){
+		MPI_Recv(&bTmp, 1, MPI_INT, MPI_ANY_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);	
+		MPI_Recv(x_part, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+		//On recupère le numéro du processus qui vient d'envoyer son travail au maître
+		idTmp = status.MPI_SOURCE;
+		//On recopie le travail de l'esclave
+		for(int j = 0;j<n_part;j++){
+			(x + bTmp*n_part)[j] = x_part[j];
+		}	
+		//On dit à l'esclave de ne plus travailler
+		MPI_Send(&idTmp, 1, MPI_INT, idTmp, STOP, MPI_COMM_WORLD);			
+	}
+}
+
+void maitre_esclave_root_sans_gather_reduce(int* x){
+/* Premier tour des ordres envoyes aux esclaves */
+	for(int i = 1;i < nbProc;i++){
+		dest = i;
+		MPI_Send(&i_block, 1, MPI_INT, dest, INDICE, MPI_COMM_WORLD);
+		i_block += 1;			
+	}
+
+	/* Envoi des ordres */
+	while(i_block != nbOfBlock){
+		//le maitre recoit le numéro du dernier bloc calculé
+		MPI_Recv(&bTmp, 1, MPI_INT, MPI_ANY_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);	
+		//le maitre recoit le dernier bloc calculé
+		MPI_Recv(x_part, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+		dest = status.MPI_SOURCE;
+		MPI_Send(&i_block, 1, MPI_INT, dest, INDICE, MPI_COMM_WORLD);
+		i_block += 1;
+		
+		/* Le maitre recopie le contenu de la partie du vecteur qu'il a reçu */
+		for(int i = 0;i<n_part;i++){
+			x[bTmp*n_part + i] = x_part[i];
+		}
+	}
+
+	/* Reception des derniers travaux des esclaves */
+	for(int i = 1;i < nbProc;i++){
+		MPI_Recv(&bTmp, 1, MPI_INT, MPI_ANY_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);	
+		MPI_Recv(x_part, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+		//On recupère le numéro du processus qui vient d'envoyer son travail au maître
+		idTmp = status.MPI_SOURCE;
+		//On recopie le travail de l'esclave
+		for(int j = 0;j<n_part;j++){
+			(x + bTmp*n_part)[j] = x_part[j];
+		}	
+		//On dit à l'esclave de ne plus travailler
+		MPI_Send(&idTmp, 1, MPI_INT, idTmp, STOP, MPI_COMM_WORLD);			
+	}
+}
+
 /*************************** Matrix accessors *********************************/
 
 /* Copy the diagonal of A into the vector d. */
