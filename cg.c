@@ -205,7 +205,7 @@ struct csr_matrix_t *load_mm(FILE * f, int *nnz2)//construct
 // 	}
 // }
 
-void maitre_esclave_root_produit_scalaire(int* x, int* x_part, int tagMission, int nbProc){
+void maitre_esclave_root_produit_scalaire(int* x, int* x_part, int tagMission, int nbProc, int n, int n_part, int nbOfBlock){
 	//tagMission décrit la mission en cours qui est calcul du produit scalaire rz
 	//, du produit scalaire pq ou produit matriciel A*p = q 
 /* Premier tour des ordres envoyes aux esclaves */
@@ -215,11 +215,21 @@ void maitre_esclave_root_produit_scalaire(int* x, int* x_part, int tagMission, i
 	int dest;
 	int bTmp = 0; //numero du dernier bloc du vecteur x qui vient d'être calculé
 	int idTmp;
+	enum tagType {INDICE, TRAITEMENT, STOP, DOT_RZ, DOT_PQ, MATPROD};
 
 	for(int i = 1;i < nbProc;i++){
 		dest = i;
 		MPI_Send(&i_block, 1, MPI_INT, dest, tagMission, MPI_COMM_WORLD);
 		i_block += 1;			
+
+		if(tagMission == DOT_RZ){
+			MPI_Send(&r, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
+			MPI_Send(&z, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
+		}
+		else if(tagMission == DOT_PQ){
+			MPI_Send(&p, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
+			MPI_Send(&q, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
+		}
 	}
 
 	/* Envoi des ordres */
@@ -228,9 +238,19 @@ void maitre_esclave_root_produit_scalaire(int* x, int* x_part, int tagMission, i
 		MPI_Recv(&bTmp, 1, MPI_INT, MPI_ANY_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);	
 		//le maitre recoit le dernier bloc calculé
 		MPI_Recv(x_part, sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+		//Le maître envoie la mission suivante à l'esclave
 		dest = status.MPI_SOURCE;
 		MPI_Send(&i_block, 1, MPI_INT, dest, tagMission, MPI_COMM_WORLD);
 		i_block += 1;
+
+		if(tagMission == DOT_RZ){
+			MPI_Send(&r, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
+			MPI_Send(&z, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
+		}
+		else if(tagMission == DOT_PQ){
+			MPI_Send(&p, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
+			MPI_Send(&q, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
+		}
 		
 		/* Le maitre recopie le contenu de la partie du vecteur qu'il a reçu */
 		for(int i = 0;i<n_part;i++){
@@ -253,7 +273,7 @@ void maitre_esclave_root_produit_scalaire(int* x, int* x_part, int tagMission, i
 	}
 }
 
-void maitre_esclave_root_produit_matriciel(int* x, int* x_part, int tagMission, int nbProc){
+void maitre_esclave_root_produit_matriciel(int* x, int* x_part, int tagMission, int nbProc, int n, int n_part, int nbOfBlock){
 	//tagMission décrit la mission en cours qui est calcul du produit scalaire rz
 	//, du produit scalaire pq ou produit matriciel A*p = q 
 /* Premier tour des ordres envoyes aux esclaves */
@@ -268,6 +288,7 @@ void maitre_esclave_root_produit_matriciel(int* x, int* x_part, int tagMission, 
 		dest = i;
 		MPI_Send(&i_block, 1, MPI_INT, dest, tagMission, MPI_COMM_WORLD);
 		i_block += 1;			
+		MPI_Send(&p, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
 	}
 
 	/* Envoi des ordres */
@@ -279,6 +300,7 @@ void maitre_esclave_root_produit_matriciel(int* x, int* x_part, int tagMission, 
 		dest = status.MPI_SOURCE;
 		MPI_Send(&i_block, 1, MPI_INT, dest, tagMission, MPI_COMM_WORLD);
 		i_block += 1;
+		MPI_Send(&p, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
 		
 		/* Le maitre recopie le contenu de la partie du vecteur qu'il a reçu */
 		for(int i = 0;i<n_part;i++){
@@ -595,7 +617,6 @@ int main(int argc, char **argv)
 	if(my_rank == 0){		
 		double start = wtime();
 		double last_display = start;
-		int iter = 0;
 		double alpha = 0.0;
 		double beta = 0.0;
 		double rz = 0.0;
@@ -615,13 +636,13 @@ int main(int argc, char **argv)
 		int recvcount = n_part*nbProc;
 		double start = wtime();
 		double last_display = start;
-		int iter = 0;
-		maitre_esclave_root_produit_scalaire(rz, rz_part, DOT_RZ, nbProc) // rz = dot(r,z)
+		int iter = 0;	
+		maitre_esclave_root_produit_scalaire(rz, rz_part, DOT_RZ, nbProc, n,  n_part, nbOfBlock) // rz = dot(r,z)
 		while (norm(n, r) > THRESHOLD){
 		/* loop invariant : rz = dot(r, z) */
 			old_rz = rz;
-			maitre_esclave_root_produit_matriciel(q, q_part, MATPROD, nbProc) /* q <-- A.p */
-			maitre_esclave_root_produit_scalaire(pq, pq_part, DOT_PQ, nbProc) // pq <-- dot(p, q)
+			maitre_esclave_root_produit_matriciel(q, q_part, MATPROD, nbProc, n,  n_part, nbOfBlock) /* q <-- A.p */
+			maitre_esclave_root_produit_scalaire(pq, pq_part, DOT_PQ, nbProc, n,  n_part, nbOfBlock) // pq <-- dot(p, q)
 			alpha = old_rz / pq;		
 			for (int i = 0; i < n_part; i++)	// x <-- x + alpha*p
 				x[i] += alpha * p[i + i_ini];
@@ -629,7 +650,7 @@ int main(int argc, char **argv)
 				r[i] -= alpha * q[i]; //A*p
 			for (int i = 0; i < n; i++)	// z <-- M^(-1).r
 				z[i] = r[i] / d[i];
-			maitre_esclave_root_produit_scalaire(rz, rz_part, DOT_RZ, nbProc) // rz = dot(r,z)
+			maitre_esclave_root_produit_scalaire(rz, rz_part, DOT_RZ, nbProc, n,  n_part, nbOfBlock) // rz = dot(r,z)
 			beta = rz / old_rz;
 			for (int i =0; i < n; i++)	// p <-- z + beta*p
 				p[i] = z[i] + beta * p[i];
