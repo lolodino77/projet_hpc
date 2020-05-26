@@ -11,6 +11,7 @@ extract_diagonal(A, d, n_part, i_ini);
 if(my_rank != 0){
 	MPI_Recv(&i_block, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 	i_ini = i_block * n_part;
+
 	if(status.MPI_TAG == DOT_RZ){
 		/* Calcul d'une partie du produit scalaire (pour une partie des composantes) */
 		MPI_Recv(r, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
@@ -18,25 +19,24 @@ if(my_rank != 0){
 		rz = dot_part(r, z, i_ini, n_part);
 		/* Envoi le résultat du calcul au maître et le numéro du bloc calculé */
 		dest = 0;
-		bTmp = i_block; //indice temporaire du dernier bloc traité
-		MPI_Send(&bTmp, 1, MPI_INT, dest, TRAITEMENT, MPI_COMM_WORLD);
 		//Il y aura un reduce.
 	}
-	if(status.MPI_TAG == DOT_PQ){
+	else if(status.MPI_TAG == DOT_PQ){
 		/* Calcul d'une partie du produit scalaire (pour une partie des composantes) */
 		MPI_Recv(p, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
 		MPI_Recv(q, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
 		pq = dot_part(p, q, i_ini, n_part);
-		/* Envoi le résultat du calcul au maître et le numéro du bloc calculé */
-		dest = 0;
-		bTmp = i_block; //indice temporaire du dernier bloc traité
-		MPI_Send(&bTmp, 1, MPI_INT, dest, TRAITEMENT, MPI_COMM_WORLD);
-		//Il y aura un reduce.
+		//Il y aura un reduce de la racine.
 	}
-	if(status.MPI_TAG == MATPROD){
+	else if(status.MPI_TAG == MATPROD){
 		void sp_gemv_part(A, p, q_part, n_part, i_ini);
-
+		//Il y aura un reduce de la racine.
 	}
+
+	/* Envoi le numéro du bloc calculé */
+	bTmp = i_block; //indice temporaire du dernier bloc traité
+	dest = 0;
+	MPI_Send(&bTmp, 1, MPI_INT, dest, TRAITEMENT, MPI_COMM_WORLD);
 }
 
 
@@ -48,7 +48,6 @@ if(my_rank != 0){
 	while (norm_part(r,i_ini,n_part) > THRESHOLD){ ///////PAS SUR SUR QUELLE CONDITION METTRE
 		/* loop invariant : rz = dot(r, z) */
 		double old_rz = rz;
-		MPI_Gather()
 		sp_gemv(A, p, q, n);	/* q <-- A.p */
 		double alpha = old_rz / dot_part(p, q, i_ini, n_part);
 		for (int i = 0; i < n_part; i++)	// x <-- x + alpha*p
@@ -91,8 +90,9 @@ if(my_rank == 0){
 		p[i] = z[i];
 
 	/*Algorithme du gradient conjugué */
+	int recvcount = n_part*nbProc;
 	MPI_Reduce(MPI_IN_PLACE, &rz, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);// rz = dot(r,z)	
-
+    MPI_Gather(q_part, n_part, MPI_INT, q, recvcount, MPI_INT, root, MPI_COMM_WORLD);
 
 
 
