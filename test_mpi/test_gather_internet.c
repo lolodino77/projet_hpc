@@ -18,7 +18,7 @@ int main( int argc, char **argv )
     /* Determine the sender and receiver */
     MPI_Comm_rank( comm, &rank );
     MPI_Comm_size( comm, &size );
- 
+    printf("size = %d\n", size);
     for (root=0; root<size; root++) {
         for (count = 1; count < 65000; count = count * 2) {
             n = 12;
