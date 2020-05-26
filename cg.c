@@ -606,25 +606,24 @@ int main(int argc, char **argv)
 			b[i] = PRF(i, seed);
 	}
 
+	/* solve Ax == b with MPI, witn nbProc processors*/
+	double *r = scratch;	        // residue
+	double *z = scratch + n;	// preconditioned-residue
+	double *p = scratch + 2*n;	// search direction
+	double *q = scratch + 3 * n;	// q == Ap
+	double *d = scratch + 4 * n;	// diagonal entries of A (Jacobi preconditioning)
+	double *q_part = malloc(n_part*sizeof(double));
+	double *rz_part = calloc(1,sizeof(double));
+	double *pq_part = calloc(1,sizeof(double));
+	printf("pq_part = %lf\n", *pq_part);
 
-	// /* solve Ax == b with MPI, witn nbProc processors*/
-	// double *r = scratch;	        // residue
-	// double *z = scratch + n;	// preconditioned-residue
-	// double *p = scratch + 2*n;	// search direction
-	// double *q = scratch + 3 * n;	// q == Ap
-	// double *d = scratch + 4 * n;	// diagonal entries of A (Jacobi preconditioning)
-	// double *q_part = malloc(n_part*sizeof(double));
-	// double *rz_part = calloc(1,sizeof(double));
-	// double *pq_part = calloc(1,sizeof(double));
-	// printf("pq_part = %lf\n", *pq_part);
-
-	// if(my_rank == 0){		
-	// 	double start = wtime();
-	// 	double last_display = start;
-	// 	double alpha = 0.0;
-	// 	double beta = 0.0;
-	// 	double *rz = calloc(1,sizeof(double));
-	// 	double *pq = calloc(1,sizeof(double));
+	if(my_rank == 0){		
+		double start = wtime();
+		double last_display = start;
+		double alpha = 0.0;
+		double beta = 0.0;
+		double *rz = calloc(1,sizeof(double));
+		double *pq = calloc(1,sizeof(double));
 
 	// /* Initialisation des vecteurs */
 	// 	for (int i = 0; i < n_part; i++)
