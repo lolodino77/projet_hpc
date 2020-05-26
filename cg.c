@@ -608,7 +608,6 @@ int main(int argc, char **argv)
 	double *q_part = malloc(n_part*sizeof(double));
 	double *rz_part = calloc(1,sizeof(double));
 	double *pq_part = calloc(1,sizeof(double));
-	printf("pq_part = %lf\n", *pq_part);
 
 	if(my_rank == 0){		
 		double start = wtime();
