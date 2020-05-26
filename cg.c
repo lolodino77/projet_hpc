@@ -219,8 +219,8 @@ void maitre_esclave_root_produit_scalaire(double* x, double* a, double* b, doubl
 
 	for(int i = 1;i < nbProc;i++){
 		dest = i;
-		MPI_Send(&a, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
-		MPI_Send(&b, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
+		MPI_Send(a, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
+		MPI_Send(b, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
 		MPI_Send(&i_block, 1, MPI_INT, dest, tagMission, MPI_COMM_WORLD);
 		i_block += 1;			
 		// if(tagMission == DOT_RZ){
@@ -281,7 +281,7 @@ void maitre_esclave_root_produit_matriciel(double* x, double* a, double* x_part,
 	int idTmp;
 	enum tagType {INDICE, TRAITEMENT, STOP, DOT_RZ, DOT_PQ, MATPROD};
 
-	MPI_Send(&a, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
+	MPI_Send(a, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
 	for(int i = 1;i < nbProc;i++){
 		dest = i;
 		MPI_Send(&i_block, 1, MPI_INT, dest, tagMission, MPI_COMM_WORLD);
