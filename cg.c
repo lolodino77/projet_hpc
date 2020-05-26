@@ -626,26 +626,26 @@ int main(int argc, char **argv)
 		double *pq = calloc(1,sizeof(double));
 
 	// /* Initialisation des vecteurs */
-	// 	for (int i = 0; i < n_part; i++)
-	// 		x[i] = 0.0;
-	// 	for (int i = 0; i < n; i++)	// r <-- b - Ax == b
-	// 		r[i] = b[i];
-	// 	for (int i = 0; i < n; i++)	// z <-- M^(-1).r
-	// 		z[i] = r[i] / d[i];
-	// 	for (int i = 0; i < n; i++)	// p <-- z
-	// 		p[i] = z[i];
+		for (int i = 0; i < n_part; i++)
+			x[i] = 0.0;
+		for (int i = 0; i < n; i++)	// r <-- b - Ax == b
+			r[i] = b[i];
+		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
+			z[i] = r[i] / d[i];
+		for (int i = 0; i < n; i++)	// p <-- z
+			p[i] = z[i];
 
 	// /*Algorithme du gradient conjugué */
 
-	// 	int nz = A->nz;
-	// 	int recvcount = n_part*nbProc;
-	// 	int iter = 0;	
+		int nz = A->nz;
+		int recvcount = n_part*nbProc;
+		int iter = 0;	
 
-	// 	fprintf(stderr, "[CG] Starting iterative solver\n");
-	// 	fprintf(stderr, "     ---> Working set : %.1fMbyte\n", 1e-6 * (12.0 * nz + 52.0 * n));
-	// 	fprintf(stderr, "     ---> Per iteration: %.2g FLOP in sp_gemv() and %.2g FLOP in the rest\n", 2. * nz, 12. * n);
+		fprintf(stderr, "[CG] Starting iterative solver\n");
+		fprintf(stderr, "     ---> Working set : %.1fMbyte\n", 1e-6 * (12.0 * nz + 52.0 * n));
+		fprintf(stderr, "     ---> Per iteration: %.2g FLOP in sp_gemv() and %.2g FLOP in the rest\n", 2. * nz, 12. * n);
 
-	// 	maitre_esclave_root_produit_scalaire(rz, r, z, rz_part, DOT_RZ, nbProc, n,  n_part, nbOfBlock); // rz = dot(r,z)
+		maitre_esclave_root_produit_scalaire(rz, r, z, rz_part, DOT_RZ, nbProc, n,  n_part, nbOfBlock); // rz = dot(r,z)
 	// 	while (norm(n, r) > THRESHOLD){
 	// 	/* loop invariant : rz = dot(r, z) */
 	// 		double old_rz = *rz;
