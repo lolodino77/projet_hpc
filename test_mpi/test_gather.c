@@ -27,6 +27,7 @@ int main(int argc, char** argv) {
     int root = 0;
     int p = 4;
     int sendcount = 5;
+    printf("sendcount = %d\n", sendcount);
     int* A = malloc(p * sendcount * sizeof(int)); // p * sendcount = 4 * 5 = 20
     int* A_part = malloc(sendcount * sizeof(int)); 
 
@@ -41,7 +42,7 @@ int main(int argc, char** argv) {
             printf("%d\n", A_part[i]);
         }   
     }
-    
+
     MPI_Finalize();
 
 }
