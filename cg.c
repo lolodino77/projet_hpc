@@ -591,20 +591,20 @@ int main(int argc, char **argv)
 	double *scratch = mem + 2 * n;	/* workspace for cg_solve() */
 
 	// /* Prepare right-hand size */
-	// if (rhs_filename) {	/* load from file */
-	// 	FILE *f_b = fopen(rhs_filename, "r");
-	// 	if (f_b == NULL)
-	// 		err(1, "cannot open %s", rhs_filename);
-	// 	fprintf(stderr, "[IO] Loading b from %s\n", rhs_filename);
-	// 	for (int i = 0; i < n; i++) {
-	// 		if (1 != fscanf(f_b, "%lg\n", &b[i]))
-	// 			errx(1, "parse error entry %d\n", i);
-	// 	}
-	// 	fclose(f_b);
-	// } else {
-	// 	for (int i = 0; i < n; i++)
-	// 		b[i] = PRF(i, seed);
-	// }
+	if (rhs_filename) {	/* load from file */
+		FILE *f_b = fopen(rhs_filename, "r");
+		if (f_b == NULL)
+			err(1, "cannot open %s", rhs_filename);
+		fprintf(stderr, "[IO] Loading b from %s\n", rhs_filename);
+		for (int i = 0; i < n; i++) {
+			if (1 != fscanf(f_b, "%lg\n", &b[i]))
+				errx(1, "parse error entry %d\n", i);
+		}
+		fclose(f_b);
+	} else {
+		for (int i = 0; i < n; i++)
+			b[i] = PRF(i, seed);
+	}
 
 
 	// /* solve Ax == b with MPI, witn nbProc processors*/
