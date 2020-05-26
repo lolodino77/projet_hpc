@@ -614,8 +614,8 @@ int main(int argc, char **argv)
 	double *q = scratch + 3 * n;	// q == Ap
 	double *d = scratch + 4 * n;	// diagonal entries of A (Jacobi preconditioning)
 	double *q_part = malloc(n_part*sizeof(double));
-	double *rz_part = calloc(sizeof(double));
-	double *pq_part = calloc(sizeof(double));
+	double *rz_part = calloc(1,sizeof(double));
+	double *pq_part = calloc(1,sizeof(double));
 	printf("pq_part = %lf\n", *pq_part);
 
 	if(my_rank == 0){		
@@ -623,8 +623,8 @@ int main(int argc, char **argv)
 		double last_display = start;
 		double alpha = 0.0;
 		double beta = 0.0;
-		double *rz = calloc(sizeof(double));
-		double *pq = calloc(sizeof(double));
+		double *rz = calloc(1,sizeof(double));
+		double *pq = calloc(1,sizeof(double));
 
 	/* Initialisation des vecteurs */
 		for (int i = 0; i < n_part; i++)
@@ -643,9 +643,9 @@ int main(int argc, char **argv)
 		maitre_esclave_root_produit_scalaire(rz, r, z, rz_part, DOT_RZ, nbProc, n,  n_part, nbOfBlock); // rz = dot(r,z)
 		while (norm(n, r) > THRESHOLD){
 		/* loop invariant : rz = dot(r, z) */
-			double old_rz = rz;
+			double old_rz = *rz;
 			maitre_esclave_root_produit_matriciel(q, p, q_part, MATPROD, nbProc, n,  n_part, nbOfBlock); /* q <-- A.p */
-			maitre_esclave_root_produit_scalaire(pq, p, q pq_part, DOT_PQ, nbProc, n,  n_part, nbOfBlock); // pq <-- dot(p, q)
+			maitre_esclave_root_produit_scalaire(pq, p, q, pq_part, DOT_PQ, nbProc, n,  n_part, nbOfBlock); // pq <-- dot(p, q)
 			alpha = old_rz / pq;		
 			for (int i = 0; i < n_part; i++)	// x <-- x + alpha*p
 				x[i] += alpha * p[i + i_ini];
