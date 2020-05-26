@@ -575,20 +575,20 @@ int main(int argc, char **argv)
     // printf("%d %d %lf %d %d %lf\n", A->Ap[0], A->Aj[0], A->Ax[0], A->Ap[50], A->Aj[50], A->Ax[50]);
   
 	// /* Allocate memory */
-	// // n = taille du vecteur x
-	// //n(cfd1) = 70 656 = n
-	// int n_part = 92;//nombre d'elements par bloc du vecteur x
-	// 							  //bloc = partie du vecteur calculée lors d'un calcul d'un processeur
-	// int nbOfBlock = n/n_part;//nombre de blocs du vecteur x = nb de calculs a effectuer
-	// int reste = n % n_part;//indique si on rajoute un bloc si besoin pour calculer 
-	// 		//le reste du vecteur si la division a un reste
-	// double *x_part = malloc(n_part*sizeof(double)); /* une partie ou bloc du vecteur x */
-	// double *mem = malloc(7 * n * sizeof(double));
-	// if(mem == NULL)
-	// 	err(1, "cannot allocate dense vectors");
-	// double *x = mem;	/* solution vector */
-	// double *b = mem + n;	/* right-hand side */
-	// double *scratch = mem + 2 * n;	/* workspace for cg_solve() */
+	// n = taille du vecteur x
+	//n(cfd1) = 70 656 = n
+	int n_part = 92;//nombre d'elements par bloc du vecteur x
+								  //bloc = partie du vecteur calculée lors d'un calcul d'un processeur
+	int nbOfBlock = n/n_part;//nombre de blocs du vecteur x = nb de calculs a effectuer
+	int reste = n % n_part;//indique si on rajoute un bloc si besoin pour calculer 
+			//le reste du vecteur si la division a un reste
+	double *x_part = malloc(n_part*sizeof(double)); /* une partie ou bloc du vecteur x */
+	double *mem = malloc(7 * n * sizeof(double));
+	if(mem == NULL)
+		err(1, "cannot allocate dense vectors");
+	double *x = mem;	/* solution vector */
+	double *b = mem + n;	/* right-hand side */
+	double *scratch = mem + 2 * n;	/* workspace for cg_solve() */
 
 	// /* Prepare right-hand size */
 	// if (rhs_filename) {	/* load from file */
