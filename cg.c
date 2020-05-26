@@ -646,6 +646,7 @@ int main(int argc, char **argv)
 		fprintf(stderr, "     ---> Per iteration: %.2g FLOP in sp_gemv() and %.2g FLOP in the rest\n", 2. * nz, 12. * n);
 
 		maitre_esclave_root_produit_scalaire(rz, r, z, rz_part, DOT_RZ, nbProc, n,  n_part, nbOfBlock); // rz = dot(r,z)
+		printf("rz = %lf\n", *rz);
 	// 	while (norm(n, r) > THRESHOLD){
 	// 	/* loop invariant : rz = dot(r, z) */
 	// 		double old_rz = *rz;
