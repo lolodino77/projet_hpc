@@ -518,27 +518,27 @@ int main(int argc, char **argv)
 	char *solution_filename = NULL;
 	int safety_check = 1;
 	char ch;
-	while ((ch = getopt_long(argc, argv, "", longopts, NULL)) != -1) {
-		switch (ch) {
-		case 's':
-			seed = atoll(optarg);
-			break;
-		case 'r':
-			rhs_filename = optarg;
-			break;
-		case 'm':
-			matrix_filename = optarg;
-			break;
-		case 'o':
-			solution_filename = optarg;
-			break;
-		case 'c':
-			safety_check = 0;
-			break;
-		default:
-			errx(1, "Unknown option");
-		}
-	}
+	// while ((ch = getopt_long(argc, argv, "", longopts, NULL)) != -1) {
+	// 	switch (ch) {
+	// 	case 's':
+	// 		seed = atoll(optarg);
+	// 		break;
+	// 	case 'r':
+	// 		rhs_filename = optarg;
+	// 		break;
+	// 	case 'm':
+	// 		matrix_filename = optarg;
+	// 		break;
+	// 	case 'o':
+	// 		solution_filename = optarg;
+	// 		break;
+	// 	case 'c':
+	// 		safety_check = 0;
+	// 		break;
+	// 	default:
+	// 		errx(1, "Unknown option");
+	// 	}
+	// }
 
 	printf("hello i am process %s number %d\n", processor_name, my_rank);
 
