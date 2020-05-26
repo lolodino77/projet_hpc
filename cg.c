@@ -205,7 +205,7 @@ struct csr_matrix_t *load_mm(FILE * f, int *nnz2)//construct
 // 	}
 // }
 
-void maitre_esclave_root_produit_scalaire(int* x, int* x_part, int tagMission, int nbProc, int n, int n_part, int nbOfBlock){
+void maitre_esclave_root_produit_scalaire(int* x, int* a, int* b, int* x_part, int tagMission, int nbProc, int n, int n_part, int nbOfBlock){
 	//tagMission décrit la mission en cours qui est calcul du produit scalaire rz
 	//, du produit scalaire pq ou produit matriciel A*p = q 
 /* Premier tour des ordres envoyes aux esclaves */
@@ -273,7 +273,7 @@ void maitre_esclave_root_produit_scalaire(int* x, int* x_part, int tagMission, i
 	}
 }
 
-void maitre_esclave_root_produit_matriciel(int* x, int* x_part, int tagMission, int nbProc, int n, int n_part, int nbOfBlock){
+void maitre_esclave_root_produit_matriciel(int* x, int* a, int* b, int* x_part, int tagMission, int nbProc, int n, int n_part, int nbOfBlock){
 	//tagMission décrit la mission en cours qui est calcul du produit scalaire rz
 	//, du produit scalaire pq ou produit matriciel A*p = q 
 /* Premier tour des ordres envoyes aux esclaves */
@@ -637,12 +637,12 @@ int main(int argc, char **argv)
 		double start = wtime();
 		double last_display = start;
 		int iter = 0;	
-		maitre_esclave_root_produit_scalaire(rz, rz_part, DOT_RZ, nbProc, n,  n_part, nbOfBlock) // rz = dot(r,z)
+		maitre_esclave_root_produit_scalaire(rz, r, z rz_part, DOT_RZ, nbProc, n,  n_part, nbOfBlock) // rz = dot(r,z)
 		while (norm(n, r) > THRESHOLD){
 		/* loop invariant : rz = dot(r, z) */
 			old_rz = rz;
 			maitre_esclave_root_produit_matriciel(q, q_part, MATPROD, nbProc, n,  n_part, nbOfBlock) /* q <-- A.p */
-			maitre_esclave_root_produit_scalaire(pq, pq_part, DOT_PQ, nbProc, n,  n_part, nbOfBlock) // pq <-- dot(p, q)
+			maitre_esclave_root_produit_scalaire(pq, p, q pq_part, DOT_PQ, nbProc, n,  n_part, nbOfBlock) // pq <-- dot(p, q)
 			alpha = old_rz / pq;		
 			for (int i = 0; i < n_part; i++)	// x <-- x + alpha*p
 				x[i] += alpha * p[i + i_ini];
@@ -650,7 +650,7 @@ int main(int argc, char **argv)
 				r[i] -= alpha * q[i]; //A*p
 			for (int i = 0; i < n; i++)	// z <-- M^(-1).r
 				z[i] = r[i] / d[i];
-			maitre_esclave_root_produit_scalaire(rz, rz_part, DOT_RZ, nbProc, n,  n_part, nbOfBlock) // rz = dot(r,z)
+			maitre_esclave_root_produit_scalaire(rz, r, z, rz_part, DOT_RZ, nbProc, n,  n_part, nbOfBlock) // rz = dot(r,z)
 			beta = rz / old_rz;
 			for (int i =0; i < n; i++)	// p <-- z + beta*p
 				p[i] = z[i] + beta * p[i];
