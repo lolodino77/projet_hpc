@@ -205,7 +205,7 @@ struct csr_matrix_t *load_mm(FILE * f, int *nnz2)//construct
 // 	}
 // }
 
-void maitre_esclave_root_produit_scalaire(int* x, int* a, int* b, int* x_part, int tagMission, int nbProc, int n, int n_part, int nbOfBlock){
+void maitre_esclave_root_produit_scalaire(double* x, double* a, double* b, double* x_part, int tagMission, int nbProc, int n, int n_part, int nbOfBlock){
 	//tagMission décrit la mission en cours qui est calcul du produit scalaire rz
 	//, du produit scalaire pq ou produit matriciel A*p = q 
 /* Premier tour des ordres envoyes aux esclaves */
@@ -275,7 +275,7 @@ void maitre_esclave_root_produit_scalaire(int* x, int* a, int* b, int* x_part, i
 	}
 }
 
-void maitre_esclave_root_produit_matriciel(int* x, int* a, int* x_part, int tagMission, int nbProc, int n, int n_part, int nbOfBlock){
+void maitre_esclave_root_produit_matriciel(double* x, double* a, double* x_part, int tagMission, int nbProc, int n, int n_part, int nbOfBlock){
 	//tagMission décrit la mission en cours qui est calcul du produit scalaire rz
 	//, du produit scalaire pq ou produit matriciel A*p = q 
 /* Premier tour des ordres envoyes aux esclaves */
@@ -285,6 +285,7 @@ void maitre_esclave_root_produit_matriciel(int* x, int* a, int* x_part, int tagM
 	int dest;
 	int bTmp = 0; //numero du dernier bloc du vecteur x qui vient d'être calculé
 	int idTmp;
+	enum tagType {INDICE, TRAITEMENT, STOP, DOT_RZ, DOT_PQ, MATPROD};
 
 	for(int i = 1;i < nbProc;i++){
 		dest = i;
@@ -406,75 +407,75 @@ double norm_part( const double *x, int i_ini, int n_part)
 /*********************** conjugate gradient algorithm *************************/
 
 /* Solve Ax == b (the solution is written in x). Scratch must be preallocated of size 6n */
-void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, const double epsilon, double *scratch, int n_part, int n)
-{
-	int nz = A->nz;
+// void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, const double epsilon, double *scratch, int n_part, int n)
+// {
+// 	int nz = A->nz;
 
-	fprintf(stderr, "[CG] Starting iterative solver\n");
-	fprintf(stderr, "     ---> Working set : %.1fMbyte\n", 1e-6 * (12.0 * nz + 52.0 * n_part));
-	fprintf(stderr, "     ---> Per iteration: %.2g FLOP in sp_gemv() and %.2g FLOP in the rest\n", 2. * nz, 12. * n_part);
+// 	fprintf(stderr, "[CG] Starting iterative solver\n");
+// 	fprintf(stderr, "     ---> Working set : %.1fMbyte\n", 1e-6 * (12.0 * nz + 52.0 * n_part));
+// 	fprintf(stderr, "     ---> Per iteration: %.2g FLOP in sp_gemv() and %.2g FLOP in the rest\n", 2. * nz, 12. * n_part);
 
-	//	double *mem = malloc(7 * n * sizeof(double));
-	// double *x = mem;	/* solution vector */
-	// double *b = mem + n;	/* right-hand side */
-	//	double *scratch = mem + 2 * n;	/* workspace for cg_solve() */
-	double *r = scratch;	        // residue
-	double *z = scratch + n;	// preconditioned-residue
-	double *p = scratch + 2*n;	// search direction
-	double *q = scratch + 3 * n;	// q == Ap
-	double *d = scratch + 4 * n;	// diagonal entries of A (Jacobi preconditioning)
+// 	//	double *mem = malloc(7 * n * sizeof(double));
+// 	// double *x = mem;	/* solution vector */
+// 	// double *b = mem + n;	/* right-hand side */
+// 	//	double *scratch = mem + 2 * n;	/* workspace for cg_solve() */
+// 	double *r = scratch;	        // residue
+// 	double *z = scratch + n;	// preconditioned-residue
+// 	double *p = scratch + 2*n;	// search direction
+// 	double *q = scratch + 3 * n;	// q == Ap
+// 	double *d = scratch + 4 * n;	// diagonal entries of A (Jacobi preconditioning)
 
-	/* Isolate diagonal */
-	extract_diagonal(A, d, n_part, i_ini);
+// 	/* Isolate diagonal */
+// 	extract_diagonal(A, d, n_part, i_ini);
 
-	/* 
-	 * This function follows closely the pseudo-code given in the (english)
-	 * Wikipedia page "Conjugate gradient method". This is the version with
-	 * preconditionning.
-	 */
+// 	/* 
+// 	 * This function follows closely the pseudo-code given in the (english)
+// 	 * Wikipedia page "Conjugate gradient method". This is the version with
+// 	 * preconditionning.
+// 	 */
 
-	/* We use x == 0 --- this avoids the first matrix-vector product. */
-	for (int i = 0; i < n_part; i++)
-		x[i] = 0.0;
-	for (int i = 0; i < n; i++)	// r <-- b - Ax == b
-		r[i] = b[i];
-	for (int i = 0; i < n; i++)	// z <-- M^(-1).r
-		z[i] = r[i] / d[i];
-	for (int i = 0; i < n; i++)	// p <-- z
-		p[i] = z[i];
+// 	/* We use x == 0 --- this avoids the first matrix-vector product. */
+// 	for (int i = 0; i < n_part; i++)
+// 		x[i] = 0.0;
+// 	for (int i = 0; i < n; i++)	// r <-- b - Ax == b
+// 		r[i] = b[i];
+// 	for (int i = 0; i < n; i++)	// z <-- M^(-1).r
+// 		z[i] = r[i] / d[i];
+// 	for (int i = 0; i < n; i++)	// p <-- z
+// 		p[i] = z[i];
 
-	double rz = dot_part(r, z, i_ini, n_part);
-	double start = wtime();
-	double last_display = start;
-	int iter = 0;
-	while (norm_part(r,i_ini,n_part) > epsilon){ ///////PAS SUR SUR QUELLE CONDITION METTRE
-		/* loop invariant : rz = dot(r, z) */
-		double old_rz = rz;
-		sp_gemv(A, p, q, n);	/* q <-- A.p */
-		double alpha = old_rz / dot_part(p, q, i_ini, n_part);
-		for (int i = 0; i < n_part; i++)	// x <-- x + alpha*p
-			x[i] += alpha * p[i + i_ini];
-		for (int i =0; i < n; i++)	// r <-- r - alpha*q
-			r[i] -= alpha * q[i]; //A*p
-		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
-			z[i] = r[i] / d[i];
-		rz = dot_part(r, z, i_ini, n_part);	// restore invariant : rz = dot(r, z)
-		double beta = rz / old_rz;
-		for (int i =0; i < n; i++)	// p <-- z + beta*p
-			p[i] = z[i] + beta * p[i];
-		iter++;
-		double t = wtime();
-		if (t - last_display > 0.5) {
-			/* verbosity */
-			double rate = iter / (t - start);	// iterations per s.
-			double GFLOPs = 1e-9 * rate * (2 * nz + 12 * n);
-			fprintf(stderr, "\r     ---> error : %2.2e, iter : %d (%.1f it/s, %.2f GFLOPs)", norm(n, r), iter, rate, GFLOPs);
-			fflush(stdout);
-			last_display = t;
-		}
-	}
-	fprintf(stderr, "\n     ---> Finished in %.1fs and %d iterations\n", wtime() - start, iter);
-}
+// 	double rz = dot_part(r, z, i_ini, n_part);
+// 	double start = wtime();
+// 	double last_display = start;
+// 	int iter = 0;
+// 	while (norm_part(r,i_ini,n_part) > epsilon){ ///////PAS SUR SUR QUELLE CONDITION METTRE
+// 		/* loop invariant : rz = dot(r, z) */
+// 		double old_rz = rz;
+// 		sp_gemv(A, p, q, n);	/* q <-- A.p */
+// 		double alpha = old_rz / dot_part(p, q, i_ini, n_part);
+// 		for (int i = 0; i < n_part; i++)	// x <-- x + alpha*p
+// 			x[i] += alpha * p[i + i_ini];
+// 		for (int i =0; i < n; i++)	// r <-- r - alpha*q
+// 			r[i] -= alpha * q[i]; //A*p
+// 		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
+// 			z[i] = r[i] / d[i];
+// 		rz = dot_part(r, z, i_ini, n_part);	// restore invariant : rz = dot(r, z)
+// 		double beta = rz / old_rz;
+// 		for (int i =0; i < n; i++)	// p <-- z + beta*p
+// 			p[i] = z[i] + beta * p[i];
+// 		iter++;
+// 		double t = wtime();
+// 		if (t - last_display > 0.5) {
+// 			/* verbosity */
+// 			double rate = iter / (t - start);	// iterations per s.
+// 			double GFLOPs = 1e-9 * rate * (2 * nz + 12 * n);
+// 			fprintf(stderr, "\r     ---> error : %2.2e, iter : %d (%.1f it/s, %.2f GFLOPs)", norm(n, r), iter, rate, GFLOPs);
+// 			fflush(stdout);
+// 			last_display = t;
+// 		}
+// 	}
+// 	fprintf(stderr, "\n     ---> Finished in %.1fs and %d iterations\n", wtime() - start, iter);
+// }
 
 /******************************* main program *********************************/
 
@@ -613,16 +614,16 @@ int main(int argc, char **argv)
 	double *q = scratch + 3 * n;	// q == Ap
 	double *d = scratch + 4 * n;	// diagonal entries of A (Jacobi preconditioning)
 	double *q_part = malloc(n_part*sizeof(double));
-	double rz_part = 0.0;
-	double pq_part = 0.0;
+	double *rz_part = 0.0;
+	double *pq_part = 0.0;
 
 	if(my_rank == 0){		
 		double start = wtime();
 		double last_display = start;
 		double alpha = 0.0;
 		double beta = 0.0;
-		double rz = 0.0;
-		double pq = 0.0;
+		double *rz = 0.0;
+		double *pq = 0.0;
 
 	/* Initialisation des vecteurs */
 		for (int i = 0; i < n_part; i++)
@@ -636,10 +637,8 @@ int main(int argc, char **argv)
 
 	/*Algorithme du gradient conjugué */
 		int recvcount = n_part*nbProc;
-		double start = wtime();
-		double last_display = start;
 		int iter = 0;	
-		maitre_esclave_root_produit_scalaire(rz, r, z rz_part, DOT_RZ, nbProc, n,  n_part, nbOfBlock) // rz = dot(r,z)
+		maitre_esclave_root_produit_scalaire(rz, r, z, rz_part, DOT_RZ, nbProc, n,  n_part, nbOfBlock); // rz = dot(r,z)
 		while (norm(n, r) > THRESHOLD){
 		/* loop invariant : rz = dot(r, z) */
 			old_rz = rz;
