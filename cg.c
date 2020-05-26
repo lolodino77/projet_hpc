@@ -217,35 +217,12 @@ void maitre_esclave_root_produit_scalaire(double* x, double* a, double* b, doubl
 	int idTmp;
 	enum tagType {INDICE, TRAITEMENT, STOP, DOT_RZ, DOT_PQ, MATPROD};
 
-	if (tagMission==DOT_RZ)
-	{
-		for (int i = 0; i < n; ++i)
-		{
-			r[i] = a[i];
-			z[i] = b[i];
-		}
-		for(int i = 1;i < nbProc;i++){
+	for(int i = 1;i < nbProc;i++){
 		dest = i;
-		MPI_Send(r, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
-		MPI_Send(z, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
+		MPI_Send(&a, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
+		MPI_Send(&b, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
 		MPI_Send(&i_block, 1, MPI_INT, dest, tagMission, MPI_COMM_WORLD);
-		i_block += 1;
-	}
-	else if (tagMission == DOT_PQ)
-	{
-		for (int i = 0; i < n; ++i)
-		{
-			p[i] = a[i];
-			q[i] = b[i];
-		}
-		for(int i = 1;i < nbProc;i++){
-		dest = i;
-		MPI_Send(p, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
-		MPI_Send(q, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
-		MPI_Send(&i_block, 1, MPI_INT, dest, tagMission, MPI_COMM_WORLD);
-		i_block += 1;
-	}
-			
+		i_block += 1;			
 		// if(tagMission == DOT_RZ){
 		// 	MPI_Send(&r, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
 		// 	MPI_Send(&z, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
