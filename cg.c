@@ -678,14 +678,14 @@ int main(int argc, char **argv)
 				MPI_Recv(r, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
 				MPI_Recv(z, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
 				rz_part = dot_part(r, z, i_ini, n_part);
-				MPI_Send(rz_part, 1, MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
+				MPI_Send(&rz_part, 1, MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
 			}
 			else if(status.MPI_TAG == DOT_PQ){
 				/* Calcul d'une partie du produit scalaire (pour une partie des composantes) */
 				MPI_Recv(p, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
 				MPI_Recv(q, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
 				pq_part = dot_part(p, q, i_ini, n_part);
-				MPI_Send(pq_part, 1, MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
+				MPI_Send(&pq_part, 1, MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
 			}
 			else if(status.MPI_TAG == MATPROD){
 				MPI_Recv(p, n*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
