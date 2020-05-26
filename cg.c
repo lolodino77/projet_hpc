@@ -221,15 +221,16 @@ void maitre_esclave_root_produit_scalaire(int* x, int* a, int* b, int* x_part, i
 		dest = i;
 		MPI_Send(&i_block, 1, MPI_INT, dest, tagMission, MPI_COMM_WORLD);
 		i_block += 1;			
-
-		if(tagMission == DOT_RZ){
-			MPI_Send(&r, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
-			MPI_Send(&z, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
-		}
-		else if(tagMission == DOT_PQ){
-			MPI_Send(&p, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
-			MPI_Send(&q, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
-		}
+		MPI_Send(&a, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
+		MPI_Send(&b, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
+		// if(tagMission == DOT_RZ){
+		// 	MPI_Send(&r, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
+		// 	MPI_Send(&z, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
+		// }
+		// else if(tagMission == DOT_PQ){
+		// 	MPI_Send(&p, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
+		// 	MPI_Send(&q, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
+		// }
 	}
 
 	/* Envoi des ordres */
@@ -242,15 +243,16 @@ void maitre_esclave_root_produit_scalaire(int* x, int* a, int* b, int* x_part, i
 		dest = status.MPI_SOURCE;
 		MPI_Send(&i_block, 1, MPI_INT, dest, tagMission, MPI_COMM_WORLD);
 		i_block += 1;
-
-		if(tagMission == DOT_RZ){
-			MPI_Send(&r, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
-			MPI_Send(&z, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
-		}
-		else if(tagMission == DOT_PQ){
-			MPI_Send(&p, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
-			MPI_Send(&q, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
-		}
+		MPI_Send(&a, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
+		MPI_Send(&b, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
+		// if(tagMission == DOT_RZ){
+		// 	MPI_Send(&r, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
+		// 	MPI_Send(&z, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
+		// }
+		// else if(tagMission == DOT_PQ){
+		// 	MPI_Send(&p, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
+		// 	MPI_Send(&q, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
+		// }
 		
 		/* Le maitre recopie le contenu de la partie du vecteur qu'il a reçu */
 		for(int i = 0;i<n_part;i++){
@@ -273,7 +275,7 @@ void maitre_esclave_root_produit_scalaire(int* x, int* a, int* b, int* x_part, i
 	}
 }
 
-void maitre_esclave_root_produit_matriciel(int* x, int* a, int* b, int* x_part, int tagMission, int nbProc, int n, int n_part, int nbOfBlock){
+void maitre_esclave_root_produit_matriciel(int* x, int* a, int* x_part, int tagMission, int nbProc, int n, int n_part, int nbOfBlock){
 	//tagMission décrit la mission en cours qui est calcul du produit scalaire rz
 	//, du produit scalaire pq ou produit matriciel A*p = q 
 /* Premier tour des ordres envoyes aux esclaves */
@@ -288,7 +290,7 @@ void maitre_esclave_root_produit_matriciel(int* x, int* a, int* b, int* x_part, 
 		dest = i;
 		MPI_Send(&i_block, 1, MPI_INT, dest, tagMission, MPI_COMM_WORLD);
 		i_block += 1;			
-		MPI_Send(&p, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
+		MPI_Send(&a, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
 	}
 
 	/* Envoi des ordres */
@@ -300,7 +302,7 @@ void maitre_esclave_root_produit_matriciel(int* x, int* a, int* b, int* x_part, 
 		dest = status.MPI_SOURCE;
 		MPI_Send(&i_block, 1, MPI_INT, dest, tagMission, MPI_COMM_WORLD);
 		i_block += 1;
-		MPI_Send(&p, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
+		MPI_Send(&a, n*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);
 		
 		/* Le maitre recopie le contenu de la partie du vecteur qu'il a reçu */
 		for(int i = 0;i<n_part;i++){
@@ -641,7 +643,7 @@ int main(int argc, char **argv)
 		while (norm(n, r) > THRESHOLD){
 		/* loop invariant : rz = dot(r, z) */
 			old_rz = rz;
-			maitre_esclave_root_produit_matriciel(q, q_part, MATPROD, nbProc, n,  n_part, nbOfBlock) /* q <-- A.p */
+			maitre_esclave_root_produit_matriciel(q, p, q_part, MATPROD, nbProc, n,  n_part, nbOfBlock) /* q <-- A.p */
 			maitre_esclave_root_produit_scalaire(pq, p, q pq_part, DOT_PQ, nbProc, n,  n_part, nbOfBlock) // pq <-- dot(p, q)
 			alpha = old_rz / pq;		
 			for (int i = 0; i < n_part; i++)	// x <-- x + alpha*p
