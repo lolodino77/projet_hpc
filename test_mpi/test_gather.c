@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
         MPI_Gather(A_part, sendcount, MPI_INT, A, recvcount, MPI_INT, root, MPI_COMM_WORLD);
         printf("fin gather\n");
         for(int i = 0;i < p*sendcount;i++){
-            printf("%d ", A_part[i]);
+            printf("%d ", A[i]);
         }   
     }
 
