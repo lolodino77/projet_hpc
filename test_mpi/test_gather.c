@@ -32,6 +32,7 @@ int main(int argc, char** argv) {
 
     if(my_rank != 0){
         for(int i = 0;i < sendcount;i++){
+            printf("my rank = %d\n", my_rank);
             A_part[i] = my_rank;
             printf("%d ", A_part[i]);
         }
