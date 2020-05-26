@@ -614,16 +614,17 @@ int main(int argc, char **argv)
 	double *q = scratch + 3 * n;	// q == Ap
 	double *d = scratch + 4 * n;	// diagonal entries of A (Jacobi preconditioning)
 	double *q_part = malloc(n_part*sizeof(double));
-	double *rz_part = 0.0;
-	double *pq_part = 0.0;
+	double *rz_part = calloc(sizeof(double));
+	double *pq_part = calloc(sizeof(double));
+	printf("pq_part = %lf\n", *pq_part);
 
 	if(my_rank == 0){		
 		double start = wtime();
 		double last_display = start;
 		double alpha = 0.0;
 		double beta = 0.0;
-		double *rz = 0.0;
-		double *pq = 0.0;
+		double *rz = calloc(sizeof(double));
+		double *pq = calloc(sizeof(double));
 
 	/* Initialisation des vecteurs */
 		for (int i = 0; i < n_part; i++)
@@ -636,14 +637,15 @@ int main(int argc, char **argv)
 			p[i] = z[i];
 
 	/*Algorithme du gradient conjugué */
+		int nz = A->nz;
 		int recvcount = n_part*nbProc;
 		int iter = 0;	
 		maitre_esclave_root_produit_scalaire(rz, r, z, rz_part, DOT_RZ, nbProc, n,  n_part, nbOfBlock); // rz = dot(r,z)
 		while (norm(n, r) > THRESHOLD){
 		/* loop invariant : rz = dot(r, z) */
-			old_rz = rz;
-			maitre_esclave_root_produit_matriciel(q, p, q_part, MATPROD, nbProc, n,  n_part, nbOfBlock) /* q <-- A.p */
-			maitre_esclave_root_produit_scalaire(pq, p, q pq_part, DOT_PQ, nbProc, n,  n_part, nbOfBlock) // pq <-- dot(p, q)
+			double old_rz = rz;
+			maitre_esclave_root_produit_matriciel(q, p, q_part, MATPROD, nbProc, n,  n_part, nbOfBlock); /* q <-- A.p */
+			maitre_esclave_root_produit_scalaire(pq, p, q pq_part, DOT_PQ, nbProc, n,  n_part, nbOfBlock); // pq <-- dot(p, q)
 			alpha = old_rz / pq;		
 			for (int i = 0; i < n_part; i++)	// x <-- x + alpha*p
 				x[i] += alpha * p[i + i_ini];
@@ -651,7 +653,7 @@ int main(int argc, char **argv)
 				r[i] -= alpha * q[i]; //A*p
 			for (int i = 0; i < n; i++)	// z <-- M^(-1).r
 				z[i] = r[i] / d[i];
-			maitre_esclave_root_produit_scalaire(rz, r, z, rz_part, DOT_RZ, nbProc, n,  n_part, nbOfBlock) // rz = dot(r,z)
+			maitre_esclave_root_produit_scalaire(rz, r, z, rz_part, DOT_RZ, nbProc, n,  n_part, nbOfBlock); // rz = dot(r,z)
 			beta = rz / old_rz;
 			for (int i =0; i < n; i++)	// p <-- z + beta*p
 				p[i] = z[i] + beta * p[i];
@@ -699,14 +701,14 @@ int main(int argc, char **argv)
 				/* Calcul d'une partie du produit scalaire (pour une partie des composantes) */
 				MPI_Recv(r, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
 				MPI_Recv(z, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
-				rz_part = dot_part(r, z, i_ini, n_part);
+				*rz_part = dot_part(r, z, i_ini, n_part);
 				MPI_Send(&rz_part, 1, MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
 			}
 			else if(status.MPI_TAG == DOT_PQ){
 				/* Calcul d'une partie du produit scalaire (pour une partie des composantes) */
 				MPI_Recv(p, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
 				MPI_Recv(q, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
-				pq_part = dot_part(p, q, i_ini, n_part);
+				*pq_part = dot_part(p, q, i_ini, n_part);
 				MPI_Send(&pq_part, 1, MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
 			}
 			else if(status.MPI_TAG == MATPROD){
