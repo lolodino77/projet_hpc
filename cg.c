@@ -503,21 +503,21 @@ int main(int argc, char **argv)
     int name_len;
     MPI_Get_processor_name(processor_name, &name_len);
 	MPI_Status status;
-	int dest;
-	int bTmp = 0; //numero du dernier bloc du vecteur x qui vient d'être calculé
-	int idTmp; //numéro du processus dont le maître vient de recevoir le travail
-	int tagFin;
-	double debut, fin;
-	enum tagType {INDICE, TRAITEMENT, STOP, DOT_RZ, DOT_PQ, MATPROD};
-	debut = my_gettimeofday();
+	// int dest;
+	// int bTmp = 0; //numero du dernier bloc du vecteur x qui vient d'être calculé
+	// int idTmp; //numéro du processus dont le maître vient de recevoir le travail
+	// int tagFin;
+	// double debut, fin;
+	// enum tagType {INDICE, TRAITEMENT, STOP, DOT_RZ, DOT_PQ, MATPROD};
+	// debut = my_gettimeofday();
 
-	/* Parse command-line options */
-	long long seed = 0;
-	char *rhs_filename = NULL;
-	char *matrix_filename = NULL;
-	char *solution_filename = NULL;
-	int safety_check = 1;
-	char ch;
+	// /* Parse command-line options */
+	// long long seed = 0;
+	// char *rhs_filename = NULL;
+	// char *matrix_filename = NULL;
+	// char *solution_filename = NULL;
+	// int safety_check = 1;
+	// char ch;
 	// while ((ch = getopt_long(argc, argv, "", longopts, NULL)) != -1) {
 	// 	switch (ch) {
 	// 	case 's':
