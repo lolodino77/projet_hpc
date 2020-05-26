@@ -27,13 +27,13 @@ int main(int argc, char** argv) {
     int root = 0;
     int p = 4;
     int sendcount = 5;
-    printf("sendcount = %d\n", sendcount);
     int* A = malloc(p * sendcount * sizeof(int)); // p * sendcount = 4 * 5 = 20
     int* A_part = malloc(sendcount * sizeof(int)); 
 
     if(my_rank != 0){
         for(int i = 0;i < sendcount;i++){
             A_part[i] = my_rank;
+            printf("%d ", A_part[i]);
         }
     }
     else{
