@@ -646,7 +646,7 @@ int main(int argc, char **argv)
 			double old_rz = *rz;
 			maitre_esclave_root_produit_matriciel(q, p, q_part, MATPROD, nbProc, n,  n_part, nbOfBlock); /* q <-- A.p */
 			maitre_esclave_root_produit_scalaire(pq, p, q, pq_part, DOT_PQ, nbProc, n,  n_part, nbOfBlock); // pq <-- dot(p, q)
-			alpha = old_rz / pq;		
+			alpha = old_rz / *pq;		
 			for (int i = 0; i < n_part; i++)	// x <-- x + alpha*p
 				x[i] += alpha * p[i + i_ini];
 			for (int i =0; i < n; i++)	// r <-- r - alpha*q
@@ -654,7 +654,7 @@ int main(int argc, char **argv)
 			for (int i = 0; i < n; i++)	// z <-- M^(-1).r
 				z[i] = r[i] / d[i];
 			maitre_esclave_root_produit_scalaire(rz, r, z, rz_part, DOT_RZ, nbProc, n,  n_part, nbOfBlock); // rz = dot(r,z)
-			beta = rz / old_rz;
+			beta = *rz / old_rz;
 			for (int i =0; i < n; i++)	// p <-- z + beta*p
 				p[i] = z[i] + beta * p[i];
 			iter++;
