@@ -543,201 +543,201 @@ int main(int argc, char **argv)
 	printf("hello i am process %s number %d\n", processor_name, my_rank);
 
 /* Broadcast de la matrice A */
-	int n = 0;
-	int nnz = 0;
-	int *nnz2 = malloc(sizeof(int));
-	struct csr_matrix_t *A = malloc(sizeof(*A));
+	// int n = 0;
+	// int nnz = 0;
+	// int *nnz2 = malloc(sizeof(int));
+	// struct csr_matrix_t *A = malloc(sizeof(*A));
 
-	/* Load the matrix */
-	if(my_rank == 0){
-		FILE *f_mat = stdin;
-		if (matrix_filename) {
-			f_mat = fopen(matrix_filename, "r");
-			if (f_mat == NULL)
-				err(1, "cannot matrix file %s", matrix_filename);
-		}
-		A = load_mm(f_mat, nnz2);
-		n = A->n;
-		nnz = *nnz2;
-	}
-    MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Bcast(&nnz, 1, MPI_INT, 0, MPI_COMM_WORLD);
-	if(my_rank != 0){
-		A->n = n;
-		A->Ap = malloc((n+1)*sizeof(int));
-		A->Aj = malloc(2 * nnz*sizeof(int));
-		A->Ax = malloc(2 * nnz*sizeof(double));
-    }
-    MPI_Bcast(&A->nz, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Bcast(A->Ap, n+1, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Bcast(A->Aj, 2*nnz, MPI_INT, 0, MPI_COMM_WORLD); //bug la
-    MPI_Bcast(A->Ax, 2*nnz, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    // printf("%d %d %lf %d %d %lf\n", A->Ap[0], A->Aj[0], A->Ax[0], A->Ap[50], A->Aj[50], A->Ax[50]);
+	// /* Load the matrix */
+	// if(my_rank == 0){
+	// 	FILE *f_mat = stdin;
+	// 	if (matrix_filename) {
+	// 		f_mat = fopen(matrix_filename, "r");
+	// 		if (f_mat == NULL)
+	// 			err(1, "cannot matrix file %s", matrix_filename);
+	// 	}
+	// 	A = load_mm(f_mat, nnz2);
+	// 	n = A->n;
+	// 	nnz = *nnz2;
+	// }
+ //    MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
+ //    MPI_Bcast(&nnz, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	// if(my_rank != 0){
+	// 	A->n = n;
+	// 	A->Ap = malloc((n+1)*sizeof(int));
+	// 	A->Aj = malloc(2 * nnz*sizeof(int));
+	// 	A->Ax = malloc(2 * nnz*sizeof(double));
+ //    }
+ //    MPI_Bcast(&A->nz, 1, MPI_INT, 0, MPI_COMM_WORLD);
+ //    MPI_Bcast(A->Ap, n+1, MPI_INT, 0, MPI_COMM_WORLD);
+ //    MPI_Bcast(A->Aj, 2*nnz, MPI_INT, 0, MPI_COMM_WORLD); //bug la
+ //    MPI_Bcast(A->Ax, 2*nnz, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+ //    // printf("%d %d %lf %d %d %lf\n", A->Ap[0], A->Aj[0], A->Ax[0], A->Ap[50], A->Aj[50], A->Ax[50]);
   
-	/* Allocate memory */
-	// n = taille du vecteur x
-	//n(cfd1) = 70 656 = n
-	int n_part = 92;//nombre d'elements par bloc du vecteur x
-								  //bloc = partie du vecteur calculée lors d'un calcul d'un processeur
-	int nbOfBlock = n/n_part;//nombre de blocs du vecteur x = nb de calculs a effectuer
-	int reste = n % n_part;//indique si on rajoute un bloc si besoin pour calculer 
-			//le reste du vecteur si la division a un reste
-	double *x_part = malloc(n_part*sizeof(double)); /* une partie ou bloc du vecteur x */
-	double *mem = malloc(7 * n * sizeof(double));
-	if(mem == NULL)
-		err(1, "cannot allocate dense vectors");
-	double *x = mem;	/* solution vector */
-	double *b = mem + n;	/* right-hand side */
-	double *scratch = mem + 2 * n;	/* workspace for cg_solve() */
+	// /* Allocate memory */
+	// // n = taille du vecteur x
+	// //n(cfd1) = 70 656 = n
+	// int n_part = 92;//nombre d'elements par bloc du vecteur x
+	// 							  //bloc = partie du vecteur calculée lors d'un calcul d'un processeur
+	// int nbOfBlock = n/n_part;//nombre de blocs du vecteur x = nb de calculs a effectuer
+	// int reste = n % n_part;//indique si on rajoute un bloc si besoin pour calculer 
+	// 		//le reste du vecteur si la division a un reste
+	// double *x_part = malloc(n_part*sizeof(double)); /* une partie ou bloc du vecteur x */
+	// double *mem = malloc(7 * n * sizeof(double));
+	// if(mem == NULL)
+	// 	err(1, "cannot allocate dense vectors");
+	// double *x = mem;	/* solution vector */
+	// double *b = mem + n;	/* right-hand side */
+	// double *scratch = mem + 2 * n;	/* workspace for cg_solve() */
 
-	/* Prepare right-hand size */
-	if (rhs_filename) {	/* load from file */
-		FILE *f_b = fopen(rhs_filename, "r");
-		if (f_b == NULL)
-			err(1, "cannot open %s", rhs_filename);
-		fprintf(stderr, "[IO] Loading b from %s\n", rhs_filename);
-		for (int i = 0; i < n; i++) {
-			if (1 != fscanf(f_b, "%lg\n", &b[i]))
-				errx(1, "parse error entry %d\n", i);
-		}
-		fclose(f_b);
-	} else {
-		for (int i = 0; i < n; i++)
-			b[i] = PRF(i, seed);
-	}
+	// /* Prepare right-hand size */
+	// if (rhs_filename) {	/* load from file */
+	// 	FILE *f_b = fopen(rhs_filename, "r");
+	// 	if (f_b == NULL)
+	// 		err(1, "cannot open %s", rhs_filename);
+	// 	fprintf(stderr, "[IO] Loading b from %s\n", rhs_filename);
+	// 	for (int i = 0; i < n; i++) {
+	// 		if (1 != fscanf(f_b, "%lg\n", &b[i]))
+	// 			errx(1, "parse error entry %d\n", i);
+	// 	}
+	// 	fclose(f_b);
+	// } else {
+	// 	for (int i = 0; i < n; i++)
+	// 		b[i] = PRF(i, seed);
+	// }
 
 
-	/* solve Ax == b with MPI, witn nbProc processors*/
-	double *r = scratch;	        // residue
-	double *z = scratch + n;	// preconditioned-residue
-	double *p = scratch + 2*n;	// search direction
-	double *q = scratch + 3 * n;	// q == Ap
-	double *d = scratch + 4 * n;	// diagonal entries of A (Jacobi preconditioning)
-	double *q_part = malloc(n_part*sizeof(double));
-	double *rz_part = calloc(1,sizeof(double));
-	double *pq_part = calloc(1,sizeof(double));
-	printf("pq_part = %lf\n", *pq_part);
+	// /* solve Ax == b with MPI, witn nbProc processors*/
+	// double *r = scratch;	        // residue
+	// double *z = scratch + n;	// preconditioned-residue
+	// double *p = scratch + 2*n;	// search direction
+	// double *q = scratch + 3 * n;	// q == Ap
+	// double *d = scratch + 4 * n;	// diagonal entries of A (Jacobi preconditioning)
+	// double *q_part = malloc(n_part*sizeof(double));
+	// double *rz_part = calloc(1,sizeof(double));
+	// double *pq_part = calloc(1,sizeof(double));
+	// printf("pq_part = %lf\n", *pq_part);
 
-	if(my_rank == 0){		
-		double start = wtime();
-		double last_display = start;
-		double alpha = 0.0;
-		double beta = 0.0;
-		double *rz = calloc(1,sizeof(double));
-		double *pq = calloc(1,sizeof(double));
+	// if(my_rank == 0){		
+	// 	double start = wtime();
+	// 	double last_display = start;
+	// 	double alpha = 0.0;
+	// 	double beta = 0.0;
+	// 	double *rz = calloc(1,sizeof(double));
+	// 	double *pq = calloc(1,sizeof(double));
 
-	/* Initialisation des vecteurs */
-		for (int i = 0; i < n_part; i++)
-			x[i] = 0.0;
-		for (int i = 0; i < n; i++)	// r <-- b - Ax == b
-			r[i] = b[i];
-		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
-			z[i] = r[i] / d[i];
-		for (int i = 0; i < n; i++)	// p <-- z
-			p[i] = z[i];
+	// /* Initialisation des vecteurs */
+	// 	for (int i = 0; i < n_part; i++)
+	// 		x[i] = 0.0;
+	// 	for (int i = 0; i < n; i++)	// r <-- b - Ax == b
+	// 		r[i] = b[i];
+	// 	for (int i = 0; i < n; i++)	// z <-- M^(-1).r
+	// 		z[i] = r[i] / d[i];
+	// 	for (int i = 0; i < n; i++)	// p <-- z
+	// 		p[i] = z[i];
 
-	/*Algorithme du gradient conjugué */
+	// /*Algorithme du gradient conjugué */
 
-		int nz = A->nz;
-		int recvcount = n_part*nbProc;
-		int iter = 0;	
+	// 	int nz = A->nz;
+	// 	int recvcount = n_part*nbProc;
+	// 	int iter = 0;	
 
-		fprintf(stderr, "[CG] Starting iterative solver\n");
-		fprintf(stderr, "     ---> Working set : %.1fMbyte\n", 1e-6 * (12.0 * nz + 52.0 * n));
-		fprintf(stderr, "     ---> Per iteration: %.2g FLOP in sp_gemv() and %.2g FLOP in the rest\n", 2. * nz, 12. * n);
+	// 	fprintf(stderr, "[CG] Starting iterative solver\n");
+	// 	fprintf(stderr, "     ---> Working set : %.1fMbyte\n", 1e-6 * (12.0 * nz + 52.0 * n));
+	// 	fprintf(stderr, "     ---> Per iteration: %.2g FLOP in sp_gemv() and %.2g FLOP in the rest\n", 2. * nz, 12. * n);
 
-		maitre_esclave_root_produit_scalaire(rz, r, z, rz_part, DOT_RZ, nbProc, n,  n_part, nbOfBlock); // rz = dot(r,z)
-		while (norm(n, r) > THRESHOLD){
-		/* loop invariant : rz = dot(r, z) */
-			double old_rz = *rz;
-			maitre_esclave_root_produit_matriciel(q, p, q_part, MATPROD, nbProc, n,  n_part, nbOfBlock); /* q <-- A.p */
-			maitre_esclave_root_produit_scalaire(pq, p, q, pq_part, DOT_PQ, nbProc, n,  n_part, nbOfBlock); // pq <-- dot(p, q)
-			alpha = old_rz / *pq;		
-			for (int i = 0; i < n_part; i++)	// x <-- x + alpha*p
-				x[i] += alpha * p[i + i_ini];
-			for (int i =0; i < n; i++)	// r <-- r - alpha*q
-				r[i] -= alpha * q[i]; //A*p
-			for (int i = 0; i < n; i++)	// z <-- M^(-1).r
-				z[i] = r[i] / d[i];
-			maitre_esclave_root_produit_scalaire(rz, r, z, rz_part, DOT_RZ, nbProc, n,  n_part, nbOfBlock); // rz = dot(r,z)
-			beta = *rz / old_rz;
-			for (int i =0; i < n; i++)	// p <-- z + beta*p
-				p[i] = z[i] + beta * p[i];
-			iter++;
-			double t = wtime();
-			if (t - last_display > 0.5) {
-				/* verbosity */
-				double rate = iter / (t - start);	// iterations per s.
-				double GFLOPs = 1e-9 * rate * (2 * nz + 12 * n);
-				fprintf(stderr, "\r     ---> error : %2.2e, iter : %d (%.1f it/s, %.2f GFLOPs)", norm(n, r), iter, rate, GFLOPs);
-				fflush(stdout);
-				last_display = t;
-			}
-		}
-		fprintf(stderr, "\n     ---> Finished in %.1fs and %d iterations\n", wtime() - start, iter);
+	// 	maitre_esclave_root_produit_scalaire(rz, r, z, rz_part, DOT_RZ, nbProc, n,  n_part, nbOfBlock); // rz = dot(r,z)
+	// 	while (norm(n, r) > THRESHOLD){
+	// 	/* loop invariant : rz = dot(r, z) */
+	// 		double old_rz = *rz;
+	// 		maitre_esclave_root_produit_matriciel(q, p, q_part, MATPROD, nbProc, n,  n_part, nbOfBlock); /* q <-- A.p */
+	// 		maitre_esclave_root_produit_scalaire(pq, p, q, pq_part, DOT_PQ, nbProc, n,  n_part, nbOfBlock); // pq <-- dot(p, q)
+	// 		alpha = old_rz / *pq;		
+	// 		for (int i = 0; i < n_part; i++)	// x <-- x + alpha*p
+	// 			x[i] += alpha * p[i + i_ini];
+	// 		for (int i =0; i < n; i++)	// r <-- r - alpha*q
+	// 			r[i] -= alpha * q[i]; //A*p
+	// 		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
+	// 			z[i] = r[i] / d[i];
+	// 		maitre_esclave_root_produit_scalaire(rz, r, z, rz_part, DOT_RZ, nbProc, n,  n_part, nbOfBlock); // rz = dot(r,z)
+	// 		beta = *rz / old_rz;
+	// 		for (int i =0; i < n; i++)	// p <-- z + beta*p
+	// 			p[i] = z[i] + beta * p[i];
+	// 		iter++;
+	// 		double t = wtime();
+	// 		if (t - last_display > 0.5) {
+	// 			/* verbosity */
+	// 			double rate = iter / (t - start);	// iterations per s.
+	// 			double GFLOPs = 1e-9 * rate * (2 * nz + 12 * n);
+	// 			fprintf(stderr, "\r     ---> error : %2.2e, iter : %d (%.1f it/s, %.2f GFLOPs)", norm(n, r), iter, rate, GFLOPs);
+	// 			fflush(stdout);
+	// 			last_display = t;
+	// 		}
+	// 	}
+	// 	fprintf(stderr, "\n     ---> Finished in %.1fs and %d iterations\n", wtime() - start, iter);
 	
-		/* Check result */
-		if (safety_check) {
-			double *y = scratch;
-			//sp_gemv(const struct csr_matrix_t *A, const double *x, double *y, int n, int i_ini)
-			//sp_gemv(A, p, q, n, i_ini);
-			sp_gemv(A, x, y, n);	// y = Ax
-			for (int i = 0; i < n; i++)	// y = Ax - b
-				y[i] -= b[i];
-			fprintf(stderr, "[check] max error = %2.2e\n", norm(n, y));
-		}
+	// 	/* Check result */
+	// 	if (safety_check) {
+	// 		double *y = scratch;
+	// 		//sp_gemv(const struct csr_matrix_t *A, const double *x, double *y, int n, int i_ini)
+	// 		//sp_gemv(A, p, q, n, i_ini);
+	// 		sp_gemv(A, x, y, n);	// y = Ax
+	// 		for (int i = 0; i < n; i++)	// y = Ax - b
+	// 			y[i] -= b[i];
+	// 		fprintf(stderr, "[check] max error = %2.2e\n", norm(n, y));
+	// 	}
 
-		/* Dump the solution vector */
-		FILE *f_x = stdout;
-		if (solution_filename != NULL) {
-			f_x = fopen(solution_filename, "w");
-			if (f_x == NULL)
-				err(1, "cannot open solution file %s", solution_filename);
-			fprintf(stderr, "[IO] writing solution to %s\n", solution_filename);
-		}
-		for (int i = 0; i < n; i++)
-			fprintf(f_x, "%a\n", x[i]);
-		return EXIT_SUCCESS;
-	}
-	else{// si le processus n'est pas le maître mais un esclave
-		while(1){
-			MPI_Recv(&i_block, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-			i_ini = i_block * n_part;
+	// 	/* Dump the solution vector */
+	// 	FILE *f_x = stdout;
+	// 	if (solution_filename != NULL) {
+	// 		f_x = fopen(solution_filename, "w");
+	// 		if (f_x == NULL)
+	// 			err(1, "cannot open solution file %s", solution_filename);
+	// 		fprintf(stderr, "[IO] writing solution to %s\n", solution_filename);
+	// 	}
+	// 	for (int i = 0; i < n; i++)
+	// 		fprintf(f_x, "%a\n", x[i]);
+	// 	return EXIT_SUCCESS;
+	// }
+	// else{// si le processus n'est pas le maître mais un esclave
+	// 	while(1){
+	// 		MPI_Recv(&i_block, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+	// 		i_ini = i_block * n_part;
 
-			if(status.MPI_TAG == DOT_RZ){
-				/* Calcul d'une partie du produit scalaire (pour une partie des composantes) */
-				MPI_Recv(r, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
-				MPI_Recv(z, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
-				*rz_part = dot_part(r, z, i_ini, n_part);
-				MPI_Send(&rz_part, 1, MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
-			}
-			else if(status.MPI_TAG == DOT_PQ){
-				/* Calcul d'une partie du produit scalaire (pour une partie des composantes) */
-				MPI_Recv(p, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
-				MPI_Recv(q, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
-				*pq_part = dot_part(p, q, i_ini, n_part);
-				MPI_Send(&pq_part, 1, MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
-			}
-			else if(status.MPI_TAG == MATPROD){
-				MPI_Recv(p, n*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
-				void sp_gemv_part(A, p, q_part, n_part, i_ini);
-				MPI_Send(q_part, n_part*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
-			}
-			else if(status.MPI_TAG == STOP){
-				break;
-			}
+	// 		if(status.MPI_TAG == DOT_RZ){
+	// 			/* Calcul d'une partie du produit scalaire (pour une partie des composantes) */
+	// 			MPI_Recv(r, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+	// 			MPI_Recv(z, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+	// 			*rz_part = dot_part(r, z, i_ini, n_part);
+	// 			MPI_Send(&rz_part, 1, MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
+	// 		}
+	// 		else if(status.MPI_TAG == DOT_PQ){
+	// 			/* Calcul d'une partie du produit scalaire (pour une partie des composantes) */
+	// 			MPI_Recv(p, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+	// 			MPI_Recv(q, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+	// 			*pq_part = dot_part(p, q, i_ini, n_part);
+	// 			MPI_Send(&pq_part, 1, MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
+	// 		}
+	// 		else if(status.MPI_TAG == MATPROD){
+	// 			MPI_Recv(p, n*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+	// 			void sp_gemv_part(A, p, q_part, n_part, i_ini);
+	// 			MPI_Send(q_part, n_part*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
+	// 		}
+	// 		else if(status.MPI_TAG == STOP){
+	// 			break;
+	// 		}
 
-			/* Envoi le numéro du bloc calculé */
-			bTmp = i_block; //indice temporaire du dernier bloc traité
-			dest = 0;
-			MPI_Send(&bTmp, 1, MPI_INT, dest, TRAITEMENT, MPI_COMM_WORLD);
-		}
-	}
+	// 		/* Envoi le numéro du bloc calculé */
+	// 		bTmp = i_block; //indice temporaire du dernier bloc traité
+	// 		dest = 0;
+	// 		MPI_Send(&bTmp, 1, MPI_INT, dest, TRAITEMENT, MPI_COMM_WORLD);
+	// 	}
+	// }
 
-	/* Affichage de la sortie */
-	fin = my_gettimeofday();
-	fprintf(stderr, "Temps total de calcul du processeur %d : %g sec\n", my_rank, fin - debut);
-	//printf("my_rank = %d, fini\n",my_rank);
+	// /* Affichage de la sortie */
+	// fin = my_gettimeofday();
+	// fprintf(stderr, "Temps total de calcul du processeur %d : %g sec\n", my_rank, fin - debut);
+	// //printf("my_rank = %d, fini\n",my_rank);
 
 	MPI_Finalize();
 }
