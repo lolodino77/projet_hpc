@@ -42,6 +42,7 @@ int main(int argc, char** argv) {
         printf("my_rank = %d\n", my_rank);
         printf("debut gather\n");        
         int recvcount = p * sendcount;
+        printf("recvcount = %d\n", recvcount);
         MPI_Gather(A_part, sendcount, MPI_INT, A, recvcount, MPI_INT, root, MPI_COMM_WORLD);
         printf("fin gather\n");
         for(int i = 0;i < p*sendcount;i++){
