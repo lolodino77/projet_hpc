@@ -32,15 +32,16 @@ int main(int argc, char** argv) {
 
     if(my_rank != 0){
         for(int i = 0;i < sendcount;i++){
-            printf("my rank = %d\n", my_rank);
+            // printf("my rank = %d\n", my_rank);
             A_part[i] = my_rank;
             printf("%d ", A_part[i]);
         }
+        printf("\n");
     }
     else{
         MPI_Gather(A_part, sendcount, MPI_INT, A, p * sendcount, MPI_INT, root, MPI_COMM_WORLD);
         for(int i = 0;i < p*sendcount;i++){
-            printf("%d\n", A_part[i]);
+            printf("%d ", A_part[i]);
         }   
     }
 
