@@ -228,6 +228,21 @@ void sp_gemv(const struct csr_matrix_t *A, const double *x, double *y, int n)
 	}
 }
 
+void sp_gemv_part(const struct csr_matrix_t *A, const double *x, double *y, int n_part, int i_ini)
+{
+	int *Ap = A->Ap;
+	int *Aj = A->Aj;
+	double *Ax = A->Ax;
+	for (int i = i_ini; i < i_ini + n_part; i++) {
+		y[i] = 0;
+		for (int u = Ap[i]; u < Ap[i + 1]; u++) {
+			int j = Aj[u]; //j = Aj[Ap[i]]
+			double A_ij = Ax[u];
+			y[i] += A_ij * x[j];
+		}
+	}
+}
+
 /*************************** Vector operations ********************************/
 
 /* dot product */
@@ -262,7 +277,7 @@ double norm_part( const double *x, int i_ini, int n_part)
 /*********************** conjugate gradient algorithm *************************/
 
 /* Solve Ax == b (the solution is written in x). Scratch must be preallocated of size 6n */
-void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, const double epsilon, double *scratch, int n_part, int n, int i_ini)
+void cg_solve(const struct csr_matrix_t *A, const double *b, double *x, const double epsilon, double *scratch, int n_part, int n)
 {
 	int nz = A->nz;
 
@@ -363,7 +378,7 @@ int main(int argc, char **argv)
 	int idTmp; //numéro du processus dont le maître vient de recevoir le travail
 	int tagFin;
 	double debut, fin;
-	enum tagType {INDICE, TRAITEMENT, STOP};
+	enum tagType {INDICE, TRAITEMENT, STOP, DOT_RZ, DOT_PQ, MATPROD};
 	debut = my_gettimeofday();
 
 	/* Parse command-line options */
@@ -432,12 +447,12 @@ int main(int argc, char **argv)
 	/* Allocate memory */
 	// n = taille du vecteur x
 	//n(cfd1) = 70 656 = n
-	int n_cellsPerBlock = 92;//nombre d'elements par bloc du vecteur x
+	int n_part = 92;//nombre d'elements par bloc du vecteur x
 								  //bloc = partie du vecteur calculée lors d'un calcul d'un processeur
-	int nbOfBlock = n/n_cellsPerBlock;//nombre de blocs du vecteur x = nb de calculs a effectuer
-	int reste = n % n_cellsPerBlock;//indique si on rajoute un bloc si besoin pour calculer 
+	int nbOfBlock = n/n_part;//nombre de blocs du vecteur x = nb de calculs a effectuer
+	int reste = n % n_part;//indique si on rajoute un bloc si besoin pour calculer 
 			//le reste du vecteur si la division a un reste
-	double *x_part = malloc(n_cellsPerBlock*sizeof(double)); /* une partie ou bloc du vecteur x */
+	double *x_part = malloc(n_part*sizeof(double)); /* une partie ou bloc du vecteur x */
 	double *mem = malloc(7 * n * sizeof(double));
 	if(mem == NULL)
 		err(1, "cannot allocate dense vectors");
@@ -476,26 +491,26 @@ int main(int argc, char **argv)
 			//le maitre recoit le numéro du dernier bloc calculé
 			MPI_Recv(&bTmp, 1, MPI_INT, MPI_ANY_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);	
 			//le maitre recoit le dernier bloc calculé
-			MPI_Recv(x_part, n_cellsPerBlock*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+			MPI_Recv(x_part, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
 			dest = status.MPI_SOURCE;
 			MPI_Send(&i_block, 1, MPI_INT, dest, INDICE, MPI_COMM_WORLD);
 			i_block += 1;
 			
 			/* Le maitre recopie le contenu de la partie du vecteur qu'il a reçu */
-			for(int i = 0;i<n_cellsPerBlock;i++){
-				x[bTmp*n_cellsPerBlock + i] = x_part[i];
+			for(int i = 0;i<n_part;i++){
+				x[bTmp*n_part + i] = x_part[i];
 			}
 		}
 
 		/* Reception des derniers travaux des esclaves */
 		for(int i = 1;i < nbProc;i++){
 			MPI_Recv(&bTmp, 1, MPI_INT, MPI_ANY_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);	
-			MPI_Recv(x_part, n_cellsPerBlock*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+			MPI_Recv(x_part, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
 			//On recupère le numéro du processus qui vient d'envoyer son travail au maître
 			idTmp = status.MPI_SOURCE;
 			//On recopie le travail de l'esclave
-			for(int j = 0;j<n_cellsPerBlock;j++){
-				(x + bTmp*n_cellsPerBlock)[j] = x_part[j];
+			for(int j = 0;j<n_part;j++){
+				(x + bTmp*n_part)[j] = x_part[j];
 			}	
 			//On dit à l'esclave de ne plus travailler
 			MPI_Send(&idTmp, 1, MPI_INT, idTmp, STOP, MPI_COMM_WORLD);			
@@ -529,18 +544,18 @@ int main(int argc, char **argv)
 			tagFin = status.MPI_TAG;
 			// MPI_Recv(&i_ini, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 			// tagFin = status.MPI_TAG;
-			i_ini = i_block * n_cellsPerBlock;
+			i_ini = i_block * n_part;
 			if(tagFin == STOP){
 				break;
 			}
 
 			/* Calcul */
-			cg_solve(A, b, x_part, THRESHOLD, scratch, n_cellsPerBlock, n, i_ini);
+			cg_solve(A, b, x_part, THRESHOLD, scratch, n_part, n, i_ini);
 			dest = 0;
 			/* Envoi le résultat du calcul au maître et le numéro du bloc calculé */
 			bTmp = i_block;
 			MPI_Send(&bTmp, 1, MPI_INT, dest, TRAITEMENT, MPI_COMM_WORLD);
-			MPI_Send(x_part, n_cellsPerBlock*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
+			MPI_Send(x_part, n_part*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
 		}
 	}
 
