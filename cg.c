@@ -196,11 +196,29 @@ struct csr_matrix_t *load_mm(FILE * f, int *nnz2)//construct
 	return A;
 }
 
-void maitre_esclave_root(int* x){
+// void maitre_esclave_root2(int* x){
+// /* Premier tour des ordres envoyes aux esclaves */
+// 	for(int i = 1;i < nbProc;i++){
+// 		dest = i;
+// 		MPI_Send(&i_block, 1, MPI_INT, dest, INDICE, MPI_COMM_WORLD);
+// 		i_block += 1;			
+// 	}
+// }
+
+void maitre_esclave_root_produit_scalaire(int* x, int* x_part, int tagMission, int nbProc){
+	//tagMission décrit la mission en cours qui est calcul du produit scalaire rz
+	//, du produit scalaire pq ou produit matriciel A*p = q 
 /* Premier tour des ordres envoyes aux esclaves */
+	int i_ini = 0; //indice duquel on part pour calculer une partie du vecteur solution x
+	int i_block = 0; //numero du bloc courant en train d'etre calculé
+	MPI_Status status;
+	int dest;
+	int bTmp = 0; //numero du dernier bloc du vecteur x qui vient d'être calculé
+	int idTmp;
+
 	for(int i = 1;i < nbProc;i++){
 		dest = i;
-		MPI_Send(&i_block, 1, MPI_INT, dest, INDICE, MPI_COMM_WORLD);
+		MPI_Send(&i_block, 1, MPI_INT, dest, tagMission, MPI_COMM_WORLD);
 		i_block += 1;			
 	}
 
@@ -209,37 +227,46 @@ void maitre_esclave_root(int* x){
 		//le maitre recoit le numéro du dernier bloc calculé
 		MPI_Recv(&bTmp, 1, MPI_INT, MPI_ANY_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);	
 		//le maitre recoit le dernier bloc calculé
-		MPI_Recv(x_part, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+		MPI_Recv(x_part, sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
 		dest = status.MPI_SOURCE;
-		MPI_Send(&i_block, 1, MPI_INT, dest, INDICE, MPI_COMM_WORLD);
+		MPI_Send(&i_block, 1, MPI_INT, dest, tagMission, MPI_COMM_WORLD);
 		i_block += 1;
 		
 		/* Le maitre recopie le contenu de la partie du vecteur qu'il a reçu */
 		for(int i = 0;i<n_part;i++){
-			x[bTmp*n_part + i] = x_part[i];
+			*x += *x_part;
 		}
 	}
 
 	/* Reception des derniers travaux des esclaves */
 	for(int i = 1;i < nbProc;i++){
 		MPI_Recv(&bTmp, 1, MPI_INT, MPI_ANY_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);	
-		MPI_Recv(x_part, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
-		//On recupère le numéro du processus qui vient d'envoyer son travail au maître
+		MPI_Recv(x_part, sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+		//On recupère le numéro du processus (idTmp) qui vient d'envoyer son travail au maître
 		idTmp = status.MPI_SOURCE;
 		//On recopie le travail de l'esclave
 		for(int j = 0;j<n_part;j++){
-			(x + bTmp*n_part)[j] = x_part[j];
+			*x += *x_part;
 		}	
 		//On dit à l'esclave de ne plus travailler
 		MPI_Send(&idTmp, 1, MPI_INT, idTmp, STOP, MPI_COMM_WORLD);			
 	}
 }
 
-void maitre_esclave_root_sans_gather_reduce(int* x){
+void maitre_esclave_root_produit_matriciel(int* x, int* x_part, int tagMission, int nbProc){
+	//tagMission décrit la mission en cours qui est calcul du produit scalaire rz
+	//, du produit scalaire pq ou produit matriciel A*p = q 
 /* Premier tour des ordres envoyes aux esclaves */
+	int i_ini = 0; //indice duquel on part pour calculer une partie du vecteur solution x
+	int i_block = 0; //numero du bloc courant en train d'etre calculé
+	MPI_Status status;
+	int dest;
+	int bTmp = 0; //numero du dernier bloc du vecteur x qui vient d'être calculé
+	int idTmp;
+
 	for(int i = 1;i < nbProc;i++){
 		dest = i;
-		MPI_Send(&i_block, 1, MPI_INT, dest, INDICE, MPI_COMM_WORLD);
+		MPI_Send(&i_block, 1, MPI_INT, dest, tagMission, MPI_COMM_WORLD);
 		i_block += 1;			
 	}
 
@@ -250,7 +277,7 @@ void maitre_esclave_root_sans_gather_reduce(int* x){
 		//le maitre recoit le dernier bloc calculé
 		MPI_Recv(x_part, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
 		dest = status.MPI_SOURCE;
-		MPI_Send(&i_block, 1, MPI_INT, dest, INDICE, MPI_COMM_WORLD);
+		MPI_Send(&i_block, 1, MPI_INT, dest, tagMission, MPI_COMM_WORLD);
 		i_block += 1;
 		
 		/* Le maitre recopie le contenu de la partie du vecteur qu'il a reçu */
@@ -263,7 +290,7 @@ void maitre_esclave_root_sans_gather_reduce(int* x){
 	for(int i = 1;i < nbProc;i++){
 		MPI_Recv(&bTmp, 1, MPI_INT, MPI_ANY_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);	
 		MPI_Recv(x_part, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
-		//On recupère le numéro du processus qui vient d'envoyer son travail au maître
+		//On recupère le numéro du processus (idTmp) qui vient d'envoyer son travail au maître
 		idTmp = status.MPI_SOURCE;
 		//On recopie le travail de l'esclave
 		for(int j = 0;j<n_part;j++){
@@ -556,43 +583,67 @@ int main(int argc, char **argv)
 
 
 	/* solve Ax == b with MPI, witn nbProc processors*/
-	if(my_rank == 0){
-		/* Premier tour des ordres envoyes aux esclaves */
-		for(int i = 1;i < nbProc;i++){
-			dest = i;
-			MPI_Send(&i_block, 1, MPI_INT, dest, INDICE, MPI_COMM_WORLD);
-			i_block += 1;			
-		}
+	double *r = scratch;	        // residue
+	double *z = scratch + n;	// preconditioned-residue
+	double *p = scratch + 2*n;	// search direction
+	double *q = scratch + 3 * n;	// q == Ap
+	double *d = scratch + 4 * n;	// diagonal entries of A (Jacobi preconditioning)
+	double rz_part = 0.0;
+	double pq_part = 0.0;
 
-		/* Envoi des ordres */
-		while(i_block != nbOfBlock){
-			//le maitre recoit le numéro du dernier bloc calculé
-			MPI_Recv(&bTmp, 1, MPI_INT, MPI_ANY_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);	
-			//le maitre recoit le dernier bloc calculé
-			MPI_Recv(x_part, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
-			dest = status.MPI_SOURCE;
-			MPI_Send(&i_block, 1, MPI_INT, dest, INDICE, MPI_COMM_WORLD);
-			i_block += 1;
-			
-			/* Le maitre recopie le contenu de la partie du vecteur qu'il a reçu */
-			for(int i = 0;i<n_part;i++){
-				x[bTmp*n_part + i] = x_part[i];
+	if(my_rank == 0){		
+		double start = wtime();
+		double last_display = start;
+		int iter = 0;
+		double alpha = 0.0;
+		double beta = 0.0;
+		double rz = 0.0;
+		double pq = 0.0;
+
+	/* Initialisation des vecteurs */
+		for (int i = 0; i < n_part; i++)
+			x[i] = 0.0;
+		for (int i = 0; i < n; i++)	// r <-- b - Ax == b
+			r[i] = b[i];
+		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
+			z[i] = r[i] / d[i];
+		for (int i = 0; i < n; i++)	// p <-- z
+			p[i] = z[i];
+
+	/*Algorithme du gradient conjugué */
+		int recvcount = n_part*nbProc;
+		double start = wtime();
+		double last_display = start;
+		int iter = 0;
+		maitre_esclave_root_produit_scalaire(rz, rz_part, DOT_RZ, nbProc) // rz = dot(r,z)
+		while (norm(n, r) > THRESHOLD){
+		/* loop invariant : rz = dot(r, z) */
+			old_rz = rz;
+			maitre_esclave_root_produit_matriciel(q, q_part, MATPROD, nbProc) /* q <-- A.p */
+			maitre_esclave_root_produit_scalaire(pq, pq_part, DOT_PQ, nbProc) // pq <-- dot(p, q)
+			alpha = old_rz / pq;		
+			for (int i = 0; i < n_part; i++)	// x <-- x + alpha*p
+				x[i] += alpha * p[i + i_ini];
+			for (int i =0; i < n; i++)	// r <-- r - alpha*q
+				r[i] -= alpha * q[i]; //A*p
+			for (int i = 0; i < n; i++)	// z <-- M^(-1).r
+				z[i] = r[i] / d[i];
+			maitre_esclave_root_produit_scalaire(rz, rz_part, DOT_RZ, nbProc) // rz = dot(r,z)
+			beta = rz / old_rz;
+			for (int i =0; i < n; i++)	// p <-- z + beta*p
+				p[i] = z[i] + beta * p[i];
+			iter++;
+			double t = wtime();
+			if (t - last_display > 0.5) {
+				/* verbosity */
+				double rate = iter / (t - start);	// iterations per s.
+				double GFLOPs = 1e-9 * rate * (2 * nz + 12 * n);
+				fprintf(stderr, "\r     ---> error : %2.2e, iter : %d (%.1f it/s, %.2f GFLOPs)", norm(n, r), iter, rate, GFLOPs);
+				fflush(stdout);
+				last_display = t;
 			}
 		}
-
-		/* Reception des derniers travaux des esclaves */
-		for(int i = 1;i < nbProc;i++){
-			MPI_Recv(&bTmp, 1, MPI_INT, MPI_ANY_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);	
-			MPI_Recv(x_part, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
-			//On recupère le numéro du processus qui vient d'envoyer son travail au maître
-			idTmp = status.MPI_SOURCE;
-			//On recopie le travail de l'esclave
-			for(int j = 0;j<n_part;j++){
-				(x + bTmp*n_part)[j] = x_part[j];
-			}	
-			//On dit à l'esclave de ne plus travailler
-			MPI_Send(&idTmp, 1, MPI_INT, idTmp, STOP, MPI_COMM_WORLD);			
-		}
+	
 		/* Check result */
 		if (safety_check) {
 			double *y = scratch;
@@ -619,21 +670,35 @@ int main(int argc, char **argv)
 	else{// si le processus n'est pas le maître mais un esclave
 		while(1){
 			MPI_Recv(&i_block, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-			tagFin = status.MPI_TAG;
-			// MPI_Recv(&i_ini, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-			// tagFin = status.MPI_TAG;
 			i_ini = i_block * n_part;
-			if(tagFin == STOP){
+
+			if(status.MPI_TAG == DOT_RZ){
+				/* Calcul d'une partie du produit scalaire (pour une partie des composantes) */
+				MPI_Recv(r, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+				MPI_Recv(z, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+				rz_part = dot_part(r, z, i_ini, n_part);
+				MPI_Send(rz_part, n_part*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
+			}
+			else if(status.MPI_TAG == DOT_PQ){
+				/* Calcul d'une partie du produit scalaire (pour une partie des composantes) */
+				MPI_Recv(p, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+				MPI_Recv(q, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+				pq_part = dot_part(p, q, i_ini, n_part);
+				MPI_Send(pq_part, n_part*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
+			}
+			else if(status.MPI_TAG == MATPROD){
+				MPI_Recv(p, n*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+				void sp_gemv_part(A, p, q_part, n_part, i_ini);
+				MPI_Send(q_part, n_part*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
+			}
+			else if(status.MPI_TAG == STOP){
 				break;
 			}
 
-			/* Calcul */
-			cg_solve(A, b, x_part, THRESHOLD, scratch, n_part, n, i_ini);
+			/* Envoi le numéro du bloc calculé */
+			bTmp = i_block; //indice temporaire du dernier bloc traité
 			dest = 0;
-			/* Envoi le résultat du calcul au maître et le numéro du bloc calculé */
-			bTmp = i_block;
 			MPI_Send(&bTmp, 1, MPI_INT, dest, TRAITEMENT, MPI_COMM_WORLD);
-			MPI_Send(x_part, n_part*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
 		}
 	}
 

@@ -5,17 +5,19 @@ double *p = scratch + 2*n;	// search direction
 double *q = scratch + 3 * n;	// q == Ap
 double *d = scratch + 4 * n;	// diagonal entries of A (Jacobi preconditioning)
 double *q_part = malloc(n_part*sizeof(double)); /* une partie ou bloc du vecteur x */
-double rz = 0.0;
-double pq = 0.0;
-double alpha = 0.0;
-double beta = 0.0;
+
+
 extract_diagonal(A, d, n_part, i_ini);
 
 if(my_rank == 0){
+
 	double start = wtime();
 	double last_display = start;
 	int iter = 0;
-
+	double alpha = 0.0;
+	double beta = 0.0;
+	double rz = 0.0;
+	double pq = 0.0;
 	/* Initialisation des vecteurs */
 	for (int i = 0; i < n_part; i++)
 		x[i] = 0.0;
@@ -63,31 +65,61 @@ if(my_rank == 0){
 }
 
 if(my_rank != 0){
+	while(1){
+		MPI_Recv(&i_block, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+		i_ini = i_block * n_part;
+
+		if(status.MPI_TAG == DOT_RZ){
+			/* Calcul d'une partie du produit scalaire (pour une partie des composantes) */
+			MPI_Recv(r, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+			MPI_Recv(z, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+			rz = dot_part(r, z, i_ini, n_part);
+			//Il y aura un reduce de la racine.
+		}
+		else if(status.MPI_TAG == DOT_PQ){
+			/* Calcul d'une partie du produit scalaire (pour une partie des composantes) */
+			MPI_Recv(p, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+			MPI_Recv(q, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+			pq = dot_part(p, q, i_ini, n_part);
+			//Il y aura un reduce de la racine.
+		}
+		else if(status.MPI_TAG == MATPROD){
+			MPI_Recv(p, n*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
+			void sp_gemv_part(A, p, q_part, n_part, i_ini);
+			//Il y aura un gather de la racine.
+		}
+
+		/* Envoi le numéro du bloc calculé */
+		bTmp = i_block; //indice temporaire du dernier bloc traité
+		dest = 0;
+		MPI_Send(&bTmp, 1, MPI_INT, dest, TRAITEMENT, MPI_COMM_WORLD);
+	}
+}
+
+
+
+
+
+
+
+
+
+//////ancien
+while(1){
 	MPI_Recv(&i_block, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+	tagFin = status.MPI_TAG;
+	// MPI_Recv(&i_ini, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+	// tagFin = status.MPI_TAG;
 	i_ini = i_block * n_part;
-
-	if(status.MPI_TAG == DOT_RZ){
-		/* Calcul d'une partie du produit scalaire (pour une partie des composantes) */
-		MPI_Recv(r, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
-		MPI_Recv(z, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
-		rz = dot_part(r, z, i_ini, n_part);
-		//Il y aura un reduce de la racine.
-	}
-	else if(status.MPI_TAG == DOT_PQ){
-		/* Calcul d'une partie du produit scalaire (pour une partie des composantes) */
-		MPI_Recv(p, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
-		MPI_Recv(q, n_part*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
-		pq = dot_part(p, q, i_ini, n_part);
-		//Il y aura un reduce de la racine.
-	}
-	else if(status.MPI_TAG == MATPROD){
-		MPI_Recv(p, n*sizeof(double), MPI_DOUBLE, status.MPI_SOURCE, TRAITEMENT, MPI_COMM_WORLD, &status);
-		void sp_gemv_part(A, p, q_part, n_part, i_ini);
-		//Il y aura un gather de la racine.
+	if(tagFin == STOP){
+		break;
 	}
 
-	/* Envoi le numéro du bloc calculé */
-	bTmp = i_block; //indice temporaire du dernier bloc traité
+	/* Calcul */
+	cg_solve(A, b, x_part, THRESHOLD, scratch, n_part, n, i_ini);
 	dest = 0;
+	/* Envoi le résultat du calcul au maître et le numéro du bloc calculé */
+	bTmp = i_block;
 	MPI_Send(&bTmp, 1, MPI_INT, dest, TRAITEMENT, MPI_COMM_WORLD);
+	MPI_Send(x_part, n_part*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
 }
