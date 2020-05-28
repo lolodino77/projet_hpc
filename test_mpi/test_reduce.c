@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
 	int *rz_part = 0;
     *rz_part = 10;
 	printf("rz = %d\n", *rz);
-    MPI_Reduce(rz_part, rz, 1, MPI_INT, MPI_SUM, root, MPI_COMM_WORLD);
+    MPI_Reduce(&rz_part, &rz, 1, MPI_INT, MPI_SUM, root, MPI_COMM_WORLD);
     printf("after reduce\n");
     if(my_rank == 0){
         printf("rz = %d\n", *rz);
