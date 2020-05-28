@@ -470,6 +470,7 @@ int main(int argc, char **argv)
 	    printf("q : ");
 
 	    if(my_rank == 2){
+    	printf("c'est moi 2\n");
 		    for(int i = 0;i<n;i++){
 	    		printf("%lf ", q[i]);
 		    }
