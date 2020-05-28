@@ -522,18 +522,23 @@ int main(int argc, char **argv)
 	}
 
 	/* Dump the solution vector */
-	FILE *f_x = stdout;
-	if (solution_filename != NULL) {
-		f_x = fopen(solution_filename, "w");
-		if (f_x == NULL)
-			err(1, "cannot open solution file %s", solution_filename);
-		fprintf(stderr, "[IO] writing solution to %s\n", solution_filename);
+
+	if(my_rank == 0){
+		FILE *f_x = stdout;
+		printf("solution filename = %s\n", solution_filename);
+		if (solution_filename != NULL) {
+			f_x = fopen(solution_filename, "w");
+			if (f_x == NULL)
+				err(1, "cannot open solution file %s", solution_filename);
+			fprintf(stderr, "[IO] writing solution to %s\n", solution_filename);
+		}
+		// for (int i = 0; i < n; i++)
+		// 	fprintf(f_x, "%a\n", x[i]);
 	}
-	for (int i = 0; i < n; i++)
-		fprintf(f_x, "%a\n", x[i]);
+
 	free(mem);
 	free(q_part);
-	return EXIT_SUCCESS;
+	// return EXIT_SUCCESS;
 
 	MPI_Finalize();
 }
