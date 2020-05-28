@@ -29,9 +29,10 @@ int main(int argc, char** argv) {
     int root = 0;
 
 
-    int *rz = 0;
-	int *rz_part = 0;
+    int *rz;
+	int *rz_part;
     *rz_part = 10;
+    *rz = 0;
 	printf("rz = %d\n", *rz);
     MPI_Reduce(&rz_part, &rz, 1, MPI_INT, MPI_SUM, root, MPI_COMM_WORLD);
     printf("after reduce\n");
