@@ -206,8 +206,8 @@ void extract_diagonal(const struct csr_matrix_t *A, double *d)
 void sp_gemv(const struct csr_matrix_t *A, const double *x, double *y)
 {
 	int n = A->n;
-	int *Ap = A->Ap;
-	int *Aj = A->Aj;
+	int *Ap = A->Ap;// row pointers
+	int *Aj = A->Aj;// column indices
 	double *Ax = A->Ax;
 	for (int i = 0; i < n; i++) {
 		y[i] = 0;
