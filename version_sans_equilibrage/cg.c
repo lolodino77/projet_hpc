@@ -304,7 +304,6 @@ int main(int argc, char **argv)
 	/* Initialisation de variables */
 	int my_rank; //rank of the process
 	int nbProc; //number of process
-	int i_ini = 0; //indice duquel on part pour calculer une partie du vecteur solution x
 	int i_block = 0; //numero du bloc courant en train d'etre calculé
 	MPI_Init(&argc,&argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
@@ -387,10 +386,10 @@ int main(int argc, char **argv)
 	// /* Allocate memory */
 	// n = taille du vecteur x
 	//n(cfd1) = 70 656 = n
-	int n_part = n/p;//nombre d'elements par bloc d'un vecteur de taille n
+	int n_part = n/nbProc;//nombre d'elements par bloc d'un vecteur de taille n
 								  //bloc = partie du vecteur calculée lors d'un calcul d'un processeur
-	printf("n_part = %d\n", n/p);
-	int reste = n % p;//indique si on rajoute un bloc si besoin pour calculer 
+	printf("n_part = %d\n", n_part);
+	int reste = n % nbProc;//indique si on rajoute un bloc si besoin pour calculer 
 			//le reste du vecteur si la division a un reste
 	double *mem = malloc(7 * n * sizeof(double));
 	if(mem == NULL)
@@ -416,7 +415,7 @@ int main(int argc, char **argv)
 	}
 
 	/* solve Ax == b with MPI, witn nbProc processors*/
-	int i_ini = my_rank*n_part;
+	int i_ini = my_rank*n_part; //indice duquel on part pour calculer une partie du vecteur solution x
 	double *r = scratch;	        // residue
 	double *z = scratch + n;	// preconditioned-residue
 	double *p = scratch + 2*n;	// search direction
@@ -425,12 +424,6 @@ int main(int argc, char **argv)
 	double *q_part = malloc(n_part*sizeof(double)); /* une partie ou bloc du vecteur x */
 	double rz_part;
 	double pq_part;
-
-	// double *d_part;
-	// extract_diagonal_part(A, d_part, n_part, i_ini);
-	// MPI_Allgather(d_part, n_part, MPI_DOUBLE, d, n_part, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */
-	extract_diagonal(A, d);
-
 	double start = wtime();
 	double last_display = start;
 	int iter = 0;
@@ -438,6 +431,13 @@ int main(int argc, char **argv)
 	double beta = 0.0;
 	double rz = 0.0;
 	double pq = 0.0;
+	int nz = A->nz;
+
+	// double *d_part;
+	// extract_diagonal_part(A, d_part, n_part, i_ini);
+	// MPI_Allgather(d_part, n_part, MPI_DOUBLE, d, n_part, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */
+	extract_diagonal(A, d);
+
 	/* Initialisation des vecteurs */
 	for (int i = 0; i < n_part; i++)
 		x[i] = 0.0;
@@ -449,9 +449,7 @@ int main(int argc, char **argv)
 		p[i] = z[i];
 
 	/*Algorithme du gradient conjugué */
-	double start = wtime();
 	double last_display = start;
-	int iter = 0;
 	MPI_Reduce(MPI_IN_PLACE, &rz, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);// rz = dot(r,z)	
 	while (norm(n, r) > THRESHOLD){ ///////PAS SUR SUR QUELLE CONDITION METTRE
 		/* loop invariant : rz = dot(r, z) */
