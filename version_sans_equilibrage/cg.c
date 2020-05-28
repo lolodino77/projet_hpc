@@ -468,10 +468,13 @@ int main(int argc, char **argv)
 	    MPI_Allgather(q_part, n_part, MPI_DOUBLE, q, n_part, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */
 	    printf("allgather matrice fini\n");
 	    printf("q : ");
-	    for(int i = 0;i<n;i++){
-    		printf("%lf ", q[i]);
-	    }
-		
+
+	    if(my_rank == 2){
+		    for(int i = 0;i<n;i++){
+	    		printf("%lf ", q[i]);
+		    }
+		}
+
 		pq_part = dot_part(p, q, i_ini, n_part);
 		MPI_Allreduce(&pq_part, &pq, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
 		printf("pq = %lf\n", pq);
