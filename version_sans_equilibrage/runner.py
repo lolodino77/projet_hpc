@@ -109,6 +109,7 @@ def do_computation():
     #            va pas leur suggérer.
     
     # le solveur a terminé avec succès. On récupère le vecteur solution.
+    print(result.stdout.decode())
     x = []
     for line in result.stdout.decode().splitlines():
         x.append(float.fromhex(line))
