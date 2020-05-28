@@ -445,7 +445,7 @@ int main(int argc, char **argv)
 	extract_diagonal(A, d);
 
 	/* Initialisation des vecteurs */
-	for (int i = 0; i < n_part; i++)
+	for (int i = 0; i < n; i++)
 		x[i] = 0.0;
 	for (int i = 0; i < n; i++)	// r <-- b - Ax == b
 		r[i] = b[i];
@@ -475,8 +475,8 @@ int main(int argc, char **argv)
 		printf("pq = %lf\n", pq);
 		
 		alpha = old_rz / pq;		
-		for (int i = 0; i < n_part; i++)	// x <-- x + alpha*p
-			x[i] += alpha * p[i + i_ini];
+		for (int i = 0; i < n; i++)	// x <-- x + alpha*p
+			x[i] += alpha * p[i];
 		for (int i =0; i < n; i++)	// r <-- r - alpha*q
 			r[i] -= alpha * q[i]; //A*p
 		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
