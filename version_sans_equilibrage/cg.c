@@ -249,7 +249,7 @@ void sp_gemv_part(const struct csr_matrix_t *A, const double *x, double *y, int 
 	double *Ax = A->Ax;
 	for (int i = i_ini; i < i_ini + n_part; i++) {
 		y[i] = 0;
-		for (int u = Ap[i]; u < Ap[i + 1]; u++) {
+		for (int u = Ap[i - i_ini]; u < Ap[i - i_ini + 1]; u++) {
 			int j = Aj[u]; //j = Aj[Ap[i]]
 			double A_ij = Ax[u];
 			y[i] += A_ij * x[j];
