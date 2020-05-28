@@ -466,6 +466,7 @@ int main(int argc, char **argv)
 		// sp_gemv_part(A, x, y, n_part, i_ini)
 	    sp_gemv_part(A, p, q_part, n_part, i_ini);
 	    MPI_Allgather(q_part, n_part, MPI_DOUBLE, q, n_part, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */
+	    printf("allgather matrice fini\n");
 	    printf("q : ");
 	    for(int i = 0;i<n;i++){
     		printf("%lf ", q[i]);
