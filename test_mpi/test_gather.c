@@ -8,10 +8,10 @@ int main(int argc, char** argv) {
     MPI_Init(NULL, NULL);
 
     // Get the number of processes
-    int world_size;
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    int p;
+    MPI_Comm_size(MPI_COMM_WORLD, &p);
 
-	printf("size = %d\n", world_size);
+	printf("size = %d\n", p);
 
     // Get the rank of the process
     int my_rank;
@@ -24,10 +24,9 @@ int main(int argc, char** argv) {
 
     // Print off a hello world message
     printf("Hello world from processor %s, rank %d out of %d processors\n",
-           processor_name, my_rank, world_size);
+           processor_name, my_rank, p);
 
     int root = 0;
-    int p = 4;
     int sendcount = 5;
     int* A = malloc(p * sendcount * sizeof(int)); // p * sendcount = 4 * 5 = 20
     //int* A_part = malloc(sendcount * sizeof(int)); 
