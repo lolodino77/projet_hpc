@@ -226,15 +226,16 @@ void extract_diagonal_part(const struct csr_matrix_t *A, double *d, int n_part, 
 }
 
 /* Matrix-vector product (with A in CSR format) : y = Ax */
-void sp_gemv(const struct csr_matrix_t *A, const double *x, double *y, int n)
+void sp_gemv(const struct csr_matrix_t *A, const double *x, double *y)
 {
+	int n = A->n;
 	int *Ap = A->Ap;
 	int *Aj = A->Aj;
 	double *Ax = A->Ax;
 	for (int i = 0; i < n; i++) {
 		y[i] = 0;
 		for (int u = Ap[i]; u < Ap[i + 1]; u++) {
-			int j = Aj[u]; //j = Aj[Ap[i]]
+			int j = Aj[u];
 			double A_ij = Ax[u];
 			y[i] += A_ij * x[j];
 		}
