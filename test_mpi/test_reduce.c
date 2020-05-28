@@ -30,9 +30,12 @@ int main(int argc, char** argv) {
 
     int *rz = malloc(sizeof(int)); 
     *rz = 10;
-
-    MPI_Reduce(MPI_IN_PLACE, &rz, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	printf("rz = %d\n", *rz);
+    MPI_Reduce(&rz, &rz, 1, MPI_INT, MPI_SUM, root, MPI_COMM_WORLD);
     printf("after reduce\n");
     if(my_rank == 0){
         printf("rz = %d\n", *rz);
     }
+
+	MPI_Finalize();
+}
