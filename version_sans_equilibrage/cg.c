@@ -459,7 +459,7 @@ int main(int argc, char **argv)
 	rz_part = dot_part(r, z, i_ini, n_part);
 	MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
 	// printf("rz = %lf\n", rz);
-	while (norm(n, r) > THRESHOLD){ ///////PAS SUR SUR QUELLE CONDITION METTRE
+	while (norm(n, r) > THRESHOLD){ 
 		/* loop invariant : rz = dot(r, z) */
 		double old_rz = rz;
 
