@@ -255,6 +255,7 @@ void sp_gemv_part(const struct csr_matrix_t *A, const double *x, double *y, int 
 			y[i] += A_ij * x[j];
 		}
 	}
+	printf("produit matriciel reussi\n");
 }
 
 /*************************** Vector operations ********************************/
