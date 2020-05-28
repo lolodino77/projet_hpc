@@ -436,6 +436,11 @@ int main(int argc, char **argv)
 	// double *d_part;
 	// extract_diagonal_part(A, d_part, n_part, i_ini);
 	// MPI_Allgather(d_part, n_part, MPI_DOUBLE, d, n_part, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */
+	
+	fprintf(stderr, "[CG] Starting iterative solver\n");
+	fprintf(stderr, "     ---> Working set : %.1fMbyte\n", 1e-6 * (12.0 * nz + 52.0 * n));
+	fprintf(stderr, "     ---> Per iteration: %.2g FLOP in sp_gemv() and %.2g FLOP in the rest\n", 2. * nz, 12. * n);
+
 	extract_diagonal(A, d);
 
 	/* Initialisation des vecteurs */
@@ -477,6 +482,7 @@ int main(int argc, char **argv)
 			last_display = t;
 		}
 	}    
+	fprintf(stderr, "\n     ---> Finished in %.1fs and %d iterations\n", wtime() - start, iter);
 
 	free(mem);
 	free(q_part);
