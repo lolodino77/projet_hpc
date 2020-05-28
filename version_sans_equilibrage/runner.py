@@ -41,8 +41,9 @@ Machines de bureau DELL équipés de CPU Intel i3 à 2 coeurs, 3Ghz, et 4Go de R
 #   On peut ajouter toutes les options qu'on veut, utiliser mpiexec, etc.
 #command_line = "./cg --matrix {matrix}.mtx --seed {seed}"
 # command_line = "zcat /Infos/lmd/2019/master/ue/MU4IN903-2020fev/{matrix}.mtx.gz | ./cg --seed {seed}"
-command_line = "mpiexec --n {cores} --hostfile nodes.txt --display-map ./cg --matrix /Infos/lmd/2019/master/ue/MU4IN903-2020fev/{matrix}.mtx.gz --seed {seed}"
+# command_line = "mpiexec --n {cores} --hostfile nodes.txt --display-map ./cg --matrix /Infos/lmd/2019/master/ue/MU4IN903-2020fev/{matrix}.mtx.gz --seed {seed}"
 #command_line = "mpiexec --n {nodes} -hostfile nodes.txt --map-by ppr:1:node ./cg --matrix {matrix}.mtx --seed {seed}"
+command_line = "zcat /Infos/lmd/2019/master/ue/MU4IN903-2020fev/thermal2.mtx.gz | mpiexec --n 5 -hostfile hostfile --map-by ppr:1:node ./cg --seed 45"
 
 ######################### Main Program ###########################
 
