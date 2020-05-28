@@ -463,13 +463,16 @@ int main(int argc, char **argv)
 		double old_rz = rz;
 
 		// sp_gemv_part(A, x, y, n_part, i_ini)
-		printf("debut mat\n");
 	    sp_gemv_part(A, p, q_part, n_part, i_ini);
 	    MPI_Allgather(q_part, n_part, MPI_DOUBLE, q, n_part, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */
-		printf("fin mat\n");
+	    printf("q : ");
+	    for(int i = 0;i<40;i++){
+    		printf("%lf ", q[i]);
+	    }
 		
 		pq_part = dot_part(p, q, i_ini, n_part);
 		MPI_Allreduce(&pq_part, &pq, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
+		printf("pq = %lf\n", pq);
 		
 		alpha = old_rz / pq;		
 		for (int i = 0; i < n_part; i++)	// x <-- x + alpha*p
@@ -481,7 +484,8 @@ int main(int argc, char **argv)
 		
 		rz_part = dot_part(r, z, i_ini, n_part);
 		MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
-		
+		printf("rz = %lf\n", rz);
+
 		beta = rz / old_rz;
 		for (int i =0; i < n; i++)	// p <-- z + beta*p
 			p[i] = z[i] + beta * p[i];
