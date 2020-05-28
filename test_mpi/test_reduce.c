@@ -29,8 +29,8 @@ int main(int argc, char** argv) {
     int root = 0;
 
 
-    int *rz;
-	int *rz_part;
+    int *rz = malloc(sizeof(int));
+	int *rz_part = malloc(sizeof(int));
     *rz_part = 10;
     *rz = 0;
 	// printf("rz = %d\n", *rz);
