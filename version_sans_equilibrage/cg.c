@@ -487,5 +487,26 @@ int main(int argc, char **argv)
 	free(mem);
 	free(q_part);
 
+	/* Check result */
+	if (safety_check) {
+		double *y = scratch;
+		sp_gemv(A, x, y);	// y = Ax
+		for (int i = 0; i < n; i++)	// y = Ax - b
+			y[i] -= b[i];
+		fprintf(stderr, "[check] max error = %2.2e\n", norm(n, y));
+	}
+
+	/* Dump the solution vector */
+	FILE *f_x = stdout;
+	if (solution_filename != NULL) {
+		f_x = fopen(solution_filename, "w");
+		if (f_x == NULL)
+			err(1, "cannot open solution file %s", solution_filename);
+		fprintf(stderr, "[IO] writing solution to %s\n", solution_filename);
+	}
+	for (int i = 0; i < n; i++)
+		fprintf(f_x, "%a\n", x[i]);
+	return EXIT_SUCCESS;
+
 	MPI_Finalize();
 }
