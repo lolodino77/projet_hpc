@@ -29,8 +29,8 @@ int main(int argc, char** argv) {
     int root = 0;
     int sendcount = 5;
     int* A = malloc(p * sendcount * sizeof(int)); // p * sendcount = 4 * 5 = 20
-    //int* A_part = malloc(sendcount * sizeof(int)); 
-	int A_part[sendcount];
+    int* A_part = malloc(sendcount * sizeof(int)); 
+	// int A_part[sendcount];
     for(int i = 0;i < sendcount;i++){
             // printf("my rank = %d\n", my_rank);
             A_part[i] = my_rank;
