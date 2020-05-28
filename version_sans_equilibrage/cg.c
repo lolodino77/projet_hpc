@@ -491,9 +491,10 @@ int main(int argc, char **argv)
 	if (safety_check) {
 		double *y = scratch;
 		sp_gemv(A, x, y);	// y = Ax
-		for (int i = 0; i < n; i++)	// y = Ax - b
+		for (int i = 0; i < n; i++){	// y = Ax - b
 			y[i] -= b[i];
 			printf("y[i] = %lf\n", y[i]);
+		}
 		fprintf(stderr, "[check] max error = %2.2e\n", norm(n, y));
 	}
 
