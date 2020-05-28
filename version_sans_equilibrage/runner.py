@@ -91,6 +91,8 @@ def do_computation():
         result = subprocess.run(cmd, shell=True, check=True, stdout=subprocess.PIPE)
         print("---------------------------------------------------------------")
         print()
+        print(result.stdout.decode())
+
     except subprocess.CalledProcessError as e:
         print("---------------------------------------------------------------")
         print("Ooops, le solveur a échoué (code de retour != 0).")
@@ -109,7 +111,6 @@ def do_computation():
     #            va pas leur suggérer.
     
     # le solveur a terminé avec succès. On récupère le vecteur solution.
-    print(result.stdout.decode())
     x = []
     for line in result.stdout.decode().splitlines():
         x.append(float.fromhex(line))
