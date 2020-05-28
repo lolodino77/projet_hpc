@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
 
     if(my_rank == 0){
         printf("my_rank = %d\n", my_rank);
-        for(int i = 0;i < recvcount;i++){
+        for(int i = 0;i < p*recvcount;i++){
             printf("%d ", A[i]);
         }   
     }
