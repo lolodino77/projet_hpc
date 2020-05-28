@@ -34,6 +34,7 @@ int main(int argc, char** argv) {
     *rz_part = 10;
     *rz = 0;
 	// printf("rz = %d\n", *rz);
+    printf("before reduce\n");
 
     MPI_Reduce(&rz_part, &rz, 1, MPI_INT, MPI_SUM, root, MPI_COMM_WORLD);
     printf("after reduce\n");
