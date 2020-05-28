@@ -388,7 +388,7 @@ int main(int argc, char **argv)
 	//n(cfd1) = 70 656 = n
 	int n_part = n/nbProc;//nombre d'elements par bloc d'un vecteur de taille n
 								  //bloc = partie du vecteur calculée lors d'un calcul d'un processeur
-	printf("n_part = %d\n", n_part);
+	printf("n_part = %d/%d = %d\n", n, nbProc, n_part);
 	int reste = n % nbProc;//indique si on rajoute un bloc si besoin pour calculer 
 			//le reste du vecteur si la division a un reste
 	double *mem = malloc(7 * n * sizeof(double));
@@ -449,7 +449,7 @@ int main(int argc, char **argv)
 		p[i] = z[i];
 
 	/*Algorithme du gradient conjugué */
-	MPI_Reduce(MPI_IN_PLACE, &rz, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);// rz = dot(r,z)	
+	MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
 	while (norm(n, r) > THRESHOLD){ ///////PAS SUR SUR QUELLE CONDITION METTRE
 		/* loop invariant : rz = dot(r, z) */
 		double old_rz = rz;

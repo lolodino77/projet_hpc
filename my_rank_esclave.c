@@ -34,7 +34,7 @@ for (int i = 0; i < n; i++)	// p <-- z
 double start = wtime();
 double last_display = start;
 int iter = 0;
-MPI_Reduce(MPI_IN_PLACE, &rz, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);// rz = dot(r,z)	
+MPI_Allreduce(MPI_IN_PLACE, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
 while (norm(n, r) > THRESHOLD){ ///////PAS SUR SUR QUELLE CONDITION METTRE
 	/* loop invariant : rz = dot(r, z) */
 	double old_rz = rz;
