@@ -11,6 +11,8 @@ int main(int argc, char** argv) {
     int world_size;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
+	printf("size = %d\n", world_size);
+
     // Get the rank of the process
     int my_rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
@@ -28,16 +30,15 @@ int main(int argc, char** argv) {
     int p = 4;
     int sendcount = 5;
     int* A = malloc(p * sendcount * sizeof(int)); // p * sendcount = 4 * 5 = 20
-    int* A_part = malloc(sendcount * sizeof(int)); 
-
-    if(my_rank != 0){
-        for(int i = 0;i < sendcount;i++){
+    //int* A_part = malloc(sendcount * sizeof(int)); 
+	int A_part[sendcount];
+    for(int i = 0;i < sendcount;i++){
             // printf("my rank = %d\n", my_rank);
             A_part[i] = my_rank;
             printf("%d ", A_part[i]);
-        }
-        printf("\n");
     }
+    printf("\n");
+    
     if(my_rank == 0){
         printf("my_rank = %d\n", my_rank);
         printf("debut gather\n");        
