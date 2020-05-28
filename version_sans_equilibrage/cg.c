@@ -466,7 +466,7 @@ int main(int argc, char **argv)
 	    sp_gemv_part(A, p, q_part, n_part, i_ini);
 	    MPI_Allgather(q_part, n_part, MPI_DOUBLE, q, n_part, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */
 	    printf("q : ");
-	    for(int i = 0;i<40;i++){
+	    for(int i = 0;i<n;i++){
     		printf("%lf ", q[i]);
 	    }
 		
