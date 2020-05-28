@@ -485,8 +485,7 @@ int main(int argc, char **argv)
 	}    
 	fprintf(stderr, "\n     ---> Finished in %.1fs and %d iterations\n", wtime() - start, iter);
 
-	free(mem);
-	free(q_part);
+
 
 	/* Check result */
 	if (safety_check) {
@@ -507,6 +506,8 @@ int main(int argc, char **argv)
 	}
 	for (int i = 0; i < n; i++)
 		fprintf(f_x, "%a\n", x[i]);
+	free(mem);
+	free(q_part);
 	return EXIT_SUCCESS;
 
 	MPI_Finalize();
