@@ -449,7 +449,6 @@ int main(int argc, char **argv)
 		p[i] = z[i];
 
 	/*Algorithme du gradient conjugué */
-	double last_display = start;
 	MPI_Reduce(MPI_IN_PLACE, &rz, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);// rz = dot(r,z)	
 	while (norm(n, r) > THRESHOLD){ ///////PAS SUR SUR QUELLE CONDITION METTRE
 		/* loop invariant : rz = dot(r, z) */
