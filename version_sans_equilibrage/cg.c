@@ -641,57 +641,57 @@ int main(int argc, char **argv)
 
 		maitre_esclave_root_produit_scalaire(rz, r, z, rz_part, DOT_RZ, nbProc, n, n_part, nbOfBlock); // rz = dot(r,z)
 		printf("rz = %lf\n", *rz);
-	// 	while (norm(n, r) > THRESHOLD){
-	// 	/* loop invariant : rz = dot(r, z) */
-	// 		double old_rz = *rz;
-	// 		maitre_esclave_root_produit_matriciel(q, p, q_part, MATPROD, nbProc, n,  n_part, nbOfBlock); /* q <-- A.p */
-	// 		maitre_esclave_root_produit_scalaire(pq, p, q, pq_part, DOT_PQ, nbProc, n,  n_part, nbOfBlock); // pq <-- dot(p, q)
-	// 		alpha = old_rz / *pq;		
-	// 		for (int i = 0; i < n_part; i++)	// x <-- x + alpha*p
-	// 			x[i] += alpha * p[i + i_ini];
-	// 		for (int i =0; i < n; i++)	// r <-- r - alpha*q
-	// 			r[i] -= alpha * q[i]; //A*p
-	// 		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
-	// 			z[i] = r[i] / d[i];
-	// 		maitre_esclave_root_produit_scalaire(rz, r, z, rz_part, DOT_RZ, nbProc, n,  n_part, nbOfBlock); // rz = dot(r,z)
-	// 		beta = *rz / old_rz;
-	// 		for (int i =0; i < n; i++)	// p <-- z + beta*p
-	// 			p[i] = z[i] + beta * p[i];
-	// 		iter++;
-	// 		double t = wtime();
-	// 		if (t - last_display > 0.5) {
-	// 			/* verbosity */
-	// 			double rate = iter / (t - start);	// iterations per s.
-	// 			double GFLOPs = 1e-9 * rate * (2 * nz + 12 * n);
-	// 			fprintf(stderr, "\r     ---> error : %2.2e, iter : %d (%.1f it/s, %.2f GFLOPs)", norm(n, r), iter, rate, GFLOPs);
-	// 			fflush(stdout);
-	// 			last_display = t;
-	// 		}
-	// 	}
-	// 	fprintf(stderr, "\n     ---> Finished in %.1fs and %d iterations\n", wtime() - start, iter);
+		while (norm(n, r) > THRESHOLD){
+		/* loop invariant : rz = dot(r, z) */
+			double old_rz = *rz;
+			maitre_esclave_root_produit_matriciel(q, p, q_part, MATPROD, nbProc, n,  n_part, nbOfBlock); /* q <-- A.p */
+			maitre_esclave_root_produit_scalaire(pq, p, q, pq_part, DOT_PQ, nbProc, n,  n_part, nbOfBlock); // pq <-- dot(p, q)
+			alpha = old_rz / *pq;		
+			for (int i = 0; i < n_part; i++)	// x <-- x + alpha*p
+				x[i] += alpha * p[i + i_ini];
+			for (int i =0; i < n; i++)	// r <-- r - alpha*q
+				r[i] -= alpha * q[i]; //A*p
+			for (int i = 0; i < n; i++)	// z <-- M^(-1).r
+				z[i] = r[i] / d[i];
+			maitre_esclave_root_produit_scalaire(rz, r, z, rz_part, DOT_RZ, nbProc, n,  n_part, nbOfBlock); // rz = dot(r,z)
+			beta = *rz / old_rz;
+			for (int i =0; i < n; i++)	// p <-- z + beta*p
+				p[i] = z[i] + beta * p[i];
+			iter++;
+			double t = wtime();
+			if (t - last_display > 0.5) {
+				/* verbosity */
+				double rate = iter / (t - start);	// iterations per s.
+				double GFLOPs = 1e-9 * rate * (2 * nz + 12 * n);
+				fprintf(stderr, "\r     ---> error : %2.2e, iter : %d (%.1f it/s, %.2f GFLOPs)", norm(n, r), iter, rate, GFLOPs);
+				fflush(stdout);
+				last_display = t;
+			}
+		}
+		fprintf(stderr, "\n     ---> Finished in %.1fs and %d iterations\n", wtime() - start, iter);
 	
-	// 	/* Check result */
-	// 	if (safety_check) {
-	// 		double *y = scratch;
-	// 		//sp_gemv(const struct csr_matrix_t *A, const double *x, double *y, int n, int i_ini)
-	// 		//sp_gemv(A, p, q, n, i_ini);
-	// 		sp_gemv(A, x, y, n);	// y = Ax
-	// 		for (int i = 0; i < n; i++)	// y = Ax - b
-	// 			y[i] -= b[i];
-	// 		fprintf(stderr, "[check] max error = %2.2e\n", norm(n, y));
-	// 	}
+		/* Check result */
+		if (safety_check) {
+			double *y = scratch;
+			//sp_gemv(const struct csr_matrix_t *A, const double *x, double *y, int n, int i_ini)
+			//sp_gemv(A, p, q, n, i_ini);
+			sp_gemv(A, x, y, n);	// y = Ax
+			for (int i = 0; i < n; i++)	// y = Ax - b
+				y[i] -= b[i];
+			fprintf(stderr, "[check] max error = %2.2e\n", norm(n, y));
+		}
 
-	// 	/* Dump the solution vector */
-	// 	FILE *f_x = stdout;
-	// 	if (solution_filename != NULL) {
-	// 		f_x = fopen(solution_filename, "w");
-	// 		if (f_x == NULL)
-	// 			err(1, "cannot open solution file %s", solution_filename);
-	// 		fprintf(stderr, "[IO] writing solution to %s\n", solution_filename);
-	// 	}
-	// 	for (int i = 0; i < n; i++)
-	// 		fprintf(f_x, "%a\n", x[i]);
-	// 	return EXIT_SUCCESS;
+		/* Dump the solution vector */
+		FILE *f_x = stdout;
+		if (solution_filename != NULL) {
+			f_x = fopen(solution_filename, "w");
+			if (f_x == NULL)
+				err(1, "cannot open solution file %s", solution_filename);
+			fprintf(stderr, "[IO] writing solution to %s\n", solution_filename);
+		}
+		for (int i = 0; i < n; i++)
+			fprintf(f_x, "%a\n", x[i]);
+		return EXIT_SUCCESS;
 	 }
 	else{// si le processus n'est pas le maître mais un esclave
 		MPI_Recv(&i_block, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
@@ -721,7 +721,7 @@ int main(int argc, char **argv)
 				MPI_Send(&pq_part, 1, MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
 			}
 			else if(status.MPI_TAG == MATPROD){
-				void sp_gemv_part(A, p, q_part, n_part, i_ini);
+				sp_gemv_part(A, p, q_part, n_part, i_ini);
 				MPI_Send(q_part, n_part*sizeof(double), MPI_DOUBLE, dest, TRAITEMENT, MPI_COMM_WORLD);	
 			}
 			else if(status.MPI_TAG == STOP){
