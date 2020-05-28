@@ -35,17 +35,18 @@ int main(int argc, char** argv) {
     for(int i = 0;i < sendcount;i++){
             // printf("my rank = %d\n", my_rank);
             A_part[i] = my_rank;
-            printf("%d ", A_part[i]);
+            // printf("%d ", A_part[i]);
     }
     printf("\n");
-    
+
+    int recvcount = p * sendcount;
+    printf("recvcount = %d\n", recvcount);
+    printf("debut gather\n");        
+    MPI_Gather(A_part, sendcount, MPI_INT, A, recvcount, MPI_INT, root, MPI_COMM_WORLD);    
+    printf("fin gather\n");
+
     if(my_rank == 0){
         printf("my_rank = %d\n", my_rank);
-        printf("debut gather\n");        
-        int recvcount = p * sendcount;
-        printf("recvcount = %d\n", recvcount);
-        MPI_Gather(A_part, sendcount, MPI_INT, A, recvcount, MPI_INT, root, MPI_COMM_WORLD);
-        printf("fin gather\n");
         for(int i = 0;i < recvcount;i++){
             printf("%d ", A[i]);
         }   
