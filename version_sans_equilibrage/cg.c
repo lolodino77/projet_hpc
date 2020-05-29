@@ -351,7 +351,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	printf("hello i am process %s number %d\n", processor_name, my_rank);
+	// printf("hello i am process %s number %d\n", processor_name, my_rank);
 
 /* Broadcast de la matrice A */
 	int n = 0;
@@ -534,7 +534,7 @@ int main(int argc, char **argv)
 
 	if(my_rank == 0){
 		FILE *f_x = stdout;
-		printf("solution filename = %s\n", solution_filename);
+		// printf("solution filename = %s\n", solution_filename);
 		if (solution_filename != NULL) {
 			f_x = fopen(solution_filename, "w");
 			if (f_x == NULL)
