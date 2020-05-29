@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# coding=utf-8
 import array
 import subprocess
 import json
@@ -17,9 +16,6 @@ params['version'] = 3
 params['proof'] = 0x65dec1542f679f51
 
 # Paramètres du calcul (à adapter)
-#bcsstk13
-#cfd2
-#cfd1
 params['matrix'] = "bcsstk13"
 params['users'] = ["3800623"]
 
@@ -39,9 +35,9 @@ Machines de bureau DELL équipés de CPU Intel i3 à 2 coeurs, 3Ghz, et 4Go de R
 #   {cores}  sera remplacé par la valeur ci-dessus.
 #   {seed}   sera remplacé par la valeur fournie par le serveur.
 #   On peut ajouter toutes les options qu'on veut, utiliser mpiexec, etc.
-#command_line = "./cg --matrix {matrix}.mtx --seed {seed}"
-# command_line = "zcat /Infos/lmd/2019/master/ue/MU4IN903-2020fev/{matrix}.mtx.gz | ./cg --seed {seed}"
-# command_line = "mpiexec --n {cores} --hostfile nodes.txt --display-map ./cg --matrix /Infos/lmd/2019/master/ue/MU4IN903-2020fev/{matrix}.mtx.gz --seed {seed}"
+# command_line = "./cg --matrix {matrix}.mtx --seed {seed}"
+#command_line = "zcat matrices/{matrix}.mtx.gz | ./cg --seed {seed}"
+#command_line = "mpiexec --n {cores} --hostfile nodes.txt --display-map ./cg --matrix {matrix}.mtx --seed {seed}"
 #command_line = "mpiexec --n {nodes} -hostfile nodes.txt --map-by ppr:1:node ./cg --matrix {matrix}.mtx --seed {seed}"
 command_line = "zcat /Infos/lmd/2019/master/ue/MU4IN903-2020fev/{matrix}.mtx.gz | mpiexec --n 17 -hostfile hostfile --map-by ppr:1:node ./cg --seed {seed}"
 
@@ -91,8 +87,6 @@ def do_computation():
         result = subprocess.run(cmd, shell=True, check=True, stdout=subprocess.PIPE)
         print("---------------------------------------------------------------")
         print()
-        print(result.stdout.decode())
-
     except subprocess.CalledProcessError as e:
         print("---------------------------------------------------------------")
         print("Ooops, le solveur a échoué (code de retour != 0).")
