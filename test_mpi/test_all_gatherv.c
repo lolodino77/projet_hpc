@@ -37,7 +37,7 @@ int main(int argc, char** argv){
 
     printf("n = %d\n", n);
     int r = p*quotient + reste;
-    printf("p*quotient + reste = \n", r);
+    printf("p*quotient + reste = %d\n", r);
 
     printf("quotient = %d\n", quotient);
     printf("reste = %d\n", reste);
