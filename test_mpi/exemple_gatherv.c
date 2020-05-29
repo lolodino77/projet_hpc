@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
         printf("displs = \n");
         for (int i = 0; i < size; ++i)
         {
-            printf("%d \n", displs[i]);
+            printf("%d ", displs[i]);
         }
     }
 
