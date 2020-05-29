@@ -51,8 +51,9 @@ int main(int argc, char** argv) {
     printf("%d\n", recvcounts[0]);
     for(int i = 1;i<p;i++){
         recvcounts[i] = quotient;
-        printf("%d\n", recvcounts[i]);
+        printf("%d", recvcounts[i]);
     }
+    printf("\n");
 
     int displs[p - 1];
     displs[0] = 0;

@@ -389,6 +389,7 @@ int main(int argc, char **argv)
 	// n = taille du vecteur x
 	//n(cfd1) = 70 656 = n	
 	int i_ini = my_rank * (n_part + 1); //indice duquel on part pour calculer une partie du vecteur solution x
+	int i_end = 
 	int n_part = n/nbProc;//nombre d'elements par bloc d'un vecteur de taille n
 								  //bloc = partie du vecteur calculée lors d'un calcul d'un processeur
 	printf("n_part = %d/%d = %d\n", n, nbProc, n_part);

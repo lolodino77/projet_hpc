@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
 
         for (int i=1; i<size; i++) {
            totlen += recvcounts[i]+1;   /* plus one for space or \0 after words */
-           displs[i] = displs[i-1] + recvcounts[i-1];
+           displs[i] = displs[i-1] + recvcounts[i-1] + 1;
         }
 
         /* allocate string, pre-fill with spaces and null terminator */
