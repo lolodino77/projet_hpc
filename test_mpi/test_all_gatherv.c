@@ -60,7 +60,7 @@ int main(int argc, char** argv){
         printf("%d ", recvcounts[i]);
     }
     recvcounts[p+1] = reste;   
-    printf("  %d\n", recvcounts[p-1]);
+    printf("  %d\n", recvcounts[p+1]);
 
     //p = 6
     int displs[p]; //displs[5]
