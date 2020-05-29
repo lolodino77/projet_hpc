@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
     int displs[p - 1];
     displs[0] = 0;
     displs[1] = reste;
-    for(int i = 2;i<p;i++){
+    for(int i = 2;i < (p - 1);i++){
         displs[i] = (i - 1) * quotient + reste; // displs[2] = displs[i] = 7 = 1*5 + 2 = (i-1)*5 + 2
     }
     printf("displs : \n");
