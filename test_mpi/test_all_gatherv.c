@@ -18,8 +18,6 @@ int main(int argc, char** argv){
     int p;
     MPI_Comm_size(MPI_COMM_WORLD, &p);
 
-    printf("size = %d\n", p);
-
     // Get the rank of the process
     int my_rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
@@ -28,10 +26,6 @@ int main(int argc, char** argv){
     char processor_name[MPI_MAX_PROCESSOR_NAME];
     int name_len;
     MPI_Get_processor_name(processor_name, &name_len);
-
-    // Print off a hello world message
-    printf("Hello world from processor %s, rank %d out of %d processors\n",
-           processor_name, my_rank, p);
 
     int n = 12; //taille du grand tableau A
     int quotient = n / p; // 12 / 5 = 2
