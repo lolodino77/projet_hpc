@@ -305,11 +305,11 @@ int main(int argc, char **argv)
 {
 	/* Initialisation de variables */
 	int my_rank; //rank of the process
-	int nbProc; //number of process
+	int p; //number of process
 	int i_block = 0; //numero du bloc courant en train d'etre calculé
 	MPI_Init(&argc,&argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
-	MPI_Comm_size(MPI_COMM_WORLD, &nbProc);
+	MPI_Comm_size(MPI_COMM_WORLD, &p);
     char processor_name[MPI_MAX_PROCESSOR_NAME];
     int name_len;
     MPI_Get_processor_name(processor_name, &name_len);
@@ -390,11 +390,35 @@ int main(int argc, char **argv)
 	//n(cfd1) = 70 656 = n	
 	int i_ini = my_rank * (n_part + 1); //indice duquel on part pour calculer une partie du vecteur solution x
 	int i_end = 
-	int n_part = n/nbProc;//nombre d'elements par bloc d'un vecteur de taille n
+	printf("n_part = %d/%d = %d\n", n, p, n_part);
+	int quotient = n / p;
+	int reste = n % p;
+	int n_part = quotient; //nombre d'elements par bloc d'un vecteur de taille n
 								  //bloc = partie du vecteur calculée lors d'un calcul d'un processeur
-	printf("n_part = %d/%d = %d\n", n, nbProc, n_part);
-	int n_reste = n % nbProc;//indique si on rajoute un bloc si besoin pour calculer 
-			//le reste du vecteur si la division a un reste
+    if(my_rank == p-1){
+        n_part = quotient + reste;
+    }    
+
+	int recvcounts[p]; //taille du petit tableau de chaque processeur, dans l'ordre croissant de my_rank
+    printf("recvcounts, p = %d :\n", p);
+    for(int i = 0;i < p-1;i++){ 
+        recvcounts[i] = quotient;
+        printf("%d ", recvcounts[i]);
+    }
+    recvcounts[p-1] = quotient + reste;   
+    printf("%d\n", recvcounts[p-1]);
+
+    int displs[p]; 
+    displs[0] = 0;
+    for(int i = 1;i < p;i++){
+        displs[i] = i * quotient; 
+    }
+    printf("displs : \n");
+    for(int i = 0; i < p; i ++){
+        printf("%d ", displs[i]);
+    }
+    printf("\n");
+
 	double *mem = malloc(7 * n * sizeof(double));
 	if(mem == NULL)
 		err(1, "cannot allocate dense vectors");
@@ -418,7 +442,7 @@ int main(int argc, char **argv)
 			b[i] = PRF(i, seed);
 	}
 
-	/* solve Ax == b with MPI, witn nbProc processors*/
+	/* solve Ax == b with MPI, witn p processors*/
 	double *r = scratch;	        // residue
 	double *z = scratch + n;	// preconditioned-residue
 	double *p = scratch + 2*n;	// search direction
@@ -459,27 +483,17 @@ int main(int argc, char **argv)
 	/*Algorithme du gradient conjugué */
 	rz_part = dot_part(r, z, i_ini, n_part);
 	MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
-	// printf("rz = %lf\n", rz);
 	while (norm(n, r) > THRESHOLD){ 
 		/* loop invariant : rz = dot(r, z) */
 		double old_rz = rz;
 
-		// sp_gemv_part(A, x, y, n_part, i_ini)
 	    sp_gemv_part(A, p, q_part, n_part, i_ini);
-	    MPI_Allgather(q_part, n_part, MPI_DOUBLE, q, n_part, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */
-	    // printf("allgather matrice fini\n");
-	    // printf("q : ");
-
-	 //    if(my_rank == 2){
-  //   	printf("c'est moi 2\n");
-		//     for(int i = 0;i<n;i++){
-	 //    		printf("%lf ", q[i]);
-		//     }
-		// }
+	    // MPI_Allgather(q_part, n_part, MPI_DOUBLE, q, n_part, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */
+	    // MPI_Allgatherv(A_part, n_part, MPI_INT, A, recvcounts, displs, MPI_INT, MPI_COMM_WORLD);    
+        MPI_Allgatherv(q_part, n_part, MPI_DOUBLE, q, recvcounts, displs, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */    
 
 		pq_part = dot_part(p, q, i_ini, n_part);
 		MPI_Allreduce(&pq_part, &pq, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
-		// printf("pq = %lf\n", pq);
 		
 		alpha = old_rz / pq;		
 		for (int i = 0; i < n; i++)	// x <-- x + alpha*p
@@ -491,7 +505,6 @@ int main(int argc, char **argv)
 		
 		rz_part = dot_part(r, z, i_ini, n_part);
 		MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
-		// printf("rz = %lf\n", rz);
 
 		beta = rz / old_rz;
 		for (int i =0; i < n; i++)	// p <-- z + beta*p
@@ -499,7 +512,6 @@ int main(int argc, char **argv)
 		iter++;
 		double t = wtime();
 		if (t - last_display > 0.5) {
-			/* verbosity */
 			double rate = iter / (t - start);	// iterations per s.
 			double GFLOPs = 1e-9 * rate * (2 * nz + 12 * n);
 			fprintf(stderr, "\r     ---> error : %2.2e, iter : %d (%.1f it/s, %.2f GFLOPs)", norm(n, r), iter, rate, GFLOPs);
