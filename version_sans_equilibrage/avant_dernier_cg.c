@@ -387,8 +387,7 @@ int main(int argc, char **argv)
   
 	// /* Allocate memory */
 	// n = taille du vecteur x
-	//n(cfd1) = 70 656 = n	
-	int i_ini = my_rank * (n_part + 1); //indice duquel on part pour calculer une partie du vecteur solution x
+	//n(cfd1) = 70 656 = n
 	int n_part = n/nbProc;//nombre d'elements par bloc d'un vecteur de taille n
 								  //bloc = partie du vecteur calculée lors d'un calcul d'un processeur
 	printf("n_part = %d/%d = %d\n", n, nbProc, n_part);
@@ -418,6 +417,7 @@ int main(int argc, char **argv)
 	}
 
 	/* solve Ax == b with MPI, witn nbProc processors*/
+	int i_ini = my_rank*n_part; //indice duquel on part pour calculer une partie du vecteur solution x
 	double *r = scratch;	        // residue
 	double *z = scratch + n;	// preconditioned-residue
 	double *p = scratch + 2*n;	// search direction
