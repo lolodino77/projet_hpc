@@ -385,8 +385,7 @@ int main(int argc, char **argv)
     MPI_Bcast(A->Ax, 2*nnz, MPI_DOUBLE, 0, MPI_COMM_WORLD);
   
 	// /* Allocate memory */
-	int i_ini = my_rank * (n_part + 1); //indice duquel on part pour calculer une partie du vecteur solution x
-	int i_end = 
+	int i_ini = my_rank * quotient; //indice duquel on part pour calculer une partie du vecteur solution x
 	printf("n_part = %d/%d = %d\n", n, P, n_part);
 	int quotient = n / P;
 	int reste = n % P;
