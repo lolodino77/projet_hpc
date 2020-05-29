@@ -69,12 +69,13 @@ int main(int argc, char** argv){
     for(int i = 1;i < p;i++){
         displs[i] = i * quotient; // displs[2] = displs[i] = 7 = 1*5 + 2 = (i-1)*5 + 2
     }
-    displs[p] = displs[p-2] + reste;
+    displs[p] = displs[p-1] + reste;
 
     printf("displs : \n");
     for(int i = 0; i < p; i ++){
         printf("%d ", displs[i]);
     }
+    printf("%d \n", displs[p]);
     printf("\n");
 
     printf("debut gather\n");        
