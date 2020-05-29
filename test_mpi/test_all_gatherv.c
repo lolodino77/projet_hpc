@@ -65,10 +65,9 @@ int main(int argc, char** argv){
     //p = 6
     int displs[p]; //displs[5]
     displs[0] = 0;
-    for(int i = 1;i < p-1;i++){
+    for(int i = 1;i < p;i++){
         displs[i] = i * quotient; // displs[2] = displs[i] = 7 = 1*5 + 2 = (i-1)*5 + 2
     }
-    displs[p-1] = displs[p-2] + reste + quotient;
 
     printf("displs : \n");
     for(int i = 0; i < p; i ++){
