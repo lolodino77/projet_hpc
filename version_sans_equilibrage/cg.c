@@ -393,27 +393,27 @@ int main(int argc, char **argv)
         n_part = quotient + reste;
     }    
 	int i_ini = my_rank * quotient; //indice duquel on part pour calculer une partie du vecteur solution x
-	printf("n_part = %d/%d = %d\n", n, P, n_part);
+	// printf("n_part = %d/%d = %d\n", n, P, n_part);
 
 	int recvcounts[P]; //taille du petit tableau de chaque processeur, dans l'ordre croissant de my_rank
-    printf("recvcounts, p = %d :\n", P);
+    // printf("recvcounts, p = %d :\n", P);
     for(int i = 0;i < P-1;i++){ 
         recvcounts[i] = quotient;
-        printf("%d ", recvcounts[i]);
+        // printf("%d ", recvcounts[i]);
     }
     recvcounts[P-1] = quotient + reste;   
-    printf("%d\n", recvcounts[P-1]);
+    // printf("%d\n", recvcounts[P-1]);
 
     int displs[P]; 
     displs[0] = 0;
     for(int i = 1;i < P;i++){
         displs[i] = i * quotient; 
     }
-    printf("displs : \n");
-    for(int i = 0; i < P; i ++){
-        printf("%d ", displs[i]);
-    }
-    printf("\n");
+    // printf("displs : \n");
+    // for(int i = 0; i < P; i ++){
+    //     printf("%d ", displs[i]);
+    // }
+    // printf("\n");
 
 	double *mem = malloc(7 * n * sizeof(double));
 	if(mem == NULL)
