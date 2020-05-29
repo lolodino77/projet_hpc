@@ -46,8 +46,10 @@ int main(int argc, char** argv) {
     printf("\n");
 
     int recvcounts[p];
+    printf("recvcounts :\n");
     for(int i = 1;i<p;i++){
         recvcounts[i] = n_part;
+        printf("%d\n", recvcounts[i]);
     }
 
     int displs[p - 1];
@@ -63,7 +65,7 @@ int main(int argc, char** argv) {
 
     printf("recvcounts = %d\n", recvcounts);
     printf("debut gather\n");        
-    // MPI_Gatherv(A_part, n_part, MPI_INT, A, recvcounts, MPI_INT, 0, MPI_COMM_WORLD)
+    // MPI_Gatherv(A_part, n_part, MPI_INT, A, recvcounts, displs, MPI_INT, 0, MPI_COMM_WORLD)
     MPI_Allgatherv(A_part, n_part, MPI_INT, A, recvcounts, displs, MPI_INT, MPI_COMM_WORLD);    
     printf("fin gather\n");
 
