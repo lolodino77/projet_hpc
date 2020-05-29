@@ -61,18 +61,19 @@ int main(int argc, char** argv){
     recvcounts[p-1] = reste;   
     printf("%d\n", recvcounts[p-1]);
 
-    int displs[p - 1]; //taille des premières adresses de chaque petit tableau, dans l'ordre croissant des my_rank
-    for(int i = 0;i < p-1;i++){
-        displs[i] = i * quotient; // displs[2] = displs[i] = 7 = 1*5 + 2 = (i-1)*5 + 2
+    //p = 6
+    int displs[p]; //displs[5]
+    displs[0] = 0;
+    displs[1] = reste;
+    for(int i = 2;i < p;i++){
+        displs[i] = (i - 1) * quotient + reste; // displs[2] = displs[i] = 7 = 1*5 + 2 = (i-1)*5 + 2
     }
-    displs[p-1] = reste;
-
     printf("displs : \n");
     for(int i = 0; i < p; i ++){
         printf("%d ", displs[i]);
     }
     printf("\n");
-
+    
     printf("debut gather\n");        
     // MPI_Gatherv(A_part, n_part, MPI_INT, A, recvcounts, displs, MPI_INT, 0, MPI_COMM_WORLD)
     MPI_Allgatherv(A_part, n_part, MPI_INT, A, recvcounts, displs, MPI_INT, MPI_COMM_WORLD);    
