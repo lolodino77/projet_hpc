@@ -29,14 +29,14 @@ int main(int argc, char** argv) {
     int root = 0;
     int quotient = 5;
     int reste = 2;
-    int sendcount = quotient;
+    int n_part = quotient;
     if(my_rank == 0){
-        sendcount = reste;
+        n_part = reste;
     }
-    int* A = malloc((p * quotient + 2) * sizeof(int)); // p * sendcount = 4 * 5 = 20
-    int* A_part = malloc(sendcount * sizeof(int)); 
-	// int A_part[sendcount];
-    for(int i = 0;i < sendcount;i++){
+    int* A = malloc(((p - 1) * quotient + reste) * sizeof(int)); // p * n_part = 4 * 5 = 20
+    int* A_part = malloc(n_part * sizeof(int)); 
+	// int A_part[n_part];
+    for(int i = 0;i < n_part;i++){
             // printf("my rank = %d\n", my_rank);
             A_part[i] = my_rank;
             // printf("%d ", A_part[i]);
@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
 
     int recvcounts[p];
     for(int i = 1;i<p;i++){
-        recvcounts[i] = sendcount;
+        recvcounts[i] = n_part;
     }
 
     int displs[p - 1];
@@ -61,13 +61,13 @@ int main(int argc, char** argv) {
 
     printf("recvcounts = %d\n", recvcounts);
     printf("debut gather\n");        
-    // MPI_Gatherv(A_part, sendcount, MPI_INT, A, recvcounts, MPI_INT, 0, MPI_COMM_WORLD)
-    MPI_Allgatherv(A_part, sendcount, MPI_INT, A, recvcounts, displs, MPI_INT, MPI_COMM_WORLD);    
+    // MPI_Gatherv(A_part, n_part, MPI_INT, A, recvcounts, MPI_INT, 0, MPI_COMM_WORLD)
+    MPI_Allgatherv(A_part, n_part, MPI_INT, A, recvcounts, displs, MPI_INT, MPI_COMM_WORLD);    
     printf("fin gather\n");
 
 
     printf("my_rank = %d\n", my_rank);
-    for(int i = 0;i < (p * sendcount + 2);i++){
+    for(int i = 0;i < (p * n_part + 2);i++){
         printf("%d ", A[i]);
     }
     printf("\n");   
