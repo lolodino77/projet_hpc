@@ -53,23 +53,22 @@ int main(int argc, char** argv){
     }
     printf("\n");
 
-    int recvcounts[p+1]; //taille du petit tableau de chaque processeur, dans l'ordre croissant de my_rank
+    int recvcounts[p]; //taille du petit tableau de chaque processeur, dans l'ordre croissant de my_rank
     printf("recvcounts, p = %d :\n", p);
-    for(int i = 0;i < p;i++){ //taille p + 1, p pour le quotient, 1 pour le reste
+    for(int i = 0;i < p-1;i++){ //taille p + 1, p pour le quotient, 1 pour le reste
         recvcounts[i] = quotient;
         printf("%d ", recvcounts[i]);
     }
-    printf("  %d\n", recvcounts[p]);
-    recvcounts[p] = reste;   
+    recvcounts[p] = quotient + reste;   
     printf("  %d\n", recvcounts[p]);
 
     //p = 6
-    int displs[p+1]; //displs[5]
+    int displs[p]; //displs[5]
     displs[0] = 0;
-    for(int i = 1;i < p;i++){
+    for(int i = 1;i < p-1;i++){
         displs[i] = i * quotient; // displs[2] = displs[i] = 7 = 1*5 + 2 = (i-1)*5 + 2
     }
-    displs[p] = displs[p-1] + reste;
+    displs[p] = displs[p-1] + reste + quotient;
 
     printf("displs : \n");
     for(int i = 0; i < p; i ++){
@@ -82,7 +81,6 @@ int main(int argc, char** argv){
     // MPI_Gatherv(A_part, n_part, MPI_INT, A, recvcounts, displs, MPI_INT, 0, MPI_COMM_WORLD)
     MPI_Allgatherv(A_part, n_part, MPI_INT, A, recvcounts, displs, MPI_INT, MPI_COMM_WORLD);    
     printf("fin gather\n");
-
 
     if (my_rank == 0)
     {
