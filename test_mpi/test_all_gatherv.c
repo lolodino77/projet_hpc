@@ -35,6 +35,10 @@ int main(int argc, char** argv){
         n_part = reste;
     }    
 
+    printf("n = %d\n", n);
+    int r = p*quotient + reste;
+    printf("p*quotient + reste = \n", r);
+
     printf("quotient = %d\n", quotient);
     printf("reste = %d\n", reste);
 
@@ -71,10 +75,6 @@ int main(int argc, char** argv){
         printf("%d ", displs[i]);
     }
     printf("\n");
-
-    printf("n = %d\n", n);
-    int r = p*quotient + reste;
-    printf("p*quotient + reste = \n", r);
 
     printf("debut gather\n");        
     // MPI_Gatherv(A_part, n_part, MPI_INT, A, recvcounts, displs, MPI_INT, 0, MPI_COMM_WORLD)
