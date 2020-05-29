@@ -59,8 +59,8 @@ int main(int argc, char** argv){
         recvcounts[i] = quotient;
         printf("%d ", recvcounts[i]);
     }
-    recvcounts[p] = quotient + reste;   
-    printf("  %d\n", recvcounts[p]);
+    recvcounts[p-1] = quotient + reste;   
+    printf("  %d\n", recvcounts[p-1]);
 
     //p = 6
     int displs[p]; //displs[5]
@@ -68,13 +68,13 @@ int main(int argc, char** argv){
     for(int i = 1;i < p-1;i++){
         displs[i] = i * quotient; // displs[2] = displs[i] = 7 = 1*5 + 2 = (i-1)*5 + 2
     }
-    displs[p] = displs[p-1] + reste + quotient;
+    displs[p-1] = displs[p-2] + reste + quotient;
 
     printf("displs : \n");
     for(int i = 0; i < p; i ++){
         printf("%d ", displs[i]);
     }
-    printf("%d \n", displs[p]);
+    printf("%d \n", displs[p-1]);
     printf("\n");
 
     printf("debut gather\n");        
