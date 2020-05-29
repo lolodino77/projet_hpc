@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
     int displs[p - 1];
     displs[0] = 0;
     for(int i = 0;i<(p - 2);i++){
-        displs[i + 1] = (i * sendcount) + 2;
+        displs[i + 1] = (i * quotient) + 2;
     }
     printf("displs : \n");
     for(int i = 0; i < p; i ++){
