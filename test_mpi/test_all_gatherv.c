@@ -57,7 +57,7 @@ int main(int argc, char** argv){
     printf("recvcounts, p = %d :\n", p);
     for(int i = 0;i < p;i++){ //taille p + 1, p pour le quotient, 1 pour le reste
         recvcounts[i] = quotient;
-        printf("%d ", recvcounts[i]);
+        printf("%d (i = %d) ", recvcounts[i], i);
     }
     recvcounts[p] = reste;   
     printf("  %d\n", recvcounts[p]);
