@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
     printf("\n");
 
     int recvcount = sendcount;
-    printf("recvcount = %d\n", recvcount);
+    printf("..recvcount = %d\n", recvcount);
     printf("debut gather\n");        
     MPI_Gather(A_part, sendcount, MPI_INT, A, recvcount, MPI_INT, root, MPI_COMM_WORLD);    
     printf("fin gather\n");
