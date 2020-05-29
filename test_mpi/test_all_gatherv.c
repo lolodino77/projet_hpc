@@ -51,9 +51,8 @@ int main(int argc, char** argv) {
     printf("%d\n", recvcounts[0]);
     for(int i = 1;i<p;i++){
         recvcounts[i] = quotient;
-        printf("%d", recvcounts[i]);
+        printf("%d\n", recvcounts[i]);
     }
-    printf("\n");
 
     int displs[p - 1];
     displs[0] = 0;
@@ -63,8 +62,9 @@ int main(int argc, char** argv) {
     }
     printf("displs : \n");
     for(int i = 0; i < (p - 1); i ++){
-        printf("%d\n", displs[i]);
+        printf("%d ", displs[i]);
     }
+    printf("\n");
 
     printf("debut gather\n");        
     // MPI_Gatherv(A_part, n_part, MPI_INT, A, recvcounts, displs, MPI_INT, 0, MPI_COMM_WORLD)
