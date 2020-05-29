@@ -67,10 +67,11 @@ int main(int argc, char** argv){
     //p = 6
     int displs[p]; //displs[5]
     displs[0] = 0;
-    displs[1] = reste;
-    for(int i = 2;i < p;i++){
-        displs[i] = (i - 1) * quotient + reste; // displs[2] = displs[i] = 7 = 1*5 + 2 = (i-1)*5 + 2
+    for(int i = 1;i < p-1;i++){
+        displs[i] = i * quotient; // displs[2] = displs[i] = 7 = 1*5 + 2 = (i-1)*5 + 2
     }
+    displs[p-1] = displs[p-2] + reste;
+
     printf("displs : \n");
     for(int i = 0; i < p; i ++){
         printf("%d ", displs[i]);
