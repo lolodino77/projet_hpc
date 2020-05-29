@@ -78,7 +78,8 @@ int main(int argc, char** argv){
     printf("fin gather\n");
 
     printf("n = %d\n", n);
-    printf("p*quotient + reste = \n", p*quotient + reste);
+    int r = p*quotient + reste;
+    printf("p*quotient + reste = \n", r);
     if (my_rank == 0)
     {
         printf("affiche A :\n", my_rank);
