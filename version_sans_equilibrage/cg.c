@@ -385,7 +385,6 @@ int main(int argc, char **argv)
     MPI_Bcast(A->Ax, 2*nnz, MPI_DOUBLE, 0, MPI_COMM_WORLD);
   
 	// /* Allocate memory */
-	int i_ini = my_rank * quotient; //indice duquel on part pour calculer une partie du vecteur solution x
 	printf("n_part = %d/%d = %d\n", n, P, n_part);
 	int quotient = n / P;
 	int reste = n % P;
@@ -394,6 +393,7 @@ int main(int argc, char **argv)
     if(my_rank == P-1){
         n_part = quotient + reste;
     }    
+	int i_ini = my_rank * quotient; //indice duquel on part pour calculer une partie du vecteur solution x
 
 	int recvcounts[P]; //taille du petit tableau de chaque processeur, dans l'ordre croissant de my_rank
     printf("recvcounts, p = %d :\n", P);
