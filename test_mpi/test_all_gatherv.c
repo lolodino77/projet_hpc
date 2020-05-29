@@ -41,6 +41,9 @@ int main(int argc, char** argv){
         n_part = reste;
     }    
 
+    printf("quotient = %d\n", quotient);
+    printf("reste = %d\n", reste);
+
     int* A = malloc(n * sizeof(int)); // p * n_part = 4 * 5 = 20
     int* A_part = malloc(n_part * sizeof(int)); 
     printf("my_rank = %d\n", my_rank);
@@ -73,7 +76,7 @@ int main(int argc, char** argv){
         printf("%d ", displs[i]);
     }
     printf("\n");
-    
+
     printf("debut gather\n");        
     // MPI_Gatherv(A_part, n_part, MPI_INT, A, recvcounts, displs, MPI_INT, 0, MPI_COMM_WORLD)
     MPI_Allgatherv(A_part, n_part, MPI_INT, A, recvcounts, displs, MPI_INT, MPI_COMM_WORLD);    
