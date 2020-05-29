@@ -305,11 +305,11 @@ int main(int argc, char **argv)
 {
 	/* Initialisation de variables */
 	int my_rank; //rank of the process
-	int p; //number of process
+	int P; //number of process
 	int i_block = 0; //numero du bloc courant en train d'etre calculé
 	MPI_Init(&argc,&argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
-	MPI_Comm_size(MPI_COMM_WORLD, &p);
+	MPI_Comm_size(MPI_COMM_WORLD, &P);
     char processor_name[MPI_MAX_PROCESSOR_NAME];
     int name_len;
     MPI_Get_processor_name(processor_name, &name_len);
@@ -383,38 +383,35 @@ int main(int argc, char **argv)
     MPI_Bcast(A->Ap, n+1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(A->Aj, 2*nnz, MPI_INT, 0, MPI_COMM_WORLD); //bug la
     MPI_Bcast(A->Ax, 2*nnz, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    // printf("%d %d %lf %d %d %lf\n", A->Ap[0], A->Aj[0], A->Ax[0], A->Ap[50], A->Aj[50], A->Ax[50]);
   
 	// /* Allocate memory */
-	// n = taille du vecteur x
-	//n(cfd1) = 70 656 = n	
 	int i_ini = my_rank * (n_part + 1); //indice duquel on part pour calculer une partie du vecteur solution x
 	int i_end = 
-	printf("n_part = %d/%d = %d\n", n, p, n_part);
-	int quotient = n / p;
-	int reste = n % p;
+	printf("n_part = %d/%d = %d\n", n, P, n_part);
+	int quotient = n / P;
+	int reste = n % P;
 	int n_part = quotient; //nombre d'elements par bloc d'un vecteur de taille n
 								  //bloc = partie du vecteur calculée lors d'un calcul d'un processeur
-    if(my_rank == p-1){
+    if(my_rank == P-1){
         n_part = quotient + reste;
     }    
 
-	int recvcounts[p]; //taille du petit tableau de chaque processeur, dans l'ordre croissant de my_rank
-    printf("recvcounts, p = %d :\n", p);
-    for(int i = 0;i < p-1;i++){ 
+	int recvcounts[P]; //taille du petit tableau de chaque processeur, dans l'ordre croissant de my_rank
+    printf("recvcounts, p = %d :\n", P);
+    for(int i = 0;i < P-1;i++){ 
         recvcounts[i] = quotient;
         printf("%d ", recvcounts[i]);
     }
-    recvcounts[p-1] = quotient + reste;   
-    printf("%d\n", recvcounts[p-1]);
+    recvcounts[P-1] = quotient + reste;   
+    printf("%d\n", recvcounts[P-1]);
 
-    int displs[p]; 
+    int displs[P]; 
     displs[0] = 0;
-    for(int i = 1;i < p;i++){
+    for(int i = 1;i < P;i++){
         displs[i] = i * quotient; 
     }
     printf("displs : \n");
-    for(int i = 0; i < p; i ++){
+    for(int i = 0; i < P; i ++){
         printf("%d ", displs[i]);
     }
     printf("\n");
@@ -551,6 +548,8 @@ int main(int argc, char **argv)
 
 	free(mem);
 	free(q_part);
+	free(nnz2);
+	free(A);
 	// return EXIT_SUCCESS;
 
 	MPI_Finalize();
