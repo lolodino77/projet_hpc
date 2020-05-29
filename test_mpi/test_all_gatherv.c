@@ -83,7 +83,7 @@ int main(int argc, char** argv){
     MPI_Allgatherv(A_part, n_part, MPI_INT, A, recvcounts, displs, MPI_INT, MPI_COMM_WORLD);    
     printf("fin gather\n");
 
-    printf("my_rank = %d\n", my_rank);
+    printf("affiche A (my_rank = %d) :\n", my_rank);
     if (my_rank == 0)
     {
         printf("n = %d\n", n);
