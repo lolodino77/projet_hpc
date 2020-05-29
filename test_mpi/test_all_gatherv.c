@@ -54,6 +54,10 @@ int main(int argc, char** argv) {
     for(int i = 0;i<(p - 2);i++){
         displs[i + 2] = (i * sendcount) + 2;
     }
+    printf("displs : \n");
+    for(int i = 0; i < p; i ++){
+        printf("%d\n", displs[i]);
+    }
 
     printf("recvcounts = %d\n", recvcounts);
     printf("debut gather\n");        
