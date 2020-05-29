@@ -27,7 +27,7 @@ int main(int argc, char** argv){
     int name_len;
     MPI_Get_processor_name(processor_name, &name_len);
 
-    int n = 31; //taille du grand tableau A
+    int n = 12; //taille du grand tableau A
     int quotient = n / p; // 12 / 5 = 2
     int reste = n % p; // 12 % 5 = 2
     int n_part = quotient; //taille du sous-tableau A_part du processeur my_rank
