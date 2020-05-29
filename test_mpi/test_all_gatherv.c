@@ -36,6 +36,8 @@ int main(int argc, char** argv) {
     int* A = malloc(((p - 1) * quotient + reste) * sizeof(int)); // p * n_part = 4 * 5 = 20
     int* A_part = malloc(n_part * sizeof(int)); 
 	// int A_part[n_part];
+    printf("egal ?\n");
+    printf("%d \n", (p - 1) * quotient + reste);
     for(int i = 0;i < n_part;i++){
             // printf("my rank = %d\n", my_rank);
             A_part[i] = my_rank;
