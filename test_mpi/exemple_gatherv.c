@@ -70,6 +70,12 @@ int main(int argc, char **argv) {
      * can gather the strings 
      */
 
+    printf("displs = \n");
+    for (int i = 0; i < size; ++i)
+    {
+        printf("%d \n", displs[i]);
+    }
+
     MPI_Gatherv(mystring, mylen, MPI_CHAR,
                 totalstring, recvcounts, displs, MPI_CHAR,
                 root, MPI_COMM_WORLD);
