@@ -484,8 +484,6 @@ int main(int argc, char **argv)
 		double old_rz = rz;
 
 	    sp_gemv_part(A, p, q_part, n_part, i_ini);
-	    // MPI_Allgather(q_part, n_part, MPI_DOUBLE, q, n_part, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */
-	    // MPI_Allgatherv(A_part, n_part, MPI_INT, A, recvcounts, displs, MPI_INT, MPI_COMM_WORLD);    
         MPI_Allgatherv(q_part, n_part, MPI_DOUBLE, q, recvcounts, displs, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */    
 
 		pq_part = dot_part(p, q, i_ini, n_part);
@@ -494,7 +492,7 @@ int main(int argc, char **argv)
 		alpha = old_rz / pq;		
 		for (int i = 0; i < n; i++)	// x <-- x + alpha*p
 			x[i] += alpha * p[i];
-		for (int i =0; i < n; i++)	// r <-- r - alpha*q
+		for (int i = 0; i < n; i++)	// r <-- r - alpha*q
 			r[i] -= alpha * q[i]; //A*p
 		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
 			z[i] = r[i] / d[i];
