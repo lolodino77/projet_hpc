@@ -74,7 +74,6 @@ int main(int argc, char** argv){
     for(int i = 0; i < p; i ++){
         printf("%d ", displs[i]);
     }
-    printf("%d \n", displs[p-1]);
     printf("\n");
 
     printf("debut gather\n");        
