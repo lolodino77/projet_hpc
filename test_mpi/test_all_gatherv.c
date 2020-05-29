@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
     if(my_rank == 0){
         n_part = reste;
     }
-    int n = p * n_part + 2;
+    int n = (p - 1) * n_part + 2;
 
     int* A = malloc(((p - 1) * quotient + reste) * sizeof(int)); // p * n_part = 4 * 5 = 20
     int* A_part = malloc(n_part * sizeof(int)); 
