@@ -41,6 +41,17 @@ int main(int argc, char** argv){
         n_part = reste;
     }    
 
+    int* A = malloc(n * sizeof(int)); // p * n_part = 4 * 5 = 20
+    int* A_part = malloc(n_part * sizeof(int)); 
+    printf("my_rank = %d\n", my_rank);
+    printf("%d \n", (p - 1) * quotient + reste);
+    for(int i = 0;i < n_part;i++){
+        // printf("my rank = %d\n", my_rank);
+        A_part[i] = my_rank;
+        printf("%d ", A_part[i]);
+    }
+    printf("\n");
+
     int recvcounts[p]; //taille du petit tableau de chaque processeur, dans l'ordre croissant de my_rank
     printf("recvcounts, p = %d :\n", p);
     for(int i = 1;i < p-1;i++){
