@@ -69,6 +69,7 @@ int main(int argc, char **argv) {
         {
             printf("%d ", displs[i]);
         }
+        printf("\n");
     }
 
     /* 
