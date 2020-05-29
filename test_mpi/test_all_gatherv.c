@@ -48,6 +48,7 @@ int main(int argc, char** argv) {
     int recvcounts[p];
     printf("recvcounts, p = %d :\n", p);
     recvcounts[0] = reste;
+    printf("%d\n", recvcounts[0]);
     for(int i = 1;i<p;i++){
         recvcounts[i] = quotient;
         printf("%d\n", recvcounts[i]);
