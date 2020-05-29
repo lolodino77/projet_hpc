@@ -33,6 +33,8 @@ int main(int argc, char** argv) {
     if(my_rank == 0){
         n_part = reste;
     }
+    int n = p * n_part + 2;
+
     int* A = malloc(((p - 1) * quotient + reste) * sizeof(int)); // p * n_part = 4 * 5 = 20
     int* A_part = malloc(n_part * sizeof(int)); 
 	// int A_part[n_part];
@@ -73,7 +75,7 @@ int main(int argc, char** argv) {
 
 
     printf("my_rank = %d\n", my_rank);
-    for(int i = 0;i < (p * n_part + 2);i++){
+    for(int i = 0;i < n;i++){
         printf("%d ", A[i]);
     }
     printf("\n");   
