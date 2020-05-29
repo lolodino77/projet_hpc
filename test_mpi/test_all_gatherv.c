@@ -50,7 +50,6 @@ int main(int argc, char** argv) {
 
     int displs[p];
     displs[0] = 0;
-    displs[1] = 2;
     for(int i = 0;i<(p - 2);i++){
         displs[i + 2] = (i * sendcount) + 2;
     }
