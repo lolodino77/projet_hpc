@@ -54,9 +54,10 @@ int main(int argc, char** argv){
 
     int recvcounts[p]; //taille du petit tableau de chaque processeur, dans l'ordre croissant de my_rank
     printf("recvcounts, p = %d :\n", p);
+    recvcounts[0] = 0;
     for(int i = 1;i < p-1;i++){
         recvcounts[i] = quotient;
-        printf("%d\n", recvcounts[i]);
+        printf("%d ", recvcounts[i]);
     }
     recvcounts[p-1] = reste;   
     printf("%d\n", recvcounts[p-1]);
