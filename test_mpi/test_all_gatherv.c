@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
 
     printf("my_rank = %d\n", my_rank);
     for(int i = 0;i < n;i++){
-        printf("%d ", A[i]);
+        printf("%d, ", A[i]);
     }
     printf("\n");   
     
