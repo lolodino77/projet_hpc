@@ -72,14 +72,16 @@ int main(int argc, char** argv){
     }
     printf("\n");
 
+    printf("n = %d\n", n);
+    int r = p*quotient + reste;
+    printf("p*quotient + reste = \n", r);
+
     printf("debut gather\n");        
     // MPI_Gatherv(A_part, n_part, MPI_INT, A, recvcounts, displs, MPI_INT, 0, MPI_COMM_WORLD)
     MPI_Allgatherv(A_part, n_part, MPI_INT, A, recvcounts, displs, MPI_INT, MPI_COMM_WORLD);    
     printf("fin gather\n");
 
-    printf("n = %d\n", n);
-    int r = p*quotient + reste;
-    printf("p*quotient + reste = \n", r);
+
     if (my_rank == 0)
     {
         printf("affiche A :\n", my_rank);
