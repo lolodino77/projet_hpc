@@ -1,7 +1,7 @@
 /* 
- * Sequential implementation of the Conjugate Gradient Method.
+ * Parallel implementation of the Conjugate Gradient Method.
  *
- * Authors : Lilia Ziane Khodja & Charles Bouillaguet
+ * Authors : Laurent Dang-Vu et Thomas Genin
  *
  * v1.02 (2020-04-3)
  *
