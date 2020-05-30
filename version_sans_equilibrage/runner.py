@@ -14,15 +14,12 @@ params = {}
 params['version'] = 3
 params['proof'] = 0x65dec1542f679f51
 
-# Paramètres du calcul (à adapter)
 params['matrix'] = "bcsstk13"
 params['users'] = ["3800623"]
 
-# Description du code exécuté
 params['software'] = """Code séquentiel fourni.
 Pas d'améliorations apportées."""
 
-# Description du matériel utilisé pour l'exécution
 params['nodes'] = 4   # nombre de noeuds
 params['cores'] = 8   # nombre total de coeurs
 params['hardware'] = """4 PCs de la Salle 327 (Esclangon).
