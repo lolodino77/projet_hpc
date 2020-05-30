@@ -9,7 +9,6 @@ import base64
 
 #################################################################
 
-# Paramètres du système (ne pas modifier)
 SERVER = "https://hpc.fil.cool"
 params = {}
 params['version'] = 3
