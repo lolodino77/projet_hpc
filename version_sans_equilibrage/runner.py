@@ -20,21 +20,11 @@ params['users'] = ["3800623"]
 params['software'] = """Code séquentiel fourni.
 Pas d'améliorations apportées."""
 
-params['nodes'] = 4   # nombre de noeuds
-params['cores'] = 8   # nombre total de coeurs
+params['nodes'] = 4  
+params['cores'] = 8   
 params['hardware'] = """4 PCs de la Salle 327 (Esclangon).
 Machines de bureau DELL équipés de CPU Intel i3 à 2 coeurs, 3Ghz, et 4Go de RAM."""
 
-# Comment exécuter le solveur :
-#   {matrix} sera remplacé par la valeur ci-dessus.
-#   {nodes}  sera remplacé par la valeur ci-dessus.
-#   {cores}  sera remplacé par la valeur ci-dessus.
-#   {seed}   sera remplacé par la valeur fournie par le serveur.
-#   On peut ajouter toutes les options qu'on veut, utiliser mpiexec, etc.
-# command_line = "./cg --matrix {matrix}.mtx --seed {seed}"
-#command_line = "zcat matrices/{matrix}.mtx.gz | ./cg --seed {seed}"
-#command_line = "mpiexec --n {cores} --hostfile nodes.txt --display-map ./cg --matrix {matrix}.mtx --seed {seed}"
-#command_line = "mpiexec --n {nodes} -hostfile nodes.txt --map-by ppr:1:node ./cg --matrix {matrix}.mtx --seed {seed}"
 command_line = "zcat /Infos/lmd/2019/master/ue/MU4IN903-2020fev/{matrix}.mtx.gz | mpiexec --n 17 -hostfile hostfile --map-by ppr:1:node ./cg --seed {seed}"
 
 ######################### Main Program ###########################
