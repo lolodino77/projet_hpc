@@ -437,138 +437,138 @@ int main(int argc, char **argv)
 	double *scratch = mem + 2 * n;	/* workspace for cg_solve() */
 
 	// /* Prepare right-hand size */
-	if (rhs_filename) {	/* load from file */
-		FILE *f_b = fopen(rhs_filename, "r");
-		if (f_b == NULL)
-			err(1, "cannot open %s", rhs_filename);
-		fprintf(stderr, "[IO] Loading b from %s\n", rhs_filename);
-		for (int i = 0; i < n; i++) {
-			if (1 != fscanf(f_b, "%lg\n", &b[i]))
-				errx(1, "parse error entry %d\n", i);
-		}
-		fclose(f_b);
-	} else {
-		#pragma omp for simd
-		for (int i = 0; i < n; i++)
-			b[i] = PRF(i, seed);
-	}
+	// if (rhs_filename) {	/* load from file */
+	// 	FILE *f_b = fopen(rhs_filename, "r");
+	// 	if (f_b == NULL)
+	// 		err(1, "cannot open %s", rhs_filename);
+	// 	fprintf(stderr, "[IO] Loading b from %s\n", rhs_filename);
+	// 	for (int i = 0; i < n; i++) {
+	// 		if (1 != fscanf(f_b, "%lg\n", &b[i]))
+	// 			errx(1, "parse error entry %d\n", i);
+	// 	}
+	// 	fclose(f_b);
+	// } else {
+	// 	#pragma omp for simd
+	// 	for (int i = 0; i < n; i++)
+	// 		b[i] = PRF(i, seed);
+	// }
 
-	/* solve Ax == b with MPI, witn p processors*/
-	double *r = scratch;	        // residue
-	double *z = scratch + n;	// preconditioned-residue
-	double *p = scratch + 2*n;	// search direction
-	double *q = scratch + 3 * n;	// q == Ap
-	double *d = scratch + 4 * n;	// diagonal entries of A (Jacobi preconditioning)
-	double *q_part = malloc(n_part*sizeof(double)); /* une partie ou bloc du vecteur x */
-	double rz_part;
-	double pq_part;
-	double start = wtime();
-	double last_display = start;
-	int iter = 0;
-	double alpha = 0.0;
-	double beta = 0.0;
-	double rz = 0.0;
-	double pq = 0.0;
-	int nz = A->nz;
+	// /* solve Ax == b with MPI, witn p processors*/
+	// double *r = scratch;	        // residue
+	// double *z = scratch + n;	// preconditioned-residue
+	// double *p = scratch + 2*n;	// search direction
+	// double *q = scratch + 3 * n;	// q == Ap
+	// double *d = scratch + 4 * n;	// diagonal entries of A (Jacobi preconditioning)
+	// double *q_part = malloc(n_part*sizeof(double)); /* une partie ou bloc du vecteur x */
+	// double rz_part;
+	// double pq_part;
+	// double start = wtime();
+	// double last_display = start;
+	// int iter = 0;
+	// double alpha = 0.0;
+	// double beta = 0.0;
+	// double rz = 0.0;
+	// double pq = 0.0;
+	// int nz = A->nz;
 
-	// double *d_part;
-	// extract_diagonal_part(A, d_part, n_part, i_ini);
-	// MPI_Allgather(d_part, n_part, MPI_DOUBLE, d, n_part, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */
+	// // double *d_part;
+	// // extract_diagonal_part(A, d_part, n_part, i_ini);
+	// // MPI_Allgather(d_part, n_part, MPI_DOUBLE, d, n_part, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */
 	
-	fprintf(stderr, "[CG] Starting iterative solver\n");
-	fprintf(stderr, "     ---> Working set : %.1fMbyte\n", 1e-6 * (12.0 * nz + 52.0 * n));
-	fprintf(stderr, "     ---> Per iteration: %.2g FLOP in sp_gemv() and %.2g FLOP in the rest\n", 2. * nz, 12. * n);
+	// fprintf(stderr, "[CG] Starting iterative solver\n");
+	// fprintf(stderr, "     ---> Working set : %.1fMbyte\n", 1e-6 * (12.0 * nz + 52.0 * n));
+	// fprintf(stderr, "     ---> Per iteration: %.2g FLOP in sp_gemv() and %.2g FLOP in the rest\n", 2. * nz, 12. * n);
 
-	extract_diagonal(A, d);
+	// extract_diagonal(A, d);
 
-	/* Initialisation des vecteurs */
-	#pragma omp for simd
-	for (int i = 0; i < n; i++)
-		x[i] = 0.0;
-	#pragma omp for simd
-	for (int i = 0; i < n; i++)	// r <-- b - Ax == b
-		r[i] = b[i];
-	#pragma omp for simd
-	for (int i = 0; i < n; i++)	// z <-- M^(-1).r
-		z[i] = r[i] / d[i];
-	#pragma omp for simd
-	for (int i = 0; i < n; i++)	// p <-- z
-		p[i] = z[i];
+	// /* Initialisation des vecteurs */
+	// #pragma omp for simd
+	// for (int i = 0; i < n; i++)
+	// 	x[i] = 0.0;
+	// #pragma omp for simd
+	// for (int i = 0; i < n; i++)	// r <-- b - Ax == b
+	// 	r[i] = b[i];
+	// #pragma omp for simd
+	// for (int i = 0; i < n; i++)	// z <-- M^(-1).r
+	// 	z[i] = r[i] / d[i];
+	// #pragma omp for simd
+	// for (int i = 0; i < n; i++)	// p <-- z
+	// 	p[i] = z[i];
 
-	/*Algorithme du gradient conjugué */
-	rz_part = dot_part(r, z, i_ini, n_part);
-	MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
-	while (norm(n, r) > THRESHOLD){ 
-		/* loop invariant : rz = dot(r, z) */
-		double old_rz = rz;
+	// /*Algorithme du gradient conjugué */
+	// rz_part = dot_part(r, z, i_ini, n_part);
+	// MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
+	// while (norm(n, r) > THRESHOLD){ 
+	// 	/* loop invariant : rz = dot(r, z) */
+	// 	double old_rz = rz;
 
-	    sp_gemv_part(A, p, q_part, n_part, i_ini);
-        MPI_Allgatherv(q_part, n_part, MPI_DOUBLE, q, recvcounts, displs, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */    
+	//     sp_gemv_part(A, p, q_part, n_part, i_ini);
+ //        MPI_Allgatherv(q_part, n_part, MPI_DOUBLE, q, recvcounts, displs, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */    
 
-		pq_part = dot_part(p, q, i_ini, n_part);
-		MPI_Allreduce(&pq_part, &pq, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
+	// 	pq_part = dot_part(p, q, i_ini, n_part);
+	// 	MPI_Allreduce(&pq_part, &pq, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
 		
-		alpha = old_rz / pq;
-		#pragma omp for simd reduction(+:x[0:n])		
-		for (int i = 0; i < n; i++)	// x <-- x + alpha*p
-			x[i] += alpha * p[i];
-		#pragma omp for simd reduction(-:r[0:n])
-		for (int i = 0; i < n; i++)	// r <-- r - alpha*q
-			r[i] -= alpha * q[i]; //A*p
-		#pragma omp for simd
-		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
-			z[i] = r[i] / d[i];
+	// 	alpha = old_rz / pq;
+	// 	#pragma omp for simd reduction(+:x[0:n])		
+	// 	for (int i = 0; i < n; i++)	// x <-- x + alpha*p
+	// 		x[i] += alpha * p[i];
+	// 	#pragma omp for simd reduction(-:r[0:n])
+	// 	for (int i = 0; i < n; i++)	// r <-- r - alpha*q
+	// 		r[i] -= alpha * q[i]; //A*p
+	// 	#pragma omp for simd
+	// 	for (int i = 0; i < n; i++)	// z <-- M^(-1).r
+	// 		z[i] = r[i] / d[i];
 		
-		rz_part = dot_part(r, z, i_ini, n_part);
-		MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
+	// 	rz_part = dot_part(r, z, i_ini, n_part);
+	// 	MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
 
-		beta = rz / old_rz;
-		#pragma omp for simd
-		for (int i =0; i < n; i++)	// p <-- z + beta*p
-			p[i] = z[i] + beta * p[i];
-		iter++;
-		double t = wtime();
-		if (t - last_display > 0.5) {
-			double rate = iter / (t - start);	// iterations per s.
-			double GFLOPs = 1e-9 * rate * (2 * nz + 12 * n);
-			fprintf(stderr, "\r     ---> error : %2.2e, iter : %d (%.1f it/s, %.2f GFLOPs)", norm(n, r), iter, rate, GFLOPs);
-			fflush(stdout);
-			last_display = t;
-		}
-	}    
-	fprintf(stderr, "\n     ---> Finished in %.1fs and %d iterations\n", wtime() - start, iter);
+	// 	beta = rz / old_rz;
+	// 	#pragma omp for simd
+	// 	for (int i =0; i < n; i++)	// p <-- z + beta*p
+	// 		p[i] = z[i] + beta * p[i];
+	// 	iter++;
+	// 	double t = wtime();
+	// 	if (t - last_display > 0.5) {
+	// 		double rate = iter / (t - start);	// iterations per s.
+	// 		double GFLOPs = 1e-9 * rate * (2 * nz + 12 * n);
+	// 		fprintf(stderr, "\r     ---> error : %2.2e, iter : %d (%.1f it/s, %.2f GFLOPs)", norm(n, r), iter, rate, GFLOPs);
+	// 		fflush(stdout);
+	// 		last_display = t;
+	// 	}
+	// }    
+	// fprintf(stderr, "\n     ---> Finished in %.1fs and %d iterations\n", wtime() - start, iter);
 
 
 
-	/* Check result */
-	double *y_part = malloc(n_part*sizeof(double)); /* une partie ou bloc du vecteur x */
-	if (safety_check) {
-		double *y = scratch;
-	    sp_gemv_part(A, x, y_part, n_part, i_ini);
-        MPI_Allgatherv(y_part, n_part, MPI_DOUBLE, y, recvcounts, displs, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */    
-		// sp_gemv(A, x, y);	// y = Ax
-		#pragma omp for simd reduction(-:y[0:n])
-		for (int i = 0; i < n; i++){	// y = Ax - b
-			y[i] -= b[i];
-			// printf("y[%d] = %lf ", i, y[i]);
-		}
-		fprintf(stderr, "[check] max error = %2.2e\n", norm(n, y));
-	}
+	// /* Check result */
+	// double *y_part = malloc(n_part*sizeof(double)); /* une partie ou bloc du vecteur x */
+	// if (safety_check) {
+	// 	double *y = scratch;
+	//     sp_gemv_part(A, x, y_part, n_part, i_ini);
+ //        MPI_Allgatherv(y_part, n_part, MPI_DOUBLE, y, recvcounts, displs, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */    
+	// 	// sp_gemv(A, x, y);	// y = Ax
+	// 	#pragma omp for simd reduction(-:y[0:n])
+	// 	for (int i = 0; i < n; i++){	// y = Ax - b
+	// 		y[i] -= b[i];
+	// 		// printf("y[%d] = %lf ", i, y[i]);
+	// 	}
+	// 	fprintf(stderr, "[check] max error = %2.2e\n", norm(n, y));
+	// }
 
-	/* Dump the solution vector */
+	// /* Dump the solution vector */
 
-	if(my_rank == 0){
-		FILE *f_x = stdout;
-		// printf("solution filename = %s\n", solution_filename);
-		if (solution_filename != NULL) {
-			f_x = fopen(solution_filename, "w");
-			if (f_x == NULL)
-				err(1, "cannot open solution file %s", solution_filename);
-			fprintf(stderr, "[IO] writing solution to %s\n", solution_filename);
-		}
-		// for (int i = 0; i < n; i++)
-		// 	fprintf(f_x, "%a\n", x[i]);
-	}
+	// if(my_rank == 0){
+	// 	FILE *f_x = stdout;
+	// 	// printf("solution filename = %s\n", solution_filename);
+	// 	if (solution_filename != NULL) {
+	// 		f_x = fopen(solution_filename, "w");
+	// 		if (f_x == NULL)
+	// 			err(1, "cannot open solution file %s", solution_filename);
+	// 		fprintf(stderr, "[IO] writing solution to %s\n", solution_filename);
+	// 	}
+	// 	// for (int i = 0; i < n; i++)
+	// 	// 	fprintf(f_x, "%a\n", x[i]);
+	// }
 
 	free(mem);
 	free(q_part);
