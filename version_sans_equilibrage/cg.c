@@ -584,7 +584,7 @@ int main(int argc, char **argv)
 	free(nnz2);
 	free(A);
 	free(y_part);
-	return EXIT_SUCCESS; //erreur
+	// return EXIT_SUCCESS; //erreur
 
 	MPI_Finalize();
 }
