@@ -513,13 +513,13 @@ int main(int argc, char **argv)
 		double tmp_r;
 		#pragma omp parallel for simd reduction(+:x[0:n])		
 		for (int i = 0; i < n; i++)	// x <-- x + alpha*p
-			tmp_x = alpha*p[i];
+			tmp_x = alpha * p[i];
 			x[i] += tmp_x;
-		// #pragma omp for simd reduction(-:r[0:n])
+		#pragma omp for simd reduction(-:r[0:n])
 		for (int i = 0; i < n; i++)	// r <-- r - alpha*q
 			tmp_r = alpha * q[i];
 			r[i] -= tmp_r; //A*p
-		// #pragma omp for simd
+		#pragma omp for simd
 		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
 			z[i] = r[i] / d[i];
 		
