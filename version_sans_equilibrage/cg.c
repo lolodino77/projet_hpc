@@ -248,8 +248,8 @@ void sp_gemv(const struct csr_matrix_t *A, const double *x, double *y)
 	double *Ax = A->Ax;
 	for (int i = 0; i < n; i++) {
 		y[i] = 0;
-		printf("Ap[i] = &d\n", Ap[i]);
-		printf("Ap[i+1] = &d\n", Ap[i+1]);
+		printf("Ap[i] = %d\n", Ap[i]);
+		printf("Ap[i+1] = %d\n", Ap[i+1]);
 		for (int u = Ap[i]; u < Ap[i + 1]; u++) {
 			int j = Aj[u];
 			double A_ij = Ax[u];
