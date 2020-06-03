@@ -495,11 +495,7 @@ int main(int argc, char **argv)
 	#pragma omp for simd
 	for (int i = 0; i < n; i++)	// p <-- z
 		p[i] = z[i];
-	printf("p[n] = %lf\n", p[n-1]);
-	printf("z[n] = %lf\n", z[n-1]);
-	printf("r[n] = %lf\n", r[n-1]);
-	printf("d[n] = %lf\n", d[n-1]);
-	printf("x[n] = %lf\n", x[n-1]);
+
 
 	// /*Algorithme du gradient conjugué */
 	rz_part = dot_part(r, z, i_ini, n_part);
@@ -515,13 +511,13 @@ int main(int argc, char **argv)
 		MPI_Allreduce(&pq_part, &pq, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
 		
 		alpha = old_rz / pq;
-		#pragma omp for simd reduction(+:x[0:n])
+		//#pragma omp for simd reduction(+:x[0:n])
 		for (int i = 0; i < n; i++)	// x <-- x + alpha*p
 			x[i] += alpha * p[i];
-		#pragma omp for simd reduction(-:r[0:n])
+		//#pragma omp for simd reduction(-:r[0:n])
 		for (int i = 0; i < n; i++)	// r <-- r - alpha*q
 			r[i] -= alpha * q[i]; //A*p
-		#pragma omp for simd
+		//#pragma omp for simd
 		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
 			z[i] = r[i] / d[i];
 		
@@ -546,42 +542,42 @@ int main(int argc, char **argv)
 
 
 
-	// /* Check result */
-	// double *y_part = malloc(n_part*sizeof(double)); /* une partie ou bloc du vecteur x */
-	// if (safety_check) {
-	// 	double *y = scratch;
-	//     sp_gemv_part(A, x, y_part, n_part, i_ini);
- //        MPI_Allgatherv(y_part, n_part, MPI_DOUBLE, y, recvcounts, displs, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */    
-	// 	// sp_gemv(A, x, y);	// y = Ax
-	// 	#pragma omp for simd reduction(-:y[0:n])
-	// 	for (int i = 0; i < n; i++){	// y = Ax - b
-	// 		y[i] -= b[i];
-	// 		// printf("y[%d] = %lf ", i, y[i]);
-	// 	}
-	// 	fprintf(stderr, "[check] max error = %2.2e\n", norm(n, y));
-	// }
+	/* Check result */
+	double *y_part = malloc(n_part*sizeof(double)); /* une partie ou bloc du vecteur x */
+	if (safety_check) {
+		double *y = scratch;
+	    sp_gemv_part(A, x, y_part, n_part, i_ini);
+        MPI_Allgatherv(y_part, n_part, MPI_DOUBLE, y, recvcounts, displs, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */    
+		// sp_gemv(A, x, y);	// y = Ax
+		#pragma omp for simd reduction(-:y[0:n])
+		for (int i = 0; i < n; i++){	// y = Ax - b
+			y[i] -= b[i];
+			// printf("y[%d] = %lf ", i, y[i]);
+		}
+		fprintf(stderr, "[check] max error = %2.2e\n", norm(n, y));
+	}
 
-	// /* Dump the solution vector */
+	/* Dump the solution vector */
 
-	// if(my_rank == 0){
-	// 	FILE *f_x = stdout;
-	// 	// printf("solution filename = %s\n", solution_filename);
-	// 	if (solution_filename != NULL) {
-	// 		f_x = fopen(solution_filename, "w");
-	// 		if (f_x == NULL)
-	// 			err(1, "cannot open solution file %s", solution_filename);
-	// 		fprintf(stderr, "[IO] writing solution to %s\n", solution_filename);
-	// 	}
-	// 	// for (int i = 0; i < n; i++)
-	// 	// 	fprintf(f_x, "%a\n", x[i]);
-	// }
+	if(my_rank == 0){
+		FILE *f_x = stdout;
+		// printf("solution filename = %s\n", solution_filename);
+		if (solution_filename != NULL) {
+			f_x = fopen(solution_filename, "w");
+			if (f_x == NULL)
+				err(1, "cannot open solution file %s", solution_filename);
+			fprintf(stderr, "[IO] writing solution to %s\n", solution_filename);
+		}
+		// for (int i = 0; i < n; i++)
+		// 	fprintf(f_x, "%a\n", x[i]);
+	}
 
-	// free(mem);
-	// free(q_part);
-	// free(nnz2);
-	// free(A);
-	// free(y_part);
-	// return EXIT_SUCCESS;
+	free(mem);
+	free(q_part);
+	free(nnz2);
+	free(A);
+	free(y_part);
+	return EXIT_SUCCESS;
 
 	MPI_Finalize();
 }
