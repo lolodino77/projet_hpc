@@ -323,21 +323,15 @@ int main(int argc, char **argv)
 	/* Initialisation de variables */
 	int my_rank; //rank of the process
 	int P; //number of process
-	int i_block = 0; //numero du bloc courant en train d'etre calculé
 	MPI_Init(&argc,&argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &P);
-    char processor_name[MPI_MAX_PROCESSOR_NAME];
-    int name_len;
-    MPI_Get_processor_name(processor_name, &name_len);
-	MPI_Status status;
-	int dest;
-	int bTmp = 0; //numero du dernier bloc du vecteur x qui vient d'être calculé
-	int idTmp; //numéro du processus dont le maître vient de recevoir le travail
-	int tagFin;
-	double debut, fin;
+    // char processor_name[MPI_MAX_PROCESSOR_NAME];
+    // int name_len;
+    // MPI_Get_processor_name(processor_name, &name_len);
+	// double debut, fin;
 	enum tagType {INDICE, TRAITEMENT, STOP, DOT_RZ, DOT_PQ, MATPROD};
-	debut = my_gettimeofday();
+	// debut = my_gettimeofday();
 
 	/* Parse command-line options */
 	long long seed = 0;
