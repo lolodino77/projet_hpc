@@ -67,10 +67,12 @@ double wtime()
 #define ROR(x, r) ((x >> r) | (x << (64 - r)))
 #define ROL(x, r) ((x << r) | (x >> (64 - r)))
 #define R(x, y, k) (x = ROR(x, 8), x += y, x ^= k, y = ROL(y, 3), y ^= x)
+#pragma omp declare simd
 double PRF(int i, unsigned long long seed)
 {
 	unsigned long long y = i, x = 0xBaadCafe, b = 0xDeadBeef, a = seed;
 	R(x, y, b);
+	#pragma omp parallel for
 	for (int i = 0; i < 31; i++) {
 		R(a, b, i);
 		R(x, y, b);
