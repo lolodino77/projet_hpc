@@ -511,12 +511,12 @@ int main(int argc, char **argv)
 		alpha = old_rz / pq;
 		double tmp_x;
 		double tmp_r;
-		#pragma omp parallel for simd reduction(+:x[0:n])		
+		#pragma omp parallel for reduction(+:x[0:n])		
 		for (int i = 0; i < n; i++){	// x <-- x + alpha*p
 			tmp_x = alpha * p[i];
 			x[i] += tmp_x;
 		}
-		#pragma omp for simd reduction(-:r[0:n])
+		#pragma omp parallel for reduction(-:r[0:n])
 		for (int i = 0; i < n; i++){	// r <-- r - alpha*q
 			tmp_r = alpha * q[i];
 			r[i] -= tmp_r; //A*p
