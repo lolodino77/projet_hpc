@@ -509,7 +509,7 @@ int main(int argc, char **argv)
 		MPI_Allreduce(&pq_part, &pq, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
 		
 		alpha = old_rz / pq;
-		// #pragma omp for simd reduction(+:x[0:n])		
+		#pragma omp for simd reduction(+:x[0:n])		
 		for (int i = 0; i < n; i++)	// x <-- x + alpha*p
 			x[i] += alpha * p[i];
 		// #pragma omp for simd reduction(-:r[0:n])
