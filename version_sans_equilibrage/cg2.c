@@ -475,6 +475,10 @@ int main(int argc, char **argv)
 		z[i] = r[i] / d[i];
 	for (int i = 0; i < n; i++)	// p <-- z
 		p[i] = z[i];
+	printf("p[n] = %lf\n", p[n-1]);
+	printf("z[n] = %lf\n", z[n-1]);
+	printf("r[n] = %lf\n", r[n-1]);
+	printf("x[n] = %lf\n", x[n-1]);
 
 	/*Algorithme du gradient conjugué */
 	rz_part = dot_part(r, z, i_ini, n_part);
