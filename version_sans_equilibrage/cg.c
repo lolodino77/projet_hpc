@@ -151,16 +151,18 @@ struct csr_matrix_t *load_mm(FILE * f, int *nnz2)//construct
 	/* the following is essentially a bucket sort */
 
 	/* Count the number of entries in each row */
-	#pragma omp parallel for
+	#pragma omp for simd
 	for (int i = 0; i < n; i++)
 		w[i] = 0;
 	#pragma omp parallel for
 	for (int u = 0; u < nnz; u++) {
 		int i = Ti[u];
 		int j = Tj[u];
+		#pragma omp critical{
 		w[i]++;
 		if (i != j)	/* the file contains only the lower triangular part */
 			w[j]++;
+		}
 	}
 
 	/* Compute row pointers (prefix-sum) */
@@ -529,7 +531,7 @@ int main(int argc, char **argv)
 		MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
 
 		beta = rz / old_rz;
-		// #pragma omp for simd
+		#pragma omp for simd
 		for (int i =0; i < n; i++)	// p <-- z + beta*p
 			p[i] = z[i] + beta * p[i];
 		iter++;
@@ -576,11 +578,11 @@ int main(int argc, char **argv)
 		// 	fprintf(f_x, "%a\n", x[i]);
 	}
 
-	// free(mem);
-	// free(q_part);
-	// free(nnz2);
-	// free(A);
-	// free(y_part);
+	free(mem);
+	free(q_part);
+	free(nnz2);
+	free(A);
+	free(y_part);
 	// return EXIT_SUCCESS; //erreur
 
 	MPI_Finalize();
