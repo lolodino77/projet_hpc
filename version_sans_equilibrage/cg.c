@@ -453,33 +453,33 @@ int main(int argc, char **argv)
 			b[i] = PRF(i, seed);
 	}
 
-	// /* solve Ax == b with MPI, witn p processors*/
-	// double *r = scratch;	        // residue
-	// double *z = scratch + n;	// preconditioned-residue
-	// double *p = scratch + 2*n;	// search direction
-	// double *q = scratch + 3 * n;	// q == Ap
-	// double *d = scratch + 4 * n;	// diagonal entries of A (Jacobi preconditioning)
-	// double *q_part = malloc(n_part*sizeof(double)); /* une partie ou bloc du vecteur x */
-	// double rz_part;
-	// double pq_part;
-	// double start = wtime();
-	// double last_display = start;
-	// int iter = 0;
-	// double alpha = 0.0;
-	// double beta = 0.0;
-	// double rz = 0.0;
-	// double pq = 0.0;
-	// int nz = A->nz;
+	/* solve Ax == b with MPI, witn p processors*/
+	double *r = scratch;	        // residue
+	double *z = scratch + n;	// preconditioned-residue
+	double *p = scratch + 2*n;	// search direction
+	double *q = scratch + 3 * n;	// q == Ap
+	double *d = scratch + 4 * n;	// diagonal entries of A (Jacobi preconditioning)
+	double *q_part = malloc(n_part*sizeof(double)); /* une partie ou bloc du vecteur x */
+	double rz_part;
+	double pq_part;
+	double start = wtime();
+	double last_display = start;
+	int iter = 0;
+	double alpha = 0.0;
+	double beta = 0.0;
+	double rz = 0.0;
+	double pq = 0.0;
+	int nz = A->nz;
 
-	// // double *d_part;
-	// // extract_diagonal_part(A, d_part, n_part, i_ini);
-	// // MPI_Allgather(d_part, n_part, MPI_DOUBLE, d, n_part, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */
+	// double *d_part;
+	// extract_diagonal_part(A, d_part, n_part, i_ini);
+	// MPI_Allgather(d_part, n_part, MPI_DOUBLE, d, n_part, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */
 	
-	// fprintf(stderr, "[CG] Starting iterative solver\n");
-	// fprintf(stderr, "     ---> Working set : %.1fMbyte\n", 1e-6 * (12.0 * nz + 52.0 * n));
-	// fprintf(stderr, "     ---> Per iteration: %.2g FLOP in sp_gemv() and %.2g FLOP in the rest\n", 2. * nz, 12. * n);
+	fprintf(stderr, "[CG] Starting iterative solver\n");
+	fprintf(stderr, "     ---> Working set : %.1fMbyte\n", 1e-6 * (12.0 * nz + 52.0 * n));
+	fprintf(stderr, "     ---> Per iteration: %.2g FLOP in sp_gemv() and %.2g FLOP in the rest\n", 2. * nz, 12. * n);
 
-	// extract_diagonal(A, d);
+	extract_diagonal(A, d);
 
 	// /* Initialisation des vecteurs */
 	// #pragma omp for simd
