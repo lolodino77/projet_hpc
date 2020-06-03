@@ -503,7 +503,6 @@ int main(int argc, char **argv)
 		double old_rz = rz;
 
 	    sp_gemv_part(A, p, q_part, n_part, i_ini);
-        printf("matrice reussie\n");
         MPI_Allgatherv(q_part, n_part, MPI_DOUBLE, q, recvcounts, displs, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */    
 
 		pq_part = dot_part(p, q, i_ini, n_part);
@@ -536,6 +535,7 @@ int main(int argc, char **argv)
 			fflush(stdout);
 			last_display = t;
 		}
+		printf("fin boucle\n");
 	}    
 	fprintf(stderr, "\n     ---> Finished in %.1fs and %d iterations\n", wtime() - start, iter);
 
