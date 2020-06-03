@@ -511,11 +511,9 @@ int main(int argc, char **argv)
 		
 		alpha = old_rz / pq;
 		//#pragma omp for simd reduction(+:x[0:n_part])
-		#pragma omp for simd	
 		for (int i = 0; i < n; i++)	// x <-- x + alpha*p
-			#pragma omp atomic
 			x[i] += alpha * p[i];
-		// #pragma omp for simd reduction(-:r[0:n])
+		#pragma omp for simd reduction(-:r[0:n])
 		for (int i = 0; i < n; i++)	// r <-- r - alpha*q
 			r[i] -= alpha * q[i]; //A*p
 		// #pragma omp for simd
