@@ -544,7 +544,7 @@ int main(int argc, char **argv)
 	free(q_part);
 	free(nnz2);
 	free(A);
-	free(y);
+	free(y_part);
 	// return EXIT_SUCCESS;
 
 	MPI_Finalize();
