@@ -540,20 +540,20 @@ int main(int argc, char **argv)
 
 
 
-	// /* Check result */
-	// double *y_part = malloc(n_part*sizeof(double)); /* une partie ou bloc du vecteur x */
-	// if (safety_check) {
-	// 	double *y = scratch;
-	//     sp_gemv_part(A, x, y_part, n_part, i_ini);
- //        MPI_Allgatherv(y_part, n_part, MPI_DOUBLE, y, recvcounts, displs, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */    
-	// 	// sp_gemv(A, x, y);	// y = Ax
-	// 	#pragma omp for simd reduction(-:y[0:n])
-	// 	for (int i = 0; i < n; i++){	// y = Ax - b
-	// 		y[i] -= b[i];
-	// 		// printf("y[%d] = %lf ", i, y[i]);
-	// 	}
-	// 	fprintf(stderr, "[check] max error = %2.2e\n", norm(n, y));
-	// }
+	/* Check result */
+	double *y_part = malloc(n_part*sizeof(double)); /* une partie ou bloc du vecteur x */
+	if (safety_check) {
+		double *y = scratch;
+	    sp_gemv_part(A, x, y_part, n_part, i_ini);
+        MPI_Allgatherv(y_part, n_part, MPI_DOUBLE, y, recvcounts, displs, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */    
+		// sp_gemv(A, x, y);	// y = Ax
+		#pragma omp for simd reduction(-:y[0:n])
+		for (int i = 0; i < n; i++){	// y = Ax - b
+			y[i] -= b[i];
+			// printf("y[%d] = %lf ", i, y[i]);
+		}
+		fprintf(stderr, "[check] max error = %2.2e\n", norm(n, y));
+	}
 
 	// /* Dump the solution vector */
 
