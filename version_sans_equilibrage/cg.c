@@ -55,6 +55,41 @@ struct csr_matrix_t {
 
 /*************************** Utility functions ********************************/
 
+void init_checkpoint(double *r,	double *z, double *p, double *q, double *rz, double *pq, int readFile){
+	if(readFile == 0){
+		#pragma omp for simd
+		for (int i = 0; i < n; i++)
+			x[i] = 0.0;
+		#pragma omp for simd
+		for (int i = 0; i < n; i++)	// r <-- b - Ax == b
+			r[i] = b[i];
+		#pragma omp for simd
+		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
+			z[i] = r[i] / d[i];
+		#pragma omp for simd
+		for (int i = 0; i < n; i++)	// p <-- z
+			p[i] = z[i];
+		*pq = 0.0;
+		*rz = 0.0;
+	}
+	else{
+
+	}
+}
+
+void checkpoint(int n, double* x, double* z, double* r, double* q, double* p, double rz){
+	FILE *file;
+	char line[2*n] = "";
+	file = fopen("checkpoint.txt", "r");
+	if(file != NULL){
+		while(fgets(line, 2*n, file) != NULL){
+			for (int i = 0; i < n; ++i){
+				
+			}
+		}
+	}
+}
+
 /* Seconds (wall-clock time) since an arbitrary point in the past */
 double wtime()
 {
@@ -404,27 +439,18 @@ int main(int argc, char **argv)
         n_part = quotient + reste;
     }    
 	int i_ini = my_rank * quotient; //indice duquel on part pour calculer une partie du vecteur solution x
-	// printf("n_part = %d/%d = %d\n", n, P, n_part);
 
 	int recvcounts[P]; //taille du petit tableau de chaque processeur, dans l'ordre croissant de my_rank
-    // printf("recvcounts, p = %d :\n", P);
     for(int i = 0;i < P-1;i++){ 
         recvcounts[i] = quotient;
-        // printf("%d ", recvcounts[i]);
     }
     recvcounts[P-1] = quotient + reste;   
-    // printf("%d\n", recvcounts[P-1]);
 
     int displs[P]; 
     displs[0] = 0;
     for(int i = 1;i < P;i++){
         displs[i] = i * quotient; 
     }
-    // printf("displs : \n");
-    // for(int i = 0; i < P; i ++){
-    //     printf("%d ", displs[i]);
-    // }
-    // printf("\n");
 
 	double *mem = malloc(7 * n * sizeof(double));
 	if(mem == NULL)
@@ -433,7 +459,6 @@ int main(int argc, char **argv)
 	double *b = mem + n;	/* right-hand side */
 	double *scratch = mem + 2 * n;	/* workspace for cg_solve() */
 
-	/* Prepare right-hand size */
 	if (rhs_filename) {	/* load from file */
 		FILE *f_b = fopen(rhs_filename, "r");
 		if (f_b == NULL)
@@ -478,25 +503,35 @@ int main(int argc, char **argv)
 
 	extract_diagonal(A, d);
 
-	/* Initialisation des vecteurs */
-	#pragma omp for simd
-	for (int i = 0; i < n; i++)
-		x[i] = 0.0;
-	#pragma omp for simd
-	for (int i = 0; i < n; i++)	// r <-- b - Ax == b
-		r[i] = b[i];
-	#pragma omp for simd
-	for (int i = 0; i < n; i++)	// z <-- M^(-1).r
-		z[i] = r[i] / d[i];
-	#pragma omp for simd
-	for (int i = 0; i < n; i++)	// p <-- z
-		p[i] = z[i];
+
+	if(argv[1] == "init"){
+		//initialisation en partant de 0
+		/* Initialisation des vecteurs */
+		#pragma omp for simd
+		for (int i = 0; i < n; i++)
+			x[i] = 0.0;
+		#pragma omp for simd
+		for (int i = 0; i < n; i++)	// r <-- b - Ax == b
+			r[i] = b[i];
+		#pragma omp for simd
+		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
+			z[i] = r[i] / d[i];
+		#pragma omp for simd
+		for (int i = 0; i < n; i++)	// p <-- z
+			p[i] = z[i];
+	}
+	else if(argv[1] == "backup"){
+		x,p,q,r = x.checkpoint, y.checkpoint etc
+	}
 
 	// /*Algorithme du gradient conjugué */
 	rz_part = dot_part(r, z, i_ini, n_part);
 	MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
 	while (norm(n, r) > THRESHOLD){ 
 		/* loop invariant : rz = dot(r, z) */
+		if(clock %1min == 0)
+			checkpoint(x,z,r,q ,   , Booleen =T)
+
 		double old_rz = rz;
 
 	    sp_gemv_part(A, p, q_part, n_part, i_ini);
@@ -572,6 +607,8 @@ int main(int argc, char **argv)
 		// for (int i = 0; i < n; i++)
 		// 	fprintf(f_x, "%a\n", x[i]);
 	}
+
+	booleen.checkpoint = F
 
 	free(mem);
 	free(q_part);
