@@ -283,12 +283,6 @@ double dot_part( const double *x, const double *y, int i_ini, int n_part)
 	return sum;
 }
 
-/* euclidean norm (a.k.a 2-norm) */
-double norm_part( const double *x, int i_ini, int n_part)
-{
-	return sqrt(dot_part(x, x, i_ini, n_part));
-}
-
 /******************************* main program *********************************/
 
 /* options descriptor */
@@ -518,9 +512,12 @@ int main(int argc, char **argv)
 
 
 	/* Check result */
+	double *y_part = malloc(n_part*sizeof(double)); /* une partie ou bloc du vecteur x */
 	if (safety_check) {
 		double *y = scratch;
-		sp_gemv(A, x, y);	// y = Ax
+	    sp_gemv_part(A, x, y_part, n_part, i_ini);
+        MPI_Allgatherv(y_part, n_part, MPI_DOUBLE, y, recvcounts, displs, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */    
+		// sp_gemv(A, x, y);	// y = Ax
 		for (int i = 0; i < n; i++){	// y = Ax - b
 			y[i] -= b[i];
 			// printf("y[%d] = %lf ", i, y[i]);
@@ -547,6 +544,7 @@ int main(int argc, char **argv)
 	free(q_part);
 	free(nnz2);
 	free(A);
+	free(y);
 	// return EXIT_SUCCESS;
 
 	MPI_Finalize();
