@@ -248,8 +248,6 @@ void sp_gemv(const struct csr_matrix_t *A, const double *x, double *y)
 	double *Ax = A->Ax;
 	for (int i = 0; i < n; i++) {
 		y[i] = 0;
-		printf("Ap[i] = %d\n", Ap[i]);
-		printf("Ap[i+1] = %d\n", Ap[i+1]);
 		for (int u = Ap[i]; u < Ap[i + 1]; u++) {
 			int j = Aj[u];
 			double A_ij = Ax[u];
@@ -266,8 +264,8 @@ void sp_gemv_part(const struct csr_matrix_t *A, const double *x, double *y, int 
 	#pragma omp parallel reduction(+:y[0:n_part])
 	for (int i = i_ini; i < i_ini + n_part; i++) {
 		y[i - i_ini] = 0;
-		printf("Ap[i] = &d\n", Ap[i]);
-		printf("Ap[i+1] = &d\n", Ap[i+1]);
+		printf("Ap[i] = %d\n", Ap[i]);
+		printf("Ap[i+1] = %d\n", Ap[i+1]);
 		#pragma omp for schedule(dynamic)
 		for (int u = Ap[i]; u < Ap[i + 1]; u++) {
 			int j = Aj[u]; //j = Aj[Ap[i]]
