@@ -509,12 +509,16 @@ int main(int argc, char **argv)
 		MPI_Allreduce(&pq_part, &pq, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
 		
 		alpha = old_rz / pq;
+		double tmp_x;
+		double tmp_r;
 		#pragma omp parallel for simd reduction(+:x[0:n])		
 		for (int i = 0; i < n; i++)	// x <-- x + alpha*p
-			x[i] += alpha * p[i];
+			tmp_x = alpha*p[i];
+			x[i] += tmp;
 		// #pragma omp for simd reduction(-:r[0:n])
 		for (int i = 0; i < n; i++)	// r <-- r - alpha*q
-			r[i] -= alpha * q[i]; //A*p
+			tmp_r = alpha * q[i];
+			r[i] -= tmp_r; //A*p
 		// #pragma omp for simd
 		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
 			z[i] = r[i] / d[i];
