@@ -481,19 +481,19 @@ int main(int argc, char **argv)
 
 	extract_diagonal(A, d);
 
-	// /* Initialisation des vecteurs */
-	// #pragma omp for simd
-	// for (int i = 0; i < n; i++)
-	// 	x[i] = 0.0;
-	// #pragma omp for simd
-	// for (int i = 0; i < n; i++)	// r <-- b - Ax == b
-	// 	r[i] = b[i];
-	// #pragma omp for simd
-	// for (int i = 0; i < n; i++)	// z <-- M^(-1).r
-	// 	z[i] = r[i] / d[i];
-	// #pragma omp for simd
-	// for (int i = 0; i < n; i++)	// p <-- z
-	// 	p[i] = z[i];
+	/* Initialisation des vecteurs */
+	#pragma omp for simd
+	for (int i = 0; i < n; i++)
+		x[i] = 0.0;
+	#pragma omp for simd
+	for (int i = 0; i < n; i++)	// r <-- b - Ax == b
+		r[i] = b[i];
+	#pragma omp for simd
+	for (int i = 0; i < n; i++)	// z <-- M^(-1).r
+		z[i] = r[i] / d[i];
+	#pragma omp for simd
+	for (int i = 0; i < n; i++)	// p <-- z
+		p[i] = z[i];
 
 	// /*Algorithme du gradient conjugué */
 	// rz_part = dot_part(r, z, i_ini, n_part);
