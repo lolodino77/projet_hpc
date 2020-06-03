@@ -516,8 +516,8 @@ int main(int argc, char **argv)
 			tmp_x = alpha * p[i];
 			x[i] += tmp_x;
 		}
-		#pragma omp for simd reduction(-:r[0:n]){
-		for (int i = 0; i < n; i++)	// r <-- r - alpha*q
+		#pragma omp for simd reduction(-:r[0:n])
+		for (int i = 0; i < n; i++){	// r <-- r - alpha*q
 			tmp_r = alpha * q[i];
 			r[i] -= tmp_r; //A*p
 		}
