@@ -80,7 +80,7 @@ void init_checkpoint(double *r,	double *z, double *p, double *q, double *rz, dou
 void checkpoint(int n, double* x, double* z, double* r, double* q, double* p, double rz){
 	FILE *file;
 	char line[2*n] = "";
-	file = fopen("checkpoint.txt", "r");
+	file = fopen("checkpoints.txt", "r");
 	if(file != NULL){
 		while(fgets(line, 2*n, file) != NULL){
 			for (int i = 0; i < n; ++i){
