@@ -513,6 +513,7 @@ int main(int argc, char **argv)
 		//#pragma omp for simd reduction(+:x[0:n_part])
 		for (int i = 0; i < n; i++)	// x <-- x + alpha*p
 			x[i] += alpha * p[i];
+		printf("youa\n");
 		#pragma omp for simd reduction(-:r[0:n])
 		for (int i = 0; i < n; i++)	// r <-- r - alpha*q
 			r[i] -= alpha * q[i]; //A*p
