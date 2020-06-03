@@ -2,7 +2,7 @@
 CC = mpicc
 
 # Add your choice of flags
-CFLAGS = -O3 -Wall -Wextra -g -fopenmp-simd
+CFLAGS = -O3 -Wall -Wextra -fopt-info-vec -g -fopenmp-simd
 LDLIBS = -lm -fopenmp-simd
 
 all : cg
