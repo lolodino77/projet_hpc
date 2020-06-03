@@ -34,6 +34,9 @@
 #include "mmio.h"
 
 #define THRESHOLD 1e-8		// maximum tolerance threshold
+#ifndef _OPENMP
+#include <omp.h>
+#endif
 
 double my_gettimeofday()
 {
@@ -110,6 +113,7 @@ struct csr_matrix_t *load_mm(FILE * f, int *nnz2)//construct
 		err(1, "Cannot allocate (triplet) sparse matrix");
 
 	/* Parse and load actual entries */
+	#pragma omp parallel for
 	for (int u = 0; u < nnz; u++) {
 		int i, j;
 		double x;
@@ -145,8 +149,10 @@ struct csr_matrix_t *load_mm(FILE * f, int *nnz2)//construct
 	/* the following is essentially a bucket sort */
 
 	/* Count the number of entries in each row */
+	#pragma omp parallel for
 	for (int i = 0; i < n; i++)
 		w[i] = 0;
+	#pragma omp parallel for
 	for (int u = 0; u < nnz; u++) {
 		int i = Ti[u];
 		int j = Tj[u];
@@ -157,6 +163,7 @@ struct csr_matrix_t *load_mm(FILE * f, int *nnz2)//construct
 
 	/* Compute row pointers (prefix-sum) */
 	int sum = 0;
+	#pragma omp parallel for reduction(+,sum)
 	for (int i = 0; i < n; i++) {
 		Ap[i] = sum;
 		sum += w[i];
@@ -165,6 +172,7 @@ struct csr_matrix_t *load_mm(FILE * f, int *nnz2)//construct
 	Ap[n] = sum;
 
 	/* Dispatch entries in the right rows */
+	#pragma omp parallel for
 	for (int u = 0; u < nnz; u++) {
 		int i = Ti[u];
 		int j = Tj[u];
@@ -204,8 +212,10 @@ void extract_diagonal(const struct csr_matrix_t *A, double *d){
 	int *Ap = A->Ap;
 	int *Aj = A->Aj;
 	double *Ax = A->Ax;
+	#pragma omp parallel for reduction(+,d[0:n])
 	for (int i = 0; i < n; i++) {
 		d[i] = 0.0;
+		#pragma omp for schedule(dynamic)
 		for (int u = Ap[i]; u < Ap[i + 1]; u++)
 			if (i == Aj[u])
 				d[i] += Ax[u];
@@ -217,8 +227,10 @@ void extract_diagonal_part(const struct csr_matrix_t *A, double *d, int n_part, 
 	int *Ap = A->Ap;
 	int *Aj = A->Aj;
 	double *Ax = A->Ax;
+	#pragma omp parallel for reduction(+,d[0:n_part])
 	for (int i = i_ini; i < i_ini + n_part; i++) {
 		d[i] = 0.0;
+		#pragma omp for schedule(dynamic)
 		for (int u = Ap[i]; u < Ap[i + 1]; u++)
 			if (i == Aj[u])
 				d[i] += Ax[u];
@@ -247,8 +259,10 @@ void sp_gemv_part(const struct csr_matrix_t *A, const double *x, double *y, int 
 	int *Ap = A->Ap;
 	int *Aj = A->Aj;
 	double *Ax = A->Ax;
+	#pragma omp parallel reduction(+,y[0:n_part])
 	for (int i = i_ini; i < i_ini + n_part; i++) {
 		y[i - i_ini] = 0;
+		#pragma omp for schedule(dynamic)
 		for (int u = Ap[i]; u < Ap[i + 1]; u++) {
 			int j = Aj[u]; //j = Aj[Ap[i]]
 			double A_ij = Ax[u];
@@ -261,9 +275,11 @@ void sp_gemv_part(const struct csr_matrix_t *A, const double *x, double *y, int 
 /*************************** Vector operations ********************************/
 
 /* dot product */
+#pragma omp declare simd uniform(x,y)
 double dot(const int n, const double *x, const double *y)
 {
 	double sum = 0.0;
+	#pragma omp for simd reduction(+,sum)
 	for (int i = 0; i < n; i++)
 		sum += x[i] * y[i];
 	return sum;
@@ -275,9 +291,11 @@ double norm(const int n, const double *x)
 	return sqrt(dot(n, x, x));
 }
 
+#pragma omp declare simd uniform(x,y)
 double dot_part( const double *x, const double *y, int i_ini, int n_part)
 {
 	double sum = 0.0;
+	#pragma omp for simd reduction(+,sum)
 	for (int i = i_ini; i < i_ini + n_part; i++)
 		sum += x[i] * y[i];
 	return sum;
@@ -428,6 +446,7 @@ int main(int argc, char **argv)
 		}
 		fclose(f_b);
 	} else {
+		#pragma omp for simd
 		for (int i = 0; i < n; i++)
 			b[i] = PRF(i, seed);
 	}
@@ -461,12 +480,16 @@ int main(int argc, char **argv)
 	extract_diagonal(A, d);
 
 	/* Initialisation des vecteurs */
+	#pragma omp for simd
 	for (int i = 0; i < n; i++)
 		x[i] = 0.0;
+	#pragma omp for simd
 	for (int i = 0; i < n; i++)	// r <-- b - Ax == b
 		r[i] = b[i];
+	#pragma omp for simd
 	for (int i = 0; i < n; i++)	// z <-- M^(-1).r
 		z[i] = r[i] / d[i];
+	#pragma omp for simd
 	for (int i = 0; i < n; i++)	// p <-- z
 		p[i] = z[i];
 
@@ -483,11 +506,14 @@ int main(int argc, char **argv)
 		pq_part = dot_part(p, q, i_ini, n_part);
 		MPI_Allreduce(&pq_part, &pq, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
 		
-		alpha = old_rz / pq;		
+		alpha = old_rz / pq;
+		#pragma omp for simd reduction(+,x[0:n])		
 		for (int i = 0; i < n; i++)	// x <-- x + alpha*p
 			x[i] += alpha * p[i];
+		#pragma omp for simd reduction(-,r[0:n])
 		for (int i = 0; i < n; i++)	// r <-- r - alpha*q
 			r[i] -= alpha * q[i]; //A*p
+		#pragma omp for simd
 		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
 			z[i] = r[i] / d[i];
 		
@@ -495,6 +521,7 @@ int main(int argc, char **argv)
 		MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
 
 		beta = rz / old_rz;
+		#pragma omp for simd
 		for (int i =0; i < n; i++)	// p <-- z + beta*p
 			p[i] = z[i] + beta * p[i];
 		iter++;
@@ -518,6 +545,7 @@ int main(int argc, char **argv)
 	    sp_gemv_part(A, x, y_part, n_part, i_ini);
         MPI_Allgatherv(y_part, n_part, MPI_DOUBLE, y, recvcounts, displs, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */    
 		// sp_gemv(A, x, y);	// y = Ax
+		#pragma omp for simd reduction(-,y[0:n])
 		for (int i = 0; i < n; i++){	// y = Ax - b
 			y[i] -= b[i];
 			// printf("y[%d] = %lf ", i, y[i]);
