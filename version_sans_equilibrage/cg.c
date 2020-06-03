@@ -498,45 +498,46 @@ int main(int argc, char **argv)
 	// /*Algorithme du gradient conjugué */
 	rz_part = dot_part(r, z, i_ini, n_part);
 	MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
-	// while (norm(n, r) > THRESHOLD){ 
-	// 	/* loop invariant : rz = dot(r, z) */
-	// 	double old_rz = rz;
+	while (norm(n, r) > THRESHOLD){ 
+		/* loop invariant : rz = dot(r, z) */
+		double old_rz = rz;
 
-	//     sp_gemv_part(A, p, q_part, n_part, i_ini);
- //        MPI_Allgatherv(q_part, n_part, MPI_DOUBLE, q, recvcounts, displs, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */    
+	    sp_gemv_part(A, p, q_part, n_part, i_ini);
+        printf("matrice reussie\n");
+        MPI_Allgatherv(q_part, n_part, MPI_DOUBLE, q, recvcounts, displs, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */    
 
-	// 	pq_part = dot_part(p, q, i_ini, n_part);
-	// 	MPI_Allreduce(&pq_part, &pq, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
+		pq_part = dot_part(p, q, i_ini, n_part);
+		MPI_Allreduce(&pq_part, &pq, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
 		
-	// 	alpha = old_rz / pq;
-	// 	#pragma omp for simd reduction(+:x[0:n])		
-	// 	for (int i = 0; i < n; i++)	// x <-- x + alpha*p
-	// 		x[i] += alpha * p[i];
-	// 	#pragma omp for simd reduction(-:r[0:n])
-	// 	for (int i = 0; i < n; i++)	// r <-- r - alpha*q
-	// 		r[i] -= alpha * q[i]; //A*p
-	// 	#pragma omp for simd
-	// 	for (int i = 0; i < n; i++)	// z <-- M^(-1).r
-	// 		z[i] = r[i] / d[i];
+		alpha = old_rz / pq;
+		#pragma omp for simd reduction(+:x[0:n])		
+		for (int i = 0; i < n; i++)	// x <-- x + alpha*p
+			x[i] += alpha * p[i];
+		#pragma omp for simd reduction(-:r[0:n])
+		for (int i = 0; i < n; i++)	// r <-- r - alpha*q
+			r[i] -= alpha * q[i]; //A*p
+		#pragma omp for simd
+		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
+			z[i] = r[i] / d[i];
 		
-	// 	rz_part = dot_part(r, z, i_ini, n_part);
-	// 	MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
+		rz_part = dot_part(r, z, i_ini, n_part);
+		MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
 
-	// 	beta = rz / old_rz;
-	// 	#pragma omp for simd
-	// 	for (int i =0; i < n; i++)	// p <-- z + beta*p
-	// 		p[i] = z[i] + beta * p[i];
-	// 	iter++;
-	// 	double t = wtime();
-	// 	if (t - last_display > 0.5) {
-	// 		double rate = iter / (t - start);	// iterations per s.
-	// 		double GFLOPs = 1e-9 * rate * (2 * nz + 12 * n);
-	// 		fprintf(stderr, "\r     ---> error : %2.2e, iter : %d (%.1f it/s, %.2f GFLOPs)", norm(n, r), iter, rate, GFLOPs);
-	// 		fflush(stdout);
-	// 		last_display = t;
-	// 	}
-	// }    
-	// fprintf(stderr, "\n     ---> Finished in %.1fs and %d iterations\n", wtime() - start, iter);
+		beta = rz / old_rz;
+		#pragma omp for simd
+		for (int i =0; i < n; i++)	// p <-- z + beta*p
+			p[i] = z[i] + beta * p[i];
+		iter++;
+		double t = wtime();
+		if (t - last_display > 0.5) {
+			double rate = iter / (t - start);	// iterations per s.
+			double GFLOPs = 1e-9 * rate * (2 * nz + 12 * n);
+			fprintf(stderr, "\r     ---> error : %2.2e, iter : %d (%.1f it/s, %.2f GFLOPs)", norm(n, r), iter, rate, GFLOPs);
+			fflush(stdout);
+			last_display = t;
+		}
+	}    
+	fprintf(stderr, "\n     ---> Finished in %.1fs and %d iterations\n", wtime() - start, iter);
 
 
 
