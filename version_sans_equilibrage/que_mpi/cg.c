@@ -477,6 +477,7 @@ int main(int argc, char **argv)
 		p[i] = z[i];
 	printf("p[n] = %lf\n", p[n-1]);
 	printf("z[n] = %lf\n", z[n-1]);
+	printf("d[n] = %lf\n", d[n-1]);
 	printf("r[n] = %lf\n", r[n-1]);
 	printf("x[n] = %lf\n", x[n-1]);
 

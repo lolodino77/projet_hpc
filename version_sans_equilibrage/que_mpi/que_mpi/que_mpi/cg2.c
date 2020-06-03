@@ -479,6 +479,7 @@ int main(int argc, char **argv)
 	printf("z[n] = %lf\n", z[n-1]);
 	printf("r[n] = %lf\n", r[n-1]);
 	printf("x[n] = %lf\n", x[n-1]);
+	printf("d[n] = %lf\n", d[n-1]);
 
 	/*Algorithme du gradient conjugué */
 	rz_part = dot_part(r, z, i_ini, n_part);
