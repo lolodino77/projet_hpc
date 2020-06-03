@@ -450,6 +450,7 @@ int main(int argc, char **argv)
 	} else {
 		#pragma omp for simd
 		for (int i = 0; i < n; i++)
+			#pragma omp atomic
 			b[i] = PRF(i, seed);
 	}
 
@@ -509,8 +510,10 @@ int main(int argc, char **argv)
 		MPI_Allreduce(&pq_part, &pq, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
 		
 		alpha = old_rz / pq;
-		#pragma omp simd reduction(+:x[0:n])		
+		//#pragma omp for simd reduction(+:x[0:n_part])
+		#pragma omp for simd	
 		for (int i = 0; i < n; i++)	// x <-- x + alpha*p
+			#pragma omp atomic
 			x[i] += alpha * p[i];
 		// #pragma omp for simd reduction(-:r[0:n])
 		for (int i = 0; i < n; i++)	// r <-- r - alpha*q
