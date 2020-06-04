@@ -531,7 +531,6 @@ int main(int argc, char **argv)
 
 	extract_diagonal(A, d);
 	if(my_rank == 0){ //si on reprend le calcul à partir d'un checkpoint
-		printf("c'est moi zero\n");
 		if(strcmp(argv[3], "checkpoint") == 0 && argc == 4){
 			printf("calcul a partir d'un checkpoint\n");
 			init_from_checkpoint(n, x, z, r, q, p, rz2);
@@ -566,7 +565,7 @@ int main(int argc, char **argv)
 		rz_part = dot_part(r, z, i_ini, n_part);
 		MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)
 	}
-
+	printf("verif\n");
 	// printf("r extrait! (%d) :\n", my_rank);
 	// 	for (int i = 0; i < 20; ++i)
 	// 	{
