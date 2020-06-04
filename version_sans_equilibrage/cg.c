@@ -531,7 +531,7 @@ int main(int argc, char **argv)
 
 	if(my_rank == 0 && argc == 4){ //si on reprend le calcul à partir d'un checkpoint
 		if(strcmp(argv[3], "checkpoint") == 0){
-			printf("intialisation a partir d'un checkpoint\n");
+			printf("calcul a partir d'un checkpoint\n");
 			init_from_checkpoint(n, x, z, r, q, p, rz2);
 			rz = *rz2;	
 		    MPI_Bcast(&rz, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -543,6 +543,7 @@ int main(int argc, char **argv)
 		}
 	}
 	else{ //si on commence le calcul depuis le début
+		printf("calcul depuis le debut\n");
 		#pragma omp for simd
 		for (int i = 0; i < n; i++)
 			x[i] = 0.0;
