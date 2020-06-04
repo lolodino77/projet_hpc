@@ -591,7 +591,7 @@ int main(int argc, char **argv)
 		if((t - start) == 3.0){
 			printf("BOUM\n");
 		}
-		printf("time = %d\n", t - start);
+		printf("time = %lf\n", t - start);
 
 		if (t - last_display > 0.5) {
 			double rate = iter / (t - start);	// iterations per s.
