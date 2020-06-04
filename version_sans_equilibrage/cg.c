@@ -588,10 +588,12 @@ int main(int argc, char **argv)
 		// 	create_checkpoint(n, x, z, r, q, p, rz2);
 		// }
 
-		if((t - start) == 3.000000){
-			printf("BOUM\n");
+		if(my_rank == 0){
+			if((t - start) == 3.000000){
+				printf("BOUM\n");
+			}
+			printf("time = %lf\n", t - start);
 		}
-		printf("time = %lf\n", t - start);
 
 		if (t - last_display > 0.5) {
 			double rate = iter / (t - start);	// iterations per s.
