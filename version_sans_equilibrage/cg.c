@@ -592,7 +592,7 @@ int main(int argc, char **argv)
 	rz_part = dot_part(r, z, i_ini, n_part);
 	MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)
 
-	printf("\n");
+	// printf("\n");
 	while (norm(n, r) > THRESHOLD){ 
 		double old_rz = rz;
 
@@ -618,7 +618,7 @@ int main(int argc, char **argv)
 			r[i] -= tmp_r; //A*p
 			// printf("%lf ", r[i]);
 		}
-		printf("\n");
+		// printf("\n");
 		#pragma omp for simd
 		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
 			z[i] = r[i] / d[i];
