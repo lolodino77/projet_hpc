@@ -562,7 +562,7 @@ int main(int argc, char **argv)
 	{
 		printf("%lf ", r[i]);
 	}	
-	printf("\n", );
+	printf("\n");
 
 	// /*Algorithme du gradient conjugué */
 	rz_part = dot_part(r, z, i_ini, n_part);
