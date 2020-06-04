@@ -55,40 +55,40 @@ struct csr_matrix_t {
 
 /*************************** Utility functions ********************************/
 
-void init_checkpoint(double *r,	double *z, double *p, double *q, double *rz, double *pq, int readFile){
-	if(readFile == 0){
-		#pragma omp for simd
-		for (int i = 0; i < n; i++)
-			x[i] = 0.0;
-		#pragma omp for simd
-		for (int i = 0; i < n; i++)	// r <-- b - Ax == b
-			r[i] = b[i];
-		#pragma omp for simd
-		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
-			z[i] = r[i] / d[i];
-		#pragma omp for simd
-		for (int i = 0; i < n; i++)	// p <-- z
-			p[i] = z[i];
-		*pq = 0.0;
-		*rz = 0.0;
-	}
-	else{
+// void init_checkpoint(double *r,	double *z, double *p, double *q, double *rz, double *pq, int readFile){
+// 	if(readFile == 0){
+// 		#pragma omp for simd
+// 		for (int i = 0; i < n; i++)
+// 			x[i] = 0.0;
+// 		#pragma omp for simd
+// 		for (int i = 0; i < n; i++)	// r <-- b - Ax == b
+// 			r[i] = b[i];
+// 		#pragma omp for simd
+// 		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
+// 			z[i] = r[i] / d[i];
+// 		#pragma omp for simd
+// 		for (int i = 0; i < n; i++)	// p <-- z
+// 			p[i] = z[i];
+// 		*pq = 0.0;
+// 		*rz = 0.0;
+// 	}
+// 	else{
 
-	}
-}
+// 	}
+// }
 
-void checkpoint(int n, double* x, double* z, double* r, double* q, double* p, double rz){
-	FILE *file;
-	char line[2*n] = "";
-	file = fopen("checkpoints.txt", "r");
-	if(file != NULL){
-		while(fgets(line, 2*n, file) != NULL){
-			for (int i = 0; i < n; ++i){
+// void checkpoint(int n, double* x, double* z, double* r, double* q, double* p, double rz){
+// 	FILE *file;
+// 	char line[2*n] = "";
+// 	file = fopen("checkpoints.txt", "r");
+// 	if(file != NULL){
+// 		while(fgets(line, 2*n, file) != NULL){
+// 			for (int i = 0; i < n; ++i){
 				
-			}
-		}
-	}
-}
+// 			}
+// 		}
+// 	}
+// }
 
 /* Seconds (wall-clock time) since an arbitrary point in the past */
 double wtime()
