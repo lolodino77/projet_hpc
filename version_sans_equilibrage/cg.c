@@ -588,7 +588,7 @@ int main(int argc, char **argv)
 		// 	create_checkpoint(n, x, z, r, q, p, rz2);
 		// }
 
-		if((t - start) == 3.0){
+		if((t - start) == 3.000000){
 			printf("BOUM\n");
 		}
 		printf("time = %lf\n", t - start);
