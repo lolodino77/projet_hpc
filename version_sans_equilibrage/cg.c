@@ -365,7 +365,6 @@ int main(int argc, char **argv)
     // int name_len;
     // MPI_Get_processor_name(processor_name, &name_len);
 	// double debut, fin;
-	enum tagType {INDICE, TRAITEMENT, STOP, DOT_RZ, DOT_PQ, MATPROD};
 	// debut = my_gettimeofday();
 
 	/* Parse command-line options */
@@ -507,23 +506,24 @@ int main(int argc, char **argv)
 	if(argv[1] == "init"){
 		//initialisation en partant de 0
 		/* Initialisation des vecteurs */
-		#pragma omp for simd
-		for (int i = 0; i < n; i++)
-			x[i] = 0.0;
-		#pragma omp for simd
-		for (int i = 0; i < n; i++)	// r <-- b - Ax == b
-			r[i] = b[i];
-		#pragma omp for simd
-		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
-			z[i] = r[i] / d[i];
-		#pragma omp for simd
-		for (int i = 0; i < n; i++)	// p <-- z
-			p[i] = z[i];
+		printf("intialisation\n");
 	}
 	else if(argv[1] == "backup"){
-		x,p,q,r = x.checkpoint, y.checkpoint etc
+		// x,p,q,r = x.checkpoint, y.checkpoint etc
+		printf("backup\n");
 	}
-
+	#pragma omp for simd
+	for (int i = 0; i < n; i++)
+		x[i] = 0.0;
+	#pragma omp for simd
+	for (int i = 0; i < n; i++)	// r <-- b - Ax == b
+		r[i] = b[i];
+	#pragma omp for simd
+	for (int i = 0; i < n; i++)	// z <-- M^(-1).r
+		z[i] = r[i] / d[i];
+	#pragma omp for simd
+	for (int i = 0; i < n; i++)	// p <-- z
+		p[i] = z[i];
 	// /*Algorithme du gradient conjugué */
 	rz_part = dot_part(r, z, i_ini, n_part);
 	MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
