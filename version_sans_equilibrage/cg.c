@@ -561,12 +561,12 @@ int main(int argc, char **argv)
 	    MPI_Bcast(p, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	}
 
-	printf("r extrait! (%d) :\n", my_rank);
-		for (int i = 0; i < 20; ++i)
-		{
-			printf("%lf ", r[i]);
-		}	
-		printf("\n");
+	// printf("r extrait! (%d) :\n", my_rank);
+	// 	for (int i = 0; i < 20; ++i)
+	// 	{
+	// 		printf("%lf ", r[i]);
+	// 	}	
+	// 	printf("\n");
 
 	// /*Algorithme du gradient conjugué */
 	rz_part = dot_part(r, z, i_ini, n_part);
@@ -621,13 +621,13 @@ int main(int argc, char **argv)
 			// printf("time = %lf\n", t - start);
 		}
 
-		// if (t - last_display > 0.5) {
-		// 	double rate = iter / (t - start);	// iterations per s.
-		// 	double GFLOPs = 1e-9 * rate * (2 * nz + 12 * n);
-		// 	fprintf(stderr, "\r     ---> error : %2.2e, iter : %d (%.1f it/s, %.2f GFLOPs)", norm(n, r), iter, rate, GFLOPs);
-		// 	fflush(stdout);
-		// 	last_display = t;
-		// }
+		if (t - last_display > 0.5) {
+			double rate = iter / (t - start);	// iterations per s.
+			double GFLOPs = 1e-9 * rate * (2 * nz + 12 * n);
+			fprintf(stderr, "\r     ---> error : %2.2e, iter : %d (%.1f it/s, %.2f GFLOPs)", norm(n, r), iter, rate, GFLOPs);
+			fflush(stdout);
+			last_display = t;
+		}
 	}    
 	fprintf(stderr, "\n     ---> Finished in %.1fs and %d iterations\n", wtime() - start, iter);
 
