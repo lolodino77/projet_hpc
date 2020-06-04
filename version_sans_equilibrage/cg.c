@@ -550,9 +550,6 @@ int main(int argc, char **argv)
 	rz_part = dot_part(r, z, i_ini, n_part);
 	MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
 	while (norm(n, r) > THRESHOLD){ 
-		if(clock %1min == 0)
-			checkpoint(x,z,r,q ,   , Booleen =T)
-
 		double old_rz = rz;
 
 	    sp_gemv_part(A, p, q_part, n_part, i_ini);
