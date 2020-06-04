@@ -591,6 +591,7 @@ int main(int argc, char **argv)
 		if(my_rank == 0){
 			if((t - start) >  2.002959 && (t - start) < 2.030769){
 				printf("BOUM\n");
+				create_checkpoint(n, x, z, r, q, p, rz);
 			}
 			printf("time = %lf\n", t - start);
 		}
