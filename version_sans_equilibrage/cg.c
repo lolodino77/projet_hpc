@@ -102,8 +102,10 @@ void init_from_checkpoint(int n, double* x, double* z, double* r, double* q, dou
 				// printf("array[i][j] = %lf\n", array[i][j]);				
 			}
 			printf("\n");
+			if(j == n-1){printf("dernier element vecteur = %lf\n", array[i][j])}
 		}
 		fscanf(file, "%lf", rz);
+		printf("rz dans la fonction extraction = %lf\n", *rz);
 	}
 	for (int i = 0; i < n; ++i)
 	{
