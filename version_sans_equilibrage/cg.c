@@ -574,7 +574,7 @@ int main(int argc, char **argv)
 	// 	printf("\n");
 
 	// /*Algorithme du gradient conjugué */	
-	printf("r au debut :\n");
+	printf("r au debuts :\n");
 	if(my_rank == 5){
 		for (int i = 0; i < n; i++){	// r <-- r - alpha*q
 			printf("%lf ", r[i]);
