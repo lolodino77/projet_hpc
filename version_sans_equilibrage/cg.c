@@ -524,7 +524,6 @@ int main(int argc, char **argv)
 
 	extract_diagonal(A, d);
 
-	printf("argc = %d\n", argc);
 	if(my_rank == 0 && argc == 4){ //si on reprend le calcul à partir d'un checkpoint
 		if(strcmp(argv[3], "checkpoint") == 0){
 			printf("intialisation a partir d'un checkpoint\n");
@@ -551,9 +550,8 @@ int main(int argc, char **argv)
 	rz_part = dot_part(r, z, i_ini, n_part);
 	MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
 	while (norm(n, r) > THRESHOLD){ 
-		/* loop invariant : rz = dot(r, z) */
-		// if(clock %1min == 0)
-			// checkpoint(x,z,r,q ,   , Booleen =T)
+		if(clock %1min == 0)
+			checkpoint(x,z,r,q ,   , Booleen =T)
 
 		double old_rz = rz;
 
@@ -589,6 +587,12 @@ int main(int argc, char **argv)
 			p[i] = z[i] + beta * p[i];
 		iter++;
 		double t = wtime();
+		// if((t - start) % ){
+		// 	create_checkpoint(n, x, z, r, q, p, rz2);
+		// }
+
+		printf("time = %lf\n", t - start);
+
 		if (t - last_display > 0.5) {
 			double rate = iter / (t - start);	// iterations per s.
 			double GFLOPs = 1e-9 * rate * (2 * nz + 12 * n);
