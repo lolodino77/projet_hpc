@@ -579,6 +579,7 @@ int main(int argc, char **argv)
 		for (int i = 0; i < n; i++){	// r <-- r - alpha*q
 			printf("%lf ", r[i]);
 		}
+		printf("rz5 = %lf\n", rz);
 	}
 	printf("\n");
 	while (norm(n, r) > THRESHOLD){ 
