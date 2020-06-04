@@ -502,17 +502,17 @@ int main(int argc, char **argv)
 
 	extract_diagonal(A, d);
 
-
-	if(argv[1] == "init"){
-		//initialisation en partant de 0
-		/* Initialisation des vecteurs */
-		printf("intialisation\n");
-		printf("%s\n", argv[1]);
-	}
-	else if(argv[1] == "backup"){
-		// x,p,q,r = x.checkpoint, y.checkpoint etc
-		printf("backup\n");
-	}
+	printf("argv[1] = %s\n", argv[1]);
+	// if(argv[1] == "init"){
+	// 	//initialisation en partant de 0
+	// 	/* Initialisation des vecteurs */
+	// 	printf("intialisation\n");
+	// 	printf("%s\n", argv[1]);
+	// }
+	// else if(argv[1] == "backup"){
+	// 	// x,p,q,r = x.checkpoint, y.checkpoint etc
+	// 	printf("backup\n");
+	// }
 	#pragma omp for simd
 	for (int i = 0; i < n; i++)
 		x[i] = 0.0;
@@ -530,8 +530,8 @@ int main(int argc, char **argv)
 	MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
 	while (norm(n, r) > THRESHOLD){ 
 		/* loop invariant : rz = dot(r, z) */
-		if(clock %1min == 0)
-			checkpoint(x,z,r,q ,   , Booleen =T)
+		// if(clock %1min == 0)
+			// checkpoint(x,z,r,q ,   , Booleen =T)
 
 		double old_rz = rz;
 
