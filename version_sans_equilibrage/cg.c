@@ -602,7 +602,7 @@ int main(int argc, char **argv)
 				printf("r :\n");
 				for (int i = 0; i < 20; ++i)
 				{
-					printf("%lf \n", r[i]);
+					printf("%lf ", r[i]);
 				}
 				create_checkpoint(n, x, z, r, q, p, rz);
 			}
