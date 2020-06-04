@@ -77,18 +77,30 @@ struct csr_matrix_t {
 // 	}
 // }
 
-// void checkpoint(int n, double* x, double* z, double* r, double* q, double* p, double rz){
-// 	FILE *file;
-// 	char line[2*n] = "";
-// 	file = fopen("checkpoints.txt", "r");
-// 	if(file != NULL){
-// 		while(fgets(line, 2*n, file) != NULL){
-// 			for (int i = 0; i < n; ++i){
-				
-// 			}
-// 		}
-// 	}
-// }
+void init_from_checkpoint(int n, double* x, double* z, double* r, double* q, double* p, double rz){
+	int n_vecteurs = 6;
+	double array[n_vecteurs][n];
+	FILE *file;
+	file = fopen("checkpoint.txt", "r");
+	if(file != NULL){
+		for (int i = 0; i < n_vecteurs; ++i){
+			for (int j = 0; j < n; ++j){
+				fscanf(file, "%lf", &array[i][j]);
+				printf("array[i][j] = %lf\n", array[i][j]);				
+			}
+			printf("\n");
+		}
+	}
+	for (int i = 0; i < n_vecteurs; ++i)
+	{
+		x[i] = array[0][i];
+		r[i] = array[1][i];
+		z[i] = array[2][i];
+		p[i] = array[3][i];
+		q[i] = array[4][i];
+	}
+	fclose(file);
+}
 
 /* Seconds (wall-clock time) since an arbitrary point in the past */
 double wtime()
@@ -507,11 +519,24 @@ int main(int argc, char **argv)
 		//initialisation en partant de 0
 		/* Initialisation des vecteurs */
 		printf("intialisation\n");
+
 		// printf("%s\n", argv[3]);
 	}
 	else if(strcmp(argv[3], "backup") == 0){
 		// x,p,q,r = x.checkpoint, y.checkpoint etc
 		printf("backup\n");
+		#pragma omp for simd
+		for (int i = 0; i < n; i++)
+			x[i] = 0.0;
+		#pragma omp for simd
+		for (int i = 0; i < n; i++)	// r <-- b - Ax == b
+			r[i] = b[i];
+		#pragma omp for simd
+		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
+			z[i] = r[i] / d[i];
+		#pragma omp for simd
+		for (int i = 0; i < n; i++)	// p <-- z
+			p[i] = z[i];
 	}
 	#pragma omp for simd
 	for (int i = 0; i < n; i++)
