@@ -584,9 +584,6 @@ int main(int argc, char **argv)
 			p[i] = z[i] + beta * p[i];
 		iter++;
 		double t = wtime();
-		// if((t - start) % ){
-		// 	create_checkpoint(n, x, z, r, q, p, rz2);
-		// }
 
 		if(my_rank == 0){
 			if((t - start) >  2.002959 && (t - start) < 2.030769){
