@@ -518,7 +518,7 @@ int main(int argc, char **argv)
 
 	// printf("argv[3] = %s\n", argv[3]);
 	printf("argc = %d\n", argc);
-	if(strcmp(argv[3], "checkpoint")){
+	if(strcmp(argv[3], "checkpoint") && argc == 4){
 		printf("intialisation a partir d'un checkpoint\n");
 		init_from_checkpoint(n, x, z, r, q, p, rz2);
 		rz = *rz2;	
