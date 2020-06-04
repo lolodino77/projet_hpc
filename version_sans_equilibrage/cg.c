@@ -530,7 +530,7 @@ int main(int argc, char **argv)
 	// fprintf(stderr, "     ---> Per iteration: %.2g FLOP in sp_gemv() and %.2g FLOP in the rest\n", 2. * nz, 12. * n);
 
 	extract_diagonal(A, d);
-
+	printf("testee\n");
 	if(my_rank == 0){ //si on reprend le calcul à partir d'un checkpoint
 		if(strcmp(argv[3], "checkpoint") == 0 && argc == 4){
 			printf("calcul a partir d'un checkpoint\n");
