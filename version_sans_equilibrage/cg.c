@@ -55,27 +55,35 @@ struct csr_matrix_t {
 
 /*************************** Utility functions ********************************/
 
-// void init_checkpoint(double *r,	double *z, double *p, double *q, double *rz, double *pq, int readFile){
-// 	if(readFile == 0){
-// 		#pragma omp for simd
-// 		for (int i = 0; i < n; i++)
-// 			x[i] = 0.0;
-// 		#pragma omp for simd
-// 		for (int i = 0; i < n; i++)	// r <-- b - Ax == b
-// 			r[i] = b[i];
-// 		#pragma omp for simd
-// 		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
-// 			z[i] = r[i] / d[i];
-// 		#pragma omp for simd
-// 		for (int i = 0; i < n; i++)	// p <-- z
-// 			p[i] = z[i];
-// 		*pq = 0.0;
-// 		*rz = 0.0;
-// 	}
-// 	else{
-
-// 	}
-// }
+void create_checkpoint(int n, double* x, double* z, double* r, double* q, double* p, double rz){
+	FILE *file;
+	int n_vecteurs = 5;
+	file = fopen("checkpoint.txt", "w");
+	if(file != NULL){
+		for (int j = 0; j < n-1; ++j){
+			fprintf(file, "%lf ", x[i]);
+		}
+		fprintf(file, "%lf\n", x[n-1]);
+		for (int j = 0; j < n-1; ++j){
+			fprintf(file, "%lf ", r[i]);
+		}
+		fprintf(file, "%lf\n", r[n-1]);
+		for (int j = 0; j < n-1; ++j){
+			fprintf(file, "%lf ", z[i]);
+		}
+		fprintf(file, "%lf\n", z[n-1]);
+		for (int j = 0; j < n-1; ++j){
+			fprintf(file, "%lf ", p[i]);
+		}
+		fprintf(file, "%lf\n", p[n-1]);
+		for (int j = 0; j < n-1; ++j){
+			fprintf(file, "%lf ", q[i]);
+		}
+		fprintf(file, "%lf\n", q[n-1]);
+		fprintf(file, "%lf\n", rz);
+	}
+	fclose(file);
+}
 
 void init_from_checkpoint(int n, double* x, double* z, double* r, double* q, double* p, double *rz){
 	int n_vecteurs = 5;
@@ -516,19 +524,15 @@ int main(int argc, char **argv)
 
 	extract_diagonal(A, d);
 
-	// printf("argv[3] = %s\n", argv[3]);
 	printf("argc = %d\n", argc);
-	if(argc == 4){
+	if(my_rank == 0 && argc == 4){ //si on reprend le calcul à partir d'un checkpoint
 		if(strcmp(argv[3], "checkpoint") == 0){
 			printf("intialisation a partir d'un checkpoint\n");
 			init_from_checkpoint(n, x, z, r, q, p, rz2);
 			rz = *rz2;	
 		}
 	}
-	else{
-		//initialisation en partant de 0
-		/* Initialisation des vecteurs */
-		printf("intialisation a partir de 0\n");
+	else{ //si on commence le calcul depuis le début
 		#pragma omp for simd
 		for (int i = 0; i < n; i++)
 			x[i] = 0.0;
@@ -542,18 +546,7 @@ int main(int argc, char **argv)
 		for (int i = 0; i < n; i++)	// p <-- z
 			p[i] = z[i];
 	}
-	// #pragma omp for simd
-	// for (int i = 0; i < n; i++)
-	// 	x[i] = 0.0;
-	// #pragma omp for simd
-	// for (int i = 0; i < n; i++)	// r <-- b - Ax == b
-	// 	r[i] = b[i];
-	// #pragma omp for simd
-	// for (int i = 0; i < n; i++)	// z <-- M^(-1).r
-	// 	z[i] = r[i] / d[i];
-	// #pragma omp for simd
-	// for (int i = 0; i < n; i++)	// p <-- z
-	// 	p[i] = z[i];
+
 	// /*Algorithme du gradient conjugué */
 	rz_part = dot_part(r, z, i_ini, n_part);
 	MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
