@@ -502,7 +502,7 @@ int main(int argc, char **argv)
 
 	extract_diagonal(A, d);
 
-	printf("argv[2] = %s\n", argv[2]);
+	printf("argv[3] = %s\n", argv[3]);
 	// if(argv[1] == "init"){
 	// 	//initialisation en partant de 0
 	// 	/* Initialisation des vecteurs */
