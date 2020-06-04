@@ -94,7 +94,7 @@ void init_from_checkpoint(int n, double* x, double* z, double* r, double* q, dou
 		for (int i = 0; i < n_vecteurs; ++i){
 			for (int j = 0; j < n; ++j){
 				fscanf(file, "%lf", &array[i][j]);
-				printf("array[i][j] = %lf\n", array[i][j]);				
+				// printf("array[i][j] = %lf\n", array[i][j]);				
 			}
 			printf("\n");
 		}
@@ -590,7 +590,7 @@ int main(int argc, char **argv)
 				printf("BOUM\n");
 				create_checkpoint(n, x, z, r, q, p, rz);
 			}
-			printf("time = %lf\n", t - start);
+			// printf("time = %lf\n", t - start);
 		}
 
 		if (t - last_display > 0.5) {
