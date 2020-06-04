@@ -503,13 +503,13 @@ int main(int argc, char **argv)
 	extract_diagonal(A, d);
 
 	printf("argv[3] = %s\n", argv[3]);
-	if(argv[3] == "init"){
+	if(strcmp(argv[3], "init") == 0){
 		//initialisation en partant de 0
 		/* Initialisation des vecteurs */
 		printf("intialisation\n");
 		// printf("%s\n", argv[3]);
 	}
-	else if(argv[3] == "backup"){
+	else if(strcmp(argv[3], "backup") == 0){
 		// x,p,q,r = x.checkpoint, y.checkpoint etc
 		printf("backup\n");
 	}
