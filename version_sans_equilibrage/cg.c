@@ -562,6 +562,7 @@ int main(int argc, char **argv)
 	{
 		printf("%lf ", r[i]);
 	}	
+	printf("\n", );
 
 	// /*Algorithme du gradient conjugué */
 	rz_part = dot_part(r, z, i_ini, n_part);
@@ -606,10 +607,10 @@ int main(int argc, char **argv)
 			if((t - start) >  2.002959 && (t - start) < 2.030769){
 				printf("BOUM\n");
 				printf("r :\n");
-				for (int i = 0; i < 20; ++i)
-				{
-					printf("%lf ", r[i]);
-				}
+				// for (int i = 0; i < 20; ++i)
+				// {
+				// 	printf("%lf ", r[i]);
+				// }
 				create_checkpoint(n, x, z, r, q, p, rz);
 			}
 			// printf("time = %lf\n", t - start);
@@ -646,15 +647,12 @@ int main(int argc, char **argv)
 
 	if(my_rank == 0){
 		FILE *f_x = stdout;
-		// printf("solution filename = %s\n", solution_filename);
 		if (solution_filename != NULL) {
 			f_x = fopen(solution_filename, "w");
 			if (f_x == NULL)
 				err(1, "cannot open solution file %s", solution_filename);
 			fprintf(stderr, "[IO] writing solution to %s\n", solution_filename);
 		}
-		// for (int i = 0; i < n; i++)
-		// 	fprintf(f_x, "%a\n", x[i]);
 	}
 
 	free(mem);
