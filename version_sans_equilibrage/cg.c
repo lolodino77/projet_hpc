@@ -553,16 +553,12 @@ int main(int argc, char **argv)
 	}
 
 	if(strcmp(argv[3], "checkpoint") == 0 && argc == 4){
-	    MPI_Bcast(&rz, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	    MPI_Bcast(&rz, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	    MPI_Bcast(x, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	    MPI_Bcast(z, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	    MPI_Bcast(r, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	    MPI_Bcast(q, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	    MPI_Bcast(p, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-	}
-	else{
-		rz_part = dot_part(r, z, i_ini, n_part);
-		MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)
 	}
 
 	printf("r extrait! (%d) :\n", my_rank);
@@ -572,7 +568,9 @@ int main(int argc, char **argv)
 		}	
 		printf("\n");
 
-	// /*Algorithme du gradient conjugué */	
+	// /*Algorithme du gradient conjugué */
+	rz_part = dot_part(r, z, i_ini, n_part);
+	MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
 	while (norm(n, r) > THRESHOLD){ 
 		double old_rz = rz;
 
