@@ -535,11 +535,11 @@ int main(int argc, char **argv)
 			init_from_checkpoint(n, x, z, r, q, p, rz2);
 			rz = *rz2;	
 		    MPI_Bcast(&rz, 1, MPI_INT, 0, MPI_COMM_WORLD);
-		    MPI_Bcast(x, n, MPI_INT, 0, MPI_COMM_WORLD);
-		    MPI_Bcast(z, n, MPI_INT, 0, MPI_COMM_WORLD);
-		    MPI_Bcast(r, n, MPI_INT, 0, MPI_COMM_WORLD);
-		    MPI_Bcast(q, n, MPI_INT, 0, MPI_COMM_WORLD);
-		    MPI_Bcast(p, n, MPI_INT, 0, MPI_COMM_WORLD);
+		    MPI_Bcast(x, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		    MPI_Bcast(z, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		    MPI_Bcast(r, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		    MPI_Bcast(q, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		    MPI_Bcast(p, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 		}
 	}
 	else{ //si on commence le calcul depuis le début
