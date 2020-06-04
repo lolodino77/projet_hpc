@@ -566,12 +566,12 @@ int main(int argc, char **argv)
 		MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)
 	}
 
-	printf("r extrait! (%d) :\n", my_rank);
-		for (int i = 0; i < 20; ++i)
-		{
-			printf("%lf ", p[i]);
-		}	
-		printf("\n");
+	// printf("r extrait! (%d) :\n", my_rank);
+	// 	for (int i = 0; i < 20; ++i)
+	// 	{
+	// 		printf("%lf ", p[i]);
+	// 	}	
+	// 	printf("\n");
 
 	// /*Algorithme du gradient conjugué */	
 	while (norm(n, r) > THRESHOLD){ 
@@ -591,11 +591,14 @@ int main(int argc, char **argv)
 			tmp_x = alpha * p[i];
 			x[i] += tmp_x;
 		}
+		printf("calcul de r\n");
 		#pragma omp parallel for reduction(-:r[0:n])
 		for (int i = 0; i < n; i++){	// r <-- r - alpha*q
 			tmp_r = alpha * q[i];
 			r[i] -= tmp_r; //A*p
+			printf("%lf ", r[i]);
 		}
+		printf("\n");
 		#pragma omp for simd
 		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
 			z[i] = r[i] / d[i];
@@ -613,13 +616,13 @@ int main(int argc, char **argv)
 		if(my_rank == 0){
 			if((t - start) >  2.002959 && (t - start) < 2.030769){
 				printf("BOUM\n");
-			    printf("rz enregistre = %lf\n", rz);
-				printf("r enregistre :\n");
-				for (int i = 0; i < 20; ++i)
-				{
-					printf("%lf ", r[i]);
-				}
-				printf("\n");
+			 //    printf("rz enregistre = %lf\n", rz);
+				// printf("r enregistre :\n");
+				// for (int i = 0; i < 20; ++i)
+				// {
+				// 	printf("%lf ", r[i]);
+				// }
+				// printf("\n");
 				create_checkpoint(n, x, z, r, q, p, rz);
 			}
 			// printf("time = %lf\n", t - start);
