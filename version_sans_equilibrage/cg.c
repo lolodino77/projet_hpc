@@ -557,7 +557,7 @@ int main(int argc, char **argv)
 			p[i] = z[i];
 	}
 
-	printf("r :\n");
+	printf("r extrait :\n");
 	for (int i = 0; i < 20; ++i)
 	{
 		printf("%lf ", r[i]);
@@ -606,11 +606,12 @@ int main(int argc, char **argv)
 		if(my_rank == 0){
 			if((t - start) >  2.002959 && (t - start) < 2.030769){
 				printf("BOUM\n");
-				printf("r :\n");
-				// for (int i = 0; i < 20; ++i)
-				// {
-				// 	printf("%lf ", r[i]);
-				// }
+				printf("r enregistre :\n");
+				for (int i = 0; i < 20; ++i)
+				{
+					printf("%lf ", r[i]);
+				}
+				printf("\n");
 				create_checkpoint(n, x, z, r, q, p, rz);
 			}
 			// printf("time = %lf\n", t - start);
