@@ -540,7 +540,7 @@ int main(int argc, char **argv)
 		    MPI_Bcast(r, n, MPI_INT, 0, MPI_COMM_WORLD);
 		    MPI_Bcast(q, n, MPI_INT, 0, MPI_COMM_WORLD);
 		    MPI_Bcast(p, n, MPI_INT, 0, MPI_COMM_WORLD);
-			printf("r extrait :\n");
+			printf("r extrait! :\n");
 			for (int i = 0; i < 20; ++i)
 			{
 				printf("%lf ", r[i]);
