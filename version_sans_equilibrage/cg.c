@@ -602,7 +602,7 @@ int main(int argc, char **argv)
 		pq_part = dot_part(p, q, i_ini, n_part);
 		MPI_Allreduce(&pq_part, &pq, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
 		
-		printf("old_rz / pq = %lf / %lf\n", old_rz, pq);
+		// printf("old_rz / pq = %lf / %lf\n", old_rz, pq);
 		alpha = old_rz / pq;
 		double tmp_x;
 		double tmp_r;
@@ -611,7 +611,7 @@ int main(int argc, char **argv)
 			tmp_x = alpha * p[i];
 			x[i] += tmp_x;
 		}
-		printf("calcul de r\n");
+		// printf("calcul de r\n");
 		#pragma omp parallel for reduction(-:r[0:n])
 		for (int i = 0; i < n; i++){	// r <-- r - alpha*q
 			tmp_r = alpha * q[i];
