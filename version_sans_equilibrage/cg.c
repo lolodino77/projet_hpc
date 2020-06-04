@@ -507,7 +507,7 @@ int main(int argc, char **argv)
 		//initialisation en partant de 0
 		/* Initialisation des vecteurs */
 		printf("intialisation\n");
-		printf("%s\n", argv[3]);
+		// printf("%s\n", argv[3]);
 	}
 	else if(argv[3] == "backup"){
 		// x,p,q,r = x.checkpoint, y.checkpoint etc
