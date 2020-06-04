@@ -538,21 +538,6 @@ int main(int argc, char **argv)
 			rz = *rz2;	
 			printf("rz extrait par P0 = %lf\n", *rz2);
 		}
-		else{ //si on commence le calcul depuis le début
-			printf("calcul depuis le debut\n");
-			#pragma omp for simd
-			for (int i = 0; i < n; i++)
-				x[i] = 0.0;
-			#pragma omp for simd
-			for (int i = 0; i < n; i++)	// r <-- b - Ax == b
-				r[i] = b[i];
-			#pragma omp for simd
-			for (int i = 0; i < n; i++)	// z <-- M^(-1).r
-				z[i] = r[i] / d[i];
-			#pragma omp for simd
-			for (int i = 0; i < n; i++)	// p <-- z
-				p[i] = z[i];
-		}
 	}
 
 	if(strcmp(argv[3], "checkpoint") == 0 && argc == 4){
@@ -565,6 +550,19 @@ int main(int argc, char **argv)
 	    printf("rz = %lf\n", rz);
 	}
 	else{
+		printf("calcul depuis le debut\n");
+		#pragma omp for simd
+		for (int i = 0; i < n; i++)
+			x[i] = 0.0;
+		#pragma omp for simd
+		for (int i = 0; i < n; i++)	// r <-- b - Ax == b
+			r[i] = b[i];
+		#pragma omp for simd
+		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
+			z[i] = r[i] / d[i];
+		#pragma omp for simd
+		for (int i = 0; i < n; i++)	// p <-- z
+			p[i] = z[i];
 		rz_part = dot_part(r, z, i_ini, n_part);
 		MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)
 	}
