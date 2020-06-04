@@ -557,7 +557,7 @@ int main(int argc, char **argv)
 			p[i] = z[i];
 	}
 
-	printf("r extrait! :\n");
+	printf("r extrait! (%d) :\n", my_rank);
 		for (int i = 0; i < 20; ++i)
 		{
 			printf("%lf ", r[i]);
