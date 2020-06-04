@@ -538,6 +538,7 @@ int main(int argc, char **argv)
 			printf("rz extrait par P0 = %lf\n", *rz2);
 		}
 	}
+	printf("verif\n");
 
 	if(strcmp(argv[3], "checkpoint") == 0 && argc == 4){
 	    MPI_Bcast(&rz, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
