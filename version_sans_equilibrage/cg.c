@@ -588,7 +588,7 @@ int main(int argc, char **argv)
 		// 	create_checkpoint(n, x, z, r, q, p, rz2);
 		// }
 
-		printf("time = %lf\n", t - start);
+		printf("time = %d\n", t - start);
 
 		if (t - last_display > 0.5) {
 			double rate = iter / (t - start);	// iterations per s.
