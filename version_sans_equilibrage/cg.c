@@ -517,7 +517,13 @@ int main(int argc, char **argv)
 	extract_diagonal(A, d);
 
 	// printf("argv[3] = %s\n", argv[3]);
-	if(strcmp(argv[3], "no_checkpoint") == 0){
+	printf("argc = %d\n", argc);
+	if(strcmp(argv[3], "checkpoint")){
+		printf("intialisation a partir d'un checkpoint\n");
+		init_from_checkpoint(n, x, z, r, q, p, rz2);
+		rz = *rz2;	
+	}
+	else{
 		//initialisation en partant de 0
 		/* Initialisation des vecteurs */
 		printf("intialisation a partir de 0\n");
@@ -533,11 +539,6 @@ int main(int argc, char **argv)
 		#pragma omp for simd
 		for (int i = 0; i < n; i++)	// p <-- z
 			p[i] = z[i];
-	}
-	else if(strcmp(argv[3], "checkpoint") == 0){
-		printf("intialisation a partir d'un checkpoint\n");
-		init_from_checkpoint(n, x, z, r, q, p, rz2);
-		rz = *rz2;	
 	}
 	#pragma omp for simd
 	for (int i = 0; i < n; i++)
