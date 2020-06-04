@@ -60,23 +60,23 @@ void create_checkpoint(int n, double* x, double* z, double* r, double* q, double
 	int n_vecteurs = 5;
 	file = fopen("checkpoint.txt", "w");
 	if(file != NULL){
-		for (int j = 0; j < n-1; ++j){
+		for (int i = 0; i < n-1; ++i){
 			fprintf(file, "%lf ", x[i]);
 		}
 		fprintf(file, "%lf\n", x[n-1]);
-		for (int j = 0; j < n-1; ++j){
+		for (int i = 0; i < n-1; ++i){
 			fprintf(file, "%lf ", r[i]);
 		}
 		fprintf(file, "%lf\n", r[n-1]);
-		for (int j = 0; j < n-1; ++j){
+		for (int i = 0; i < n-1; ++i){
 			fprintf(file, "%lf ", z[i]);
 		}
 		fprintf(file, "%lf\n", z[n-1]);
-		for (int j = 0; j < n-1; ++j){
+		for (int i = 0; i < n-1; ++i){
 			fprintf(file, "%lf ", p[i]);
 		}
 		fprintf(file, "%lf\n", p[n-1]);
-		for (int j = 0; j < n-1; ++j){
+		for (int i = 0; i < n-1; ++i){
 			fprintf(file, "%lf ", q[i]);
 		}
 		fprintf(file, "%lf\n", q[n-1]);
