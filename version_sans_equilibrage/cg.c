@@ -534,6 +534,7 @@ int main(int argc, char **argv)
 			printf("calcul a partir d'un checkpoint\n");
 			init_from_checkpoint(n, x, z, r, q, p, rz2);
 			rz = *rz2;	
+			printf("rz extrait par P0 = %lf\n", rz);
 		}
 	}
 	else{ //si on commence le calcul depuis le début
