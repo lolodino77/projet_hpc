@@ -560,10 +560,6 @@ int main(int argc, char **argv)
 	    MPI_Bcast(q, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	    MPI_Bcast(p, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	}
-	else{
-		rz_part = dot_part(r, z, i_ini, n_part);
-		MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)
-	}
 
 	printf("r extrait! (%d) :\n", my_rank);
 		for (int i = 0; i < 20; ++i)
@@ -572,7 +568,9 @@ int main(int argc, char **argv)
 		}	
 		printf("\n");
 
-	// /*Algorithme du gradient conjugué */	
+	// /*Algorithme du gradient conjugué */
+	rz_part = dot_part(r, z, i_ini, n_part);
+	MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
 	while (norm(n, r) > THRESHOLD){ 
 		double old_rz = rz;
 
