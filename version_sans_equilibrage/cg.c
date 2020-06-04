@@ -539,7 +539,7 @@ int main(int argc, char **argv)
 		}
 	}
 	printf("verif\n");
-
+	printf("argv[3] = %s\n", argv[3]);
 	if(strcmp(argv[3], "checkpoint") == 0 && argc == 4){
 	    MPI_Bcast(&rz, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	    MPI_Bcast(x, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
