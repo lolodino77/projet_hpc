@@ -77,8 +77,8 @@ struct csr_matrix_t {
 // 	}
 // }
 
-void init_from_checkpoint(int n, double* x, double* z, double* r, double* q, double* p, double rz){
-	int n_vecteurs = 6;
+void init_from_checkpoint(int n, double* x, double* z, double* r, double* q, double* p, double *rz){
+	int n_vecteurs = 5;
 	double array[n_vecteurs][n];
 	FILE *file;
 	file = fopen("checkpoint.txt", "r");
@@ -90,8 +90,9 @@ void init_from_checkpoint(int n, double* x, double* z, double* r, double* q, dou
 			}
 			printf("\n");
 		}
+		fscanf(file, "%lf", rz);
 	}
-	for (int i = 0; i < n_vecteurs; ++i)
+	for (int i = 0; i < n; ++i)
 	{
 		x[i] = array[0][i];
 		r[i] = array[1][i];
@@ -501,6 +502,7 @@ int main(int argc, char **argv)
 	double alpha = 0.0;
 	double beta = 0.0;
 	double rz = 0.0;
+	double *rz2 = malloc(sizeof(double));
 	double pq = 0.0;
 	int nz = A->nz;
 
@@ -514,17 +516,11 @@ int main(int argc, char **argv)
 
 	extract_diagonal(A, d);
 
-	printf("argv[3] = %s\n", argv[3]);
-	if(strcmp(argv[3], "init") == 0){
+	// printf("argv[3] = %s\n", argv[3]);
+	if(strcmp(argv[3], "no_checkpoint") == 0){
 		//initialisation en partant de 0
 		/* Initialisation des vecteurs */
-		printf("intialisation\n");
-
-		// printf("%s\n", argv[3]);
-	}
-	else if(strcmp(argv[3], "backup") == 0){
-		// x,p,q,r = x.checkpoint, y.checkpoint etc
-		printf("backup\n");
+		printf("intialisation a partir de 0\n");
 		#pragma omp for simd
 		for (int i = 0; i < n; i++)
 			x[i] = 0.0;
@@ -537,6 +533,11 @@ int main(int argc, char **argv)
 		#pragma omp for simd
 		for (int i = 0; i < n; i++)	// p <-- z
 			p[i] = z[i];
+	}
+	else if(strcmp(argv[3], "checkpoint") == 0){
+		printf("intialisation a partir d'un checkpoint\n");
+		init_from_checkpoint(n, x, z, r, q, p, rz2);
+		rz = *rz2;	
 	}
 	#pragma omp for simd
 	for (int i = 0; i < n; i++)
@@ -639,6 +640,7 @@ int main(int argc, char **argv)
 	free(nnz2);
 	free(A);
 	free(y_part);
+	free(rz2);
 	// return EXIT_SUCCESS; //erreur
 
 	MPI_Finalize();
