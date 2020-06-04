@@ -605,7 +605,7 @@ int main(int argc, char **argv)
 		for (int i = 0; i < n; i++){	// r <-- r - alpha*q
 			tmp_r = alpha * q[i];
 			r[i] -= tmp_r; //A*p
-			printf("%lf ", r[i]);
+			// printf("%lf ", r[i]);
 		}
 		printf("\n");
 		#pragma omp for simd
