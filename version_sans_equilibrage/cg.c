@@ -64,22 +64,27 @@ void create_checkpoint(int n, double* x, double* z, double* r, double* q, double
 			fprintf(file, "%lf ", x[i]);
 		}
 		fprintf(file, "%lf\n", x[n-1]);
+		
 		for (int i = 0; i < n-1; ++i){
 			fprintf(file, "%lf ", r[i]);
 		}
 		fprintf(file, "%lf\n", r[n-1]);
+		
 		for (int i = 0; i < n-1; ++i){
 			fprintf(file, "%lf ", z[i]);
 		}
 		fprintf(file, "%lf\n", z[n-1]);
+
 		for (int i = 0; i < n-1; ++i){
 			fprintf(file, "%lf ", p[i]);
 		}
 		fprintf(file, "%lf\n", p[n-1]);
+		
 		for (int i = 0; i < n-1; ++i){
 			fprintf(file, "%lf ", q[i]);
 		}
 		fprintf(file, "%lf\n", q[n-1]);
+
 		fprintf(file, "%lf\n", rz);
 	}
 	fclose(file);
@@ -594,6 +599,11 @@ int main(int argc, char **argv)
 		if(my_rank == 0){
 			if((t - start) >  2.002959 && (t - start) < 2.030769){
 				printf("BOUM\n");
+				printf("r :\n");
+				for (int i = 0; i < 20; ++i)
+				{
+					printf("%lf \n", r[i]);
+				}
 				create_checkpoint(n, x, z, r, q, p, rz);
 			}
 			// printf("time = %lf\n", t - start);
