@@ -557,6 +557,12 @@ int main(int argc, char **argv)
 			p[i] = z[i];
 	}
 
+	printf("r :\n");
+	for (int i = 0; i < 20; ++i)
+	{
+		printf("%lf ", r[i]);
+	}	
+
 	// /*Algorithme du gradient conjugué */
 	rz_part = dot_part(r, z, i_ini, n_part);
 	MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
