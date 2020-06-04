@@ -613,6 +613,7 @@ int main(int argc, char **argv)
 		if(my_rank == 0){
 			if((t - start) >  2.002959 && (t - start) < 2.030769){
 				printf("BOUM\n");
+			    printf("rz enregistre = %lf\n", rz);
 				printf("r enregistre :\n");
 				for (int i = 0; i < 20; ++i)
 				{
