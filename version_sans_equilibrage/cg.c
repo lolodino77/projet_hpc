@@ -609,8 +609,6 @@ int main(int argc, char **argv)
 		// 	fprintf(f_x, "%a\n", x[i]);
 	}
 
-	booleen.checkpoint = F
-
 	free(mem);
 	free(q_part);
 	free(nnz2);
