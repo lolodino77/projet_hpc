@@ -92,54 +92,54 @@ void create_checkpoint(int n, double* x, double* z, double* r, double* q, double
 }
 
 void init_from_checkpoint(int n, double* x, double* z, double* r, double* q, double* p, double *rz){
-	// int n_vecteurs = 5;
-	// double array[n_vecteurs][n];
-	// FILE *file;
-	// file = fopen("checkpoint.txt", "r");
-	// if(file != NULL){
-	// 	for (int i = 0; i < n_vecteurs; ++i){
-	// 		for (int j = 0; j < n; ++j){
-	// 			fscanf(file, "%lf", &array[i][j]);
-	// 			// printf("array[i][j] = %lf\n", array[i][j]);				
-	// 			if(j == n-1){printf("dernier element vecteur = %lf\n", array[i][j]);}
-	// 		}
-	// 		// printf("\n");
-	// 	}
-	// 	fscanf(file, "%lf", rz);
-	// 	// printf("rz dans la fonction extraction = %lf\n", *rz);
-	// }
-	// for (int i = 0; i < n; ++i)
-	// {
-	// 	x[i] = array[0][i];
-	// 	r[i] = array[1][i];
-	// 	z[i] = array[2][i];
-	// 	p[i] = array[3][i];
-	// 	q[i] = array[4][i];
-	// }
-	// fclose(file);
-
 	int n_vecteurs = 5;
-	double **tab = malloc(5*n*sizeof(double*));
-	tab[0] = &x;
-	tab[1] = &r;
-	tab[2] = &z;
-	tab[3] = &p;
-	tab[4] = &q;
+	double array[n_vecteurs][n];
 	FILE *file;
 	file = fopen("checkpoint.txt", "r");
 	if(file != NULL){
-		int k =0;
-		#pragma omp simd
-		for (int i = 0; i < n_vecteurs*n; ++i){
-			fscanf(file,"%lf ", &tab[k]);
-			if(k%(n-1) == 0){
-				fscanf(file,"%lf ", &tab[k]);
-				k++;
+		for (int i = 0; i < n_vecteurs; ++i){
+			for (int j = 0; j < n; ++j){
+				fscanf(file, "%lf", &array[i][j]);
+				// printf("array[i][j] = %lf\n", array[i][j]);				
+				if(j == n-1){printf("dernier element vecteur = %lf\n", array[i][j]);}
 			}
+			// printf("\n");
 		}
-		fscanf(file,"%lf", rz);
+		fscanf(file, "%lf", rz);
+		// printf("rz dans la fonction extraction = %lf\n", *rz);
+	}
+	for (int i = 0; i < n; ++i)
+	{
+		x[i] = array[0][i];
+		r[i] = array[1][i];
+		z[i] = array[2][i];
+		p[i] = array[3][i];
+		q[i] = array[4][i];
 	}
 	fclose(file);
+
+	// int n_vecteurs = 5;
+	// double **tab = malloc(5*n*sizeof(double*));
+	// tab[0] = &x;
+	// tab[1] = &r;
+	// tab[2] = &z;
+	// tab[3] = &p;
+	// tab[4] = &q;
+	// FILE *file;
+	// file = fopen("checkpoint.txt", "r");
+	// if(file != NULL){
+	// 	int k =0;
+	// 	#pragma omp simd
+	// 	for (int i = 0; i < n_vecteurs*n; ++i){
+	// 		fscanf(file,"%lf ", &tab[k]);
+	// 		if(k%(n-1) == 0){
+	// 			fscanf(file,"%lf ", &tab[k]);
+	// 			k++;
+	// 		}
+	// 	}
+	// 	fscanf(file,"%lf", rz);
+	// }
+	// fclose(file);
 }
 
 /* Seconds (wall-clock time) since an arbitrary point in the past */
