@@ -693,12 +693,12 @@ int main(int argc, char **argv)
 			fprintf(f_x, "%a\n", x[i]);
 	}
 
-	free(mem);
-	free(q_part);
-	free(nnz2);
-	free(A);
-	free(y_part);
-	free(rz2);
+	// free(mem);
+	// free(q_part);
+	// free(nnz2);
+	// free(A);
+	// free(y_part);
+	// free(rz2);
 	return EXIT_SUCCESS; //erreur
 
 	MPI_Finalize();
