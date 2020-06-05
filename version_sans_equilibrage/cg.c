@@ -647,7 +647,6 @@ int main(int argc, char **argv)
 			r[i] -= tmp_r; //A*p
 			// printf("%lf ", r[i]);
 		}
-		// printf("\n");
 		#pragma omp for simd
 		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
 			z[i] = r[i] / d[i];
