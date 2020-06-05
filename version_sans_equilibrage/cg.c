@@ -641,9 +641,9 @@ int main(int argc, char **argv)
 		if(my_rank == 0){
 			double* integer = malloc(sizeof(double));
 			double part_dec = modf(t - start, integer);
-			printf("partie decimale de %lf = %lf\n", t - start, part_dec);
 			if(part_dec >  0.002959 && part_dec < 0.030769){
-				printf("creation of a checkpoint\n");
+				printf("partie decimale de %lf = %lf\n", t - start, part_dec);
+				printf("donc creation of a checkpoint\n");
 			 //    printf("rz enregistre = %lf\n", rz);
 				// printf("r enregistre :\n");
 				// for (int i = 0; i < 20; ++i)
