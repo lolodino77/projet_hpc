@@ -133,20 +133,20 @@ void init_from_checkpoint(int n, double* x, double* z, double* r, double* q, dou
 	for (int i = 0; i < 5; ++i){
 		tab[i] = malloc(n*sizeof(double));
 	}
-	tab[0] = &x;
-	tab[1] = &r;
-	tab[2] = &z;
-	tab[3] = &p;
-	tab[4] = &q;
+	tab[0] = x;
+	tab[1] = r;
+	tab[2] = z;
+	tab[3] = p;
+	tab[4] = q;
 	FILE *file;
 	file = fopen("checkpoint.txt", "r");
 	if(file != NULL){
 		int k =0;
 		#pragma omp simd
 		for (int i = 0; i < n_vecteurs*n; ++i){
-			fscanf(file,"%lf ", &tab[k]);
+			fscanf(file,"%lf ", &tab[k][i]);
 			if(k%(n-1) == 0){
-				fscanf(file,"%lf ", &tab[k]);
+				fscanf(file,"%lf ", &tab[k][i]);
 				k++;
 			}
 		}
