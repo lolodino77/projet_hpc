@@ -557,47 +557,47 @@ int main(int argc, char **argv)
 
 	extract_diagonal(A, d);
 	
-	if(my_rank == 0){ //si on reprend le calcul à partir d'un checkpoint
-		if(argc == 4){
-			if(strcmp(argv[3], "checkpoint") == 0){
-				printf("calcul a partir d'un checkpoint\n");
-				init_from_checkpoint(n, x, z, r, q, p, rz2);
-				rz = *rz2;	
-				printf("rz extrait par P0 = %lf\n", *rz2);
-			}
-		}
-	}
-	printf("verif\n");
-	printf("argv[3] = %s\n", argv[3]);
-	printf("argc[3] = %d\n", argc);
-	if(argc == 4){
-		if(strcmp(argv[3], "checkpoint") == 0){	    
-			MPI_Bcast(&rz, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		    MPI_Bcast(x, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		    MPI_Bcast(z, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		    MPI_Bcast(r, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		    MPI_Bcast(q, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		    MPI_Bcast(p, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		    printf("rz = %lf\n", rz);
-		}
-	}
-	if(argc != 4){
-		printf("calcul depuis le debut\n");
-		#pragma omp for simd
-		for (int i = 0; i < n; i++)
-			x[i] = 0.0;
-		#pragma omp for simd
-		for (int i = 0; i < n; i++)	// r <-- b - Ax == b
-			r[i] = b[i];
-		#pragma omp for simd
-		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
-			z[i] = r[i] / d[i];
-		#pragma omp for simd
-		for (int i = 0; i < n; i++)	// p <-- z
-			p[i] = z[i];
-		rz_part = dot_part(r, z, i_ini, n_part);
-		MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)
-	}
+	// if(my_rank == 0){ //si on reprend le calcul à partir d'un checkpoint
+	// 	if(argc == 4){
+	// 		if(strcmp(argv[3], "checkpoint") == 0){
+	// 			printf("calcul a partir d'un checkpoint\n");
+	// 			init_from_checkpoint(n, x, z, r, q, p, rz2);
+	// 			rz = *rz2;	
+	// 			printf("rz extrait par P0 = %lf\n", *rz2);
+	// 		}
+	// 	}
+	// }
+	// printf("verif\n");
+	// printf("argv[3] = %s\n", argv[3]);
+	// printf("argc[3] = %d\n", argc);
+	// if(argc == 4){
+	// 	if(strcmp(argv[3], "checkpoint") == 0){	    
+	// 		MPI_Bcast(&rz, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	// 	    MPI_Bcast(x, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	// 	    MPI_Bcast(z, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	// 	    MPI_Bcast(r, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	// 	    MPI_Bcast(q, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	// 	    MPI_Bcast(p, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	// 	    printf("rz = %lf\n", rz);
+	// 	}
+	// }
+	// if(argc != 4){
+	// 	printf("calcul depuis le debut\n");
+	// 	#pragma omp for simd
+	// 	for (int i = 0; i < n; i++)
+	// 		x[i] = 0.0;
+	// 	#pragma omp for simd
+	// 	for (int i = 0; i < n; i++)	// r <-- b - Ax == b
+	// 		r[i] = b[i];
+	// 	#pragma omp for simd
+	// 	for (int i = 0; i < n; i++)	// z <-- M^(-1).r
+	// 		z[i] = r[i] / d[i];
+	// 	#pragma omp for simd
+	// 	for (int i = 0; i < n; i++)	// p <-- z
+	// 		p[i] = z[i];
+	// 	rz_part = dot_part(r, z, i_ini, n_part);
+	// 	MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)
+	// }
 	// 	printf("verif2\n");
 	// }
 	// printf("verif\n");
@@ -612,20 +612,20 @@ int main(int argc, char **argv)
 	// /*Algorithme du gradient conjugué */	
 	// printf("r au debussst :\n");
 
-	// #pragma omp for simd
-	// for (int i = 0; i < n; i++)
-	// 	x[i] = 0.0;
-	// #pragma omp for simd
-	// for (int i = 0; i < n; i++)	// r <-- b - Ax == b
-	// 	r[i] = b[i];
-	// #pragma omp for simd
-	// for (int i = 0; i < n; i++)	// z <-- M^(-1).r
-	// 	z[i] = r[i] / d[i];
-	// #pragma omp for simd
-	// for (int i = 0; i < n; i++)	// p <-- z
-	// 	p[i] = z[i];
-	// rz_part = dot_part(r, z, i_ini, n_part);
-	// MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)
+	#pragma omp for simd
+	for (int i = 0; i < n; i++)
+		x[i] = 0.0;
+	#pragma omp for simd
+	for (int i = 0; i < n; i++)	// r <-- b - Ax == b
+		r[i] = b[i];
+	#pragma omp for simd
+	for (int i = 0; i < n; i++)	// z <-- M^(-1).r
+		z[i] = r[i] / d[i];
+	#pragma omp for simd
+	for (int i = 0; i < n; i++)	// p <-- z
+		p[i] = z[i];
+	rz_part = dot_part(r, z, i_ini, n_part);
+	MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)
 
 	// printf("\n");
 	while (norm(n, r) > THRESHOLD){ 
@@ -668,15 +668,15 @@ int main(int argc, char **argv)
 		iter++;
 		double t = wtime();
 
-		double epsilon = 0.01; // epsilon plus grand que le saut d'incrément de t qui vaut environ 0.002
-		if(my_rank == 0){
-			double* modulo = malloc(sizeof(double)); 
-			*modulo = fmod(t, 60.0);
-			if(norm(1, modulo)<epsilon)
-				printf("boum\n");
-				create_checkpoint(n, x, z, r, q, p, rz);
-			// printf("time = %lf\n", t - start);
-		}
+		// double epsilon = 0.01; // epsilon plus grand que le saut d'incrément de t qui vaut environ 0.002
+		// if(my_rank == 0){
+		// 	double* modulo = malloc(sizeof(double)); 
+		// 	*modulo = fmod(t, 60.0);
+		// 	if(norm(1, modulo)<epsilon)
+		// 		printf("boum\n");
+		// 		create_checkpoint(n, x, z, r, q, p, rz);
+		// 	// printf("time = %lf\n", t - start);
+		// }
 
 		if (t - last_display > 0.5) {
 			double rate = iter / (t - start);	// iterations per s.
