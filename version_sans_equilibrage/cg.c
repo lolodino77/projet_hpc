@@ -673,6 +673,7 @@ int main(int argc, char **argv)
 			double* modulo = malloc(sizeof(double)); 
 			*modulo = fmod(t, 60.0);
 			if(norm(1, modulo)<epsilon)
+				printf("boum\n");
 				create_checkpoint(n, x, z, r, q, p, rz);
 			// printf("time = %lf\n", t - start);
 		}
