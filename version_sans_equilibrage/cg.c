@@ -92,6 +92,7 @@ void create_checkpoint(int n, double* x, double* z, double* r, double* q, double
 }
 
 void init_from_checkpoint(int n, double* x, double* z, double* r, double* q, double* p, double *rz){
+	printf("testtl\n");	
 	int n_vecteurs = 5;
 	double array[n_vecteurs][n];
 	FILE *file;
