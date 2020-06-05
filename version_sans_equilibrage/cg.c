@@ -581,7 +581,7 @@ int main(int argc, char **argv)
 	//     MPI_Bcast(p, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	//     printf("rz = %lf\n", rz);
 	// }
-	if(strcmp(argv[3], "checkpoint") != 0 || argc != 4){
+	if(argc != 4){
 		printf("calcul depuis le debut\n");
 		#pragma omp for simd
 		for (int i = 0; i < n; i++)
