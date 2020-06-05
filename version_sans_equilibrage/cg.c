@@ -57,7 +57,6 @@ struct csr_matrix_t {
 
 void create_checkpoint(int n, double* x, double* z, double* r, double* q, double* p, double rz){
 	FILE *file;
-	int n_vecteurs = 5;
 	file = fopen("checkpoint.txt", "w");
 	if(file != NULL){
 		#pragma omp for simd
