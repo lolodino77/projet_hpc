@@ -699,7 +699,7 @@ int main(int argc, char **argv)
 	// free(A);
 	// free(y_part);
 	// free(rz2);
-	return EXIT_SUCCESS; //erreur
+	// return EXIT_SUCCESS; //erreur
 
 	MPI_Finalize();
 }
