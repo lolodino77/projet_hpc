@@ -127,8 +127,12 @@ void init_from_checkpoint(int n, double* x, double* z, double* r, double* q, dou
 	// }
 	// fclose(file);
 
+	double **tab = malloc(5*sizeof(double*));
 	int n_vecteurs = 5;
-	double **tab = malloc(5*n*sizeof(double*));
+
+	for (int i = 0; i < 5; ++i){
+		tab[i] = malloc(n*sizeof(double));
+	}
 	tab[0] = &x;
 	tab[1] = &r;
 	tab[2] = &z;
