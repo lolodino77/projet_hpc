@@ -596,8 +596,8 @@ int main(int argc, char **argv)
 		for (int i = 0; i < n; i++)	// p <-- z
 			p[i] = z[i];
 		rz_part = dot_part(r, z, i_ini, n_part);
-		printf("verif2\n");
 		MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)
+		printf("verif2\n");
 	}
 	// printf("verif\n");
 
