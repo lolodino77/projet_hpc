@@ -3,8 +3,9 @@
 #include <math.h>
 
 int main(){
-	double b = 12.455;
-	double a = 2.35;
-	double c = fmod(b,a);
-	printf("mod b/a = %lf\n", c);
+	double b = 12.45577823784;
+	double* integer = malloc(sizeof(double));
+	double c = modf(b, integer);
+	printf("partie decimale de %lf = %lf\n", b, c);
+	free(integer);
 }
