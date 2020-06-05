@@ -483,6 +483,7 @@ int main(int argc, char **argv)
 	double *mem = malloc(7 * n * sizeof(double));
 	if(mem == NULL)
 		err(1, "cannot allocate dense vectors");
+	
 	double *x = mem;	/* solution vector */
 	double *b = mem + n;	/* right-hand side */
 	double *scratch = mem + 2 * n;	/* workspace for cg_solve() */
