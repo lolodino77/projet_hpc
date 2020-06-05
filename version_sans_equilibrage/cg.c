@@ -669,15 +669,15 @@ int main(int argc, char **argv)
 		iter++;
 		double t = wtime();
 
-		// double epsilon = 0.01; // epsilon plus grand que le saut d'incrément de t qui vaut environ 0.002
-		// if(my_rank == 0){
-		// 	double* modulo = malloc(sizeof(double)); 
-		// 	*modulo = fmod(t, 60.0);
-		// 	if(norm(1, modulo)<epsilon)
-		// 		printf("boum\n");
-		// 		create_checkpoint(n, x, z, r, q, p, rz);
-		// 	// printf("time = %lf\n", t - start);
-		// }
+		double epsilon = 0.01; // epsilon plus grand que le saut d'incrément de t qui vaut environ 0.002
+		if(my_rank == 0){
+			double* modulo = malloc(sizeof(double)); 
+			*modulo = fmod(t, 60.0);
+			if(norm(1, modulo)<epsilon)
+				printf("boum\n");
+				create_checkpoint(n, x, z, r, q, p, rz);
+			// printf("time = %lf\n", t - start);
+		}
 
 		if (t - last_display > 0.5) {
 			double rate = iter / (t - start);	// iterations per s.
