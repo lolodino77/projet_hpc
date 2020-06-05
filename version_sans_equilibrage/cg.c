@@ -483,7 +483,7 @@ int main(int argc, char **argv)
 	double *mem = malloc(7 * n * sizeof(double));
 	if(mem == NULL)
 		err(1, "cannot allocate dense vectors");
-	
+
 	double *x = mem;	/* solution vector */
 	double *b = mem + n;	/* right-hand side */
 	double *scratch = mem + 2 * n;	/* workspace for cg_solve() */
@@ -639,8 +639,11 @@ int main(int argc, char **argv)
 		double t = wtime();
 
 		if(my_rank == 0){
-			if((t - start) >  20.002959 && (t - start) < 20.030769){
-				printf("BOUM\n");
+			double* integer = malloc(sizeof(double));
+			double part_dec = modf(t - start, integer);
+			printf("partie decimale de %lf = %lf\n", b, c);
+			if(part_dec >  0.002959 && part_dec < 0.030769){
+				printf("creation of a checkpoint\n");
 			 //    printf("rz enregistre = %lf\n", rz);
 				// printf("r enregistre :\n");
 				// for (int i = 0; i < 20; ++i)
@@ -700,6 +703,7 @@ int main(int argc, char **argv)
 	// free(A);
 	// free(y_part);
 	// free(rz2);
+
 	// return EXIT_SUCCESS; //erreur
 
 	MPI_Finalize();
