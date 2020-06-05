@@ -91,42 +91,6 @@ void create_checkpoint(int n, double* x, double* z, double* r, double* q, double
 }
 
 void init_from_checkpoint(int n, double* x, double* z, double* r, double* q, double* p, double *rz){
-	// printf("testtl\n");	
-	// int n_vecteurs = 5;
-	// printf("testtl\n");	
-	// double array[n_vecteurs][n];
-	// printf("testtl statique\n");	
-	// FILE *file;
-	// printf("testtl open\n");
-	// file = fopen("checkpoint.txt", "r");
-	// printf("testtl open\n");
-
-	// if(file != NULL){
-	// 	printf("testtl\n");
-	// 	for (int i = 0; i < n_vecteurs; ++i){
-	// 		for (int j = 0; j < n; ++j){
-	// 			fscanf(file, "%lf", &array[i][j]);
-	// 			// printf("array[i][j] = %lf\n", array[i][j]);				
-	// 			if(j == n-1){printf("dernier element vecteur = %lf\n", array[i][j]);}
-	// 		}
-	// 		// printf("\n");
-	// 	}
-	// 	fscanf(file, "%lf", rz);
-	// 	printf("testtl\n");
-	// 	// printf("rz dans la fonction extraction = %lf\n", *rz);
-	// }
-	// printf("testtl\n");
-	// for (int i = 0; i < n; ++i)
-	// {
-	// 	x[i] = array[0][i];
-	// 	r[i] = array[1][i];
-	// 	z[i] = array[2][i];
-	// 	p[i] = array[3][i];
-	// 	q[i] = array[4][i];
-	// }
-	// fclose(file);
-
-	// int n_vecteurs = 5;
 	FILE *file;
 	file = fopen("checkpoint.txt", "r");
 	if(file != NULL){

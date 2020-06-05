@@ -34,6 +34,9 @@
 #include "mmio.h"
 
 #define THRESHOLD 1e-8		// maximum tolerance threshold
+#ifndef _OPENMP
+#include <omp.h>
+#endif
 
 double my_gettimeofday()
 {
@@ -51,6 +54,55 @@ struct csr_matrix_t {
 };
 
 /*************************** Utility functions ********************************/
+
+void create_checkpoint(int n, double* x, double* z, double* r, double* q, double* p, double rz){
+	FILE *file;
+	file = fopen("checkpoint.txt", "w");
+	if(file != NULL){
+		for (int i = 0; i < n-1; ++i){
+			fprintf(file, "%lf ", x[i]);
+		}
+		fprintf(file, "%lf\n", x[n-1]);
+		for (int i = 0; i < n-1; ++i){
+			fprintf(file, "%lf ", r[i]);
+		}
+		fprintf(file, "%lf\n", r[n-1]);
+		for (int i = 0; i < n-1; ++i){
+			fprintf(file, "%lf ", z[i]);
+		}
+		fprintf(file, "%lf\n", z[n-1]);
+		for (int i = 0; i < n-1; ++i){
+			fprintf(file, "%lf ", p[i]);
+		}
+		fprintf(file, "%lf\n", p[n-1]);
+		for (int i = 0; i < n-1; ++i){
+			fprintf(file, "%lf ", q[i]);
+		}
+		fprintf(file, "%lf\n", q[n-1]);
+
+		fprintf(file, "%lf\n", rz);
+	}
+	fclose(file);
+}
+
+void init_from_checkpoint(int n, double* x, double* z, double* r, double* q, double* p, double *rz){
+	FILE *file;
+	file = fopen("checkpoint.txt", "r");
+	if(file != NULL){
+		for (int i = 0; i < n; ++i)
+			fscanf(file,"%lf ", &x[i]);
+		for (int i = 0; i < n; ++i)
+			fscanf(file,"%lf ", &r[i]);
+		for (int i = 0; i < n; ++i)
+			fscanf(file,"%lf ", &z[i]);
+		for (int i = 0; i < n; ++i)
+			fscanf(file,"%lf ", &p[i]);
+		for (int i = 0; i < n; ++i)
+			fscanf(file,"%lf ", &q[i]);
+		fscanf(file,"%lf", rz);
+	}	
+	fclose(file);
+}
 
 /* Seconds (wall-clock time) since an arbitrary point in the past */
 double wtime()
@@ -147,12 +199,14 @@ struct csr_matrix_t *load_mm(FILE * f, int *nnz2)//construct
 	/* Count the number of entries in each row */
 	for (int i = 0; i < n; i++)
 		w[i] = 0;
-	for (int u = 0; u < nnz; u++) {
+	for (int u = 0; u < nnz; u++){
 		int i = Ti[u];
 		int j = Tj[u];
 		w[i]++;
+		// {
 		if (i != j)	/* the file contains only the lower triangular part */
 			w[j]++;
+		// }
 	}
 
 	/* Compute row pointers (prefix-sum) */
@@ -283,12 +337,6 @@ double dot_part( const double *x, const double *y, int i_ini, int n_part)
 	return sum;
 }
 
-/* euclidean norm (a.k.a 2-norm) */
-double norm_part( const double *x, int i_ini, int n_part)
-{
-	return sqrt(dot_part(x, x, i_ini, n_part));
-}
-
 /******************************* main program *********************************/
 
 /* options descriptor */
@@ -309,11 +357,11 @@ int main(int argc, char **argv)
 	MPI_Init(&argc,&argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &P);
-    // char processor_name[MPI_MAX_PROCESSOR_NAME];
-    // int name_len;
-    // MPI_Get_processor_name(processor_name, &name_len);
+    char processor_name[MPI_MAX_PROCESSOR_NAME];
+    int name_len;
+    MPI_Get_processor_name(processor_name, &name_len);
+
 	// double debut, fin;
-	enum tagType {INDICE, TRAITEMENT, STOP, DOT_RZ, DOT_PQ, MATPROD};
 	// debut = my_gettimeofday();
 
 	/* Parse command-line options */
@@ -387,36 +435,27 @@ int main(int argc, char **argv)
         n_part = quotient + reste;
     }    
 	int i_ini = my_rank * quotient; //indice duquel on part pour calculer une partie du vecteur solution x
-	// printf("n_part = %d/%d = %d\n", n, P, n_part);
 
 	int recvcounts[P]; //taille du petit tableau de chaque processeur, dans l'ordre croissant de my_rank
-    // printf("recvcounts, p = %d :\n", P);
     for(int i = 0;i < P-1;i++){ 
         recvcounts[i] = quotient;
-        // printf("%d ", recvcounts[i]);
     }
     recvcounts[P-1] = quotient + reste;   
-    // printf("%d\n", recvcounts[P-1]);
 
     int displs[P]; 
     displs[0] = 0;
     for(int i = 1;i < P;i++){
         displs[i] = i * quotient; 
     }
-    // printf("displs : \n");
-    // for(int i = 0; i < P; i ++){
-    //     printf("%d ", displs[i]);
-    // }
-    // printf("\n");
 
 	double *mem = malloc(7 * n * sizeof(double));
 	if(mem == NULL)
 		err(1, "cannot allocate dense vectors");
+
 	double *x = mem;	/* solution vector */
 	double *b = mem + n;	/* right-hand side */
 	double *scratch = mem + 2 * n;	/* workspace for cg_solve() */
 
-	// /* Prepare right-hand size */
 	if (rhs_filename) {	/* load from file */
 		FILE *f_b = fopen(rhs_filename, "r");
 		if (f_b == NULL)
@@ -447,6 +486,7 @@ int main(int argc, char **argv)
 	double alpha = 0.0;
 	double beta = 0.0;
 	double rz = 0.0;
+	double *rz2 = malloc(sizeof(double));
 	double pq = 0.0;
 	int nz = A->nz;
 
@@ -454,13 +494,12 @@ int main(int argc, char **argv)
 	// extract_diagonal_part(A, d_part, n_part, i_ini);
 	// MPI_Allgather(d_part, n_part, MPI_DOUBLE, d, n_part, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */
 	
-	fprintf(stderr, "[CG] Starting iterative solver\n");
-	fprintf(stderr, "     ---> Working set : %.1fMbyte\n", 1e-6 * (12.0 * nz + 52.0 * n));
-	fprintf(stderr, "     ---> Per iteration: %.2g FLOP in sp_gemv() and %.2g FLOP in the rest\n", 2. * nz, 12. * n);
+	// fprintf(stderr, "[CG] Starting iterative solver\n");
+	// fprintf(stderr, "     ---> Working set : %.1fMbyte\n", 1e-6 * (12.0 * nz + 52.0 * n));
+	// fprintf(stderr, "     ---> Per iteration: %.2g FLOP in sp_gemv() and %.2g FLOP in the rest\n", 2. * nz, 12. * n);
 
 	extract_diagonal(A, d);
-
-	/* Initialisation des vecteurs */
+	
 	for (int i = 0; i < n; i++)
 		x[i] = 0.0;
 	for (int i = 0; i < n; i++)	// r <-- b - Ax == b
@@ -470,11 +509,48 @@ int main(int argc, char **argv)
 	for (int i = 0; i < n; i++)	// p <-- z
 		p[i] = z[i];
 
-	/*Algorithme du gradient conjugué */
-	rz_part = dot_part(r, z, i_ini, n_part);
-	MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
+	if(my_rank == 0){ //si on reprend le calcul à partir d'un checkpoint
+		if(argc == 4){
+			if(strcmp(argv[3], "checkpoint") == 0){
+				printf("calcul a partir d'un checkpoint\n");
+				init_from_checkpoint(n, x, z, r, q, p, rz2);
+				rz = *rz2;	
+				printf("rz extrait par P0 = %lf\n", *rz2);
+			}
+		}
+	}
+	if(argc == 4){
+		if(strcmp(argv[3], "checkpoint") == 0){	    
+			MPI_Bcast(&rz, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		    MPI_Bcast(x, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		    MPI_Bcast(z, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		    MPI_Bcast(r, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		    MPI_Bcast(q, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		    MPI_Bcast(p, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		    printf("rz = %lf\n", rz);
+		}
+	}
+	if(argc != 4){
+		// printf("calcul depuis le debut\n");
+		rz_part = dot_part(r, z, i_ini, n_part);
+		MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)
+	}
+	// 	printf("verif2\n");
+	// }
+	// printf("verif\n");
+
+	// printf("r extrait! (%d) :\n", my_rank);
+	// 	for (int i = 0; i < 20; ++i)
+	// 	{
+	// 		printf("%lf ", p[i]);
+	// 	}	
+	// 	printf("\n");
+
+	// /*Algorithme du gradient conjugué */	
+	// printf("r au debussst :\n");
+
+	// printf("\n");
 	while (norm(n, r) > THRESHOLD){ 
-		/* loop invariant : rz = dot(r, z) */
 		double old_rz = rz;
 
 	    sp_gemv_part(A, p, q_part, n_part, i_ini);
@@ -483,11 +559,19 @@ int main(int argc, char **argv)
 		pq_part = dot_part(p, q, i_ini, n_part);
 		MPI_Allreduce(&pq_part, &pq, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)	
 		
-		alpha = old_rz / pq;		
-		for (int i = 0; i < n; i++)	// x <-- x + alpha*p
-			x[i] += alpha * p[i];
-		for (int i = 0; i < n; i++)	// r <-- r - alpha*q
-			r[i] -= alpha * q[i]; //A*p
+		// printf("old_rz / pq = %lf / %lf\n", old_rz, pq);
+		alpha = old_rz / pq;
+		double tmp_x;
+		double tmp_r;
+		for (int i = 0; i < n; i++){	// x <-- x + alpha*p
+			tmp_x = alpha * p[i];
+			x[i] += tmp_x;
+		}
+		for (int i = 0; i < n; i++){	// r <-- r - alpha*q
+			tmp_r = alpha * q[i];
+			r[i] -= tmp_r; //A*p
+			// printf("%lf ", r[i]);
+		}
 		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
 			z[i] = r[i] / d[i];
 		
@@ -499,10 +583,22 @@ int main(int argc, char **argv)
 			p[i] = z[i] + beta * p[i];
 		iter++;
 		double t = wtime();
+
+		double epsilon = 0.09; // epsilon plus grand que le saut d'incrément de t qui vaut environ 0.002
+		if(my_rank == 0){
+			double* modulo = malloc(sizeof(double)); 
+			*modulo = fmod(t - start, 60.0);
+			// printf("norme = %lf\n", norm(1, modulo));
+			if(norm(1, modulo)<epsilon){
+				create_checkpoint(n, x, z, r, q, p, rz);
+			// printf("time = %lf\n", t - start);
+			}
+		}
+
 		if (t - last_display > 0.5) {
 			double rate = iter / (t - start);	// iterations per s.
 			double GFLOPs = 1e-9 * rate * (2 * nz + 12 * n);
-			fprintf(stderr, "\r     ---> error : %2.2e, iter : %d (%.1f it/s, %.2f GFLOPs)", norm(n, r), iter, rate, GFLOPs);
+			fprintf(stderr, "\r  ---> error : %2.2e, time : %lf, iter : %d (%.1f it/s, %.2f GFLOPs)", norm(n, r), t - start, iter, rate, GFLOPs);
 			fflush(stdout);
 			last_display = t;
 		}
@@ -512,9 +608,12 @@ int main(int argc, char **argv)
 
 
 	/* Check result */
+	double *y_part = malloc(n_part*sizeof(double)); /* une partie ou bloc du vecteur x */
 	if (safety_check) {
 		double *y = scratch;
-		sp_gemv(A, x, y);	// y = Ax
+	    sp_gemv_part(A, x, y_part, n_part, i_ini);
+        MPI_Allgatherv(y_part, n_part, MPI_DOUBLE, y, recvcounts, displs, MPI_DOUBLE, MPI_COMM_WORLD); /* q <-- A.p */    
+		// sp_gemv(A, x, y);	// y = Ax
 		for (int i = 0; i < n; i++){	// y = Ax - b
 			y[i] -= b[i];
 			// printf("y[%d] = %lf ", i, y[i]);
@@ -526,22 +625,24 @@ int main(int argc, char **argv)
 
 	if(my_rank == 0){
 		FILE *f_x = stdout;
-		// printf("solution filename = %s\n", solution_filename);
 		if (solution_filename != NULL) {
 			f_x = fopen(solution_filename, "w");
 			if (f_x == NULL)
 				err(1, "cannot open solution file %s", solution_filename);
 			fprintf(stderr, "[IO] writing solution to %s\n", solution_filename);
 		}
-		// for (int i = 0; i < n; i++)
-		// 	fprintf(f_x, "%a\n", x[i]);
+		for (int i = 0; i < n; i++)
+			fprintf(f_x, "%a\n", x[i]);
 	}
 
 	free(mem);
 	free(q_part);
 	free(nnz2);
 	free(A);
-	// return EXIT_SUCCESS;
+	free(y_part);
+	free(rz2);
+
+	// return EXIT_SUCCESS; //erreur
 
 	MPI_Finalize();
 }
