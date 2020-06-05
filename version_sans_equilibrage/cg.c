@@ -131,13 +131,13 @@ void init_from_checkpoint(int n, double* x, double* z, double* r, double* q, dou
 		int k =0;
 		#pragma omp simd
 		for (int i = 0; i < n_vecteurs*n; ++i){
-			sscanf(file,"%lf ", &tab[k]);
+			fscanf(file,"%lf ", &tab[k]);
 			if(k%(n-1) == 0){
-				sscanf(file,"%lf ", &tab[k]);
+				fscanf(file,"%lf ", &tab[k]);
 				k++;
 			}
 		}
-		sscanf(file,"%lf", rz);
+		fscanf(file,"%lf", rz);
 	}
 	fclose(file);
 }
