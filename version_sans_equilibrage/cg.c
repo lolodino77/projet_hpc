@@ -668,7 +668,8 @@ int main(int argc, char **argv)
 
 		double epsilon = 0.01; // epsilon plus grand que le saut d'incrément de t qui vaut environ 0.002
 		if(my_rank == 0){
-			if(norm(t%60)<epsilon)
+			double modulo = fmod(t, 60.0);
+			if(norm(1, modulo)<epsilon)
 				create_checkpoint(n, x, z, r, q, p, rz);
 			// printf("time = %lf\n", t - start);
 		}
