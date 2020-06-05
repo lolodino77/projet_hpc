@@ -254,21 +254,11 @@ struct csr_matrix_t *load_mm(FILE * f, int *nnz2)//construct
 	for (int u = 0; u < nnz; u++){
 		int i = Ti[u];
 		int j = Tj[u];
+		w[i]++;
 		#pragma omp critical
 		{
-			w[i]++;
 			if (i != j)	/* the file contains only the lower triangular part */
 				w[j]++;
-		}
-	}
-
-	//struct...
-	#pragma omp parallel
-	{
-		a = b;
-		#pragma omp critical
-		{
-
 		}
 	}
 
