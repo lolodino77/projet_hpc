@@ -581,24 +581,24 @@ int main(int argc, char **argv)
 	//     MPI_Bcast(p, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	//     printf("rz = %lf\n", rz);
 	// }
-	if(argc != 4){
-		printf("calcul depuis le debut\n");
-		#pragma omp for simd
-		for (int i = 0; i < n; i++)
-			x[i] = 0.0;
-		#pragma omp for simd
-		for (int i = 0; i < n; i++)	// r <-- b - Ax == b
-			r[i] = b[i];
-		#pragma omp for simd
-		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
-			z[i] = r[i] / d[i];
-		#pragma omp for simd
-		for (int i = 0; i < n; i++)	// p <-- z
-			p[i] = z[i];
-		rz_part = dot_part(r, z, i_ini, n_part);
-		MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)
-		printf("verif2\n");
-	}
+	// if(argc != 4){
+	// 	printf("calcul depuis le debut\n");
+	// 	#pragma omp for simd
+	// 	for (int i = 0; i < n; i++)
+	// 		x[i] = 0.0;
+	// 	#pragma omp for simd
+	// 	for (int i = 0; i < n; i++)	// r <-- b - Ax == b
+	// 		r[i] = b[i];
+	// 	#pragma omp for simd
+	// 	for (int i = 0; i < n; i++)	// z <-- M^(-1).r
+	// 		z[i] = r[i] / d[i];
+	// 	#pragma omp for simd
+	// 	for (int i = 0; i < n; i++)	// p <-- z
+	// 		p[i] = z[i];
+	// 	rz_part = dot_part(r, z, i_ini, n_part);
+	// 	MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)
+	// 	printf("verif2\n");
+	// }
 	// printf("verif\n");
 
 	// printf("r extrait! (%d) :\n", my_rank);
@@ -611,20 +611,20 @@ int main(int argc, char **argv)
 	// /*Algorithme du gradient conjugué */	
 	// printf("r au debussst :\n");
 
-	// #pragma omp for simd
-	// for (int i = 0; i < n; i++)
-	// 	x[i] = 0.0;
-	// #pragma omp for simd
-	// for (int i = 0; i < n; i++)	// r <-- b - Ax == b
-	// 	r[i] = b[i];
-	// #pragma omp for simd
-	// for (int i = 0; i < n; i++)	// z <-- M^(-1).r
-	// 	z[i] = r[i] / d[i];
-	// #pragma omp for simd
-	// for (int i = 0; i < n; i++)	// p <-- z
-	// 	p[i] = z[i];
-	// rz_part = dot_part(r, z, i_ini, n_part);
-	// MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)
+	#pragma omp for simd
+	for (int i = 0; i < n; i++)
+		x[i] = 0.0;
+	#pragma omp for simd
+	for (int i = 0; i < n; i++)	// r <-- b - Ax == b
+		r[i] = b[i];
+	#pragma omp for simd
+	for (int i = 0; i < n; i++)	// z <-- M^(-1).r
+		z[i] = r[i] / d[i];
+	#pragma omp for simd
+	for (int i = 0; i < n; i++)	// p <-- z
+		p[i] = z[i];
+	rz_part = dot_part(r, z, i_ini, n_part);
+	MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)
 
 	// printf("\n");
 	while (norm(n, r) > THRESHOLD){ 
