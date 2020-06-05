@@ -591,9 +591,6 @@ int main(int argc, char **argv)
 			}
 		}
 	}
-	printf("verif\n");
-	printf("argv[3] = %s\n", argv[3]);
-	printf("argc[3] = %d\n", argc);
 	if(argc == 4){
 		if(strcmp(argv[3], "checkpoint") == 0){	    
 			MPI_Bcast(&rz, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
@@ -606,7 +603,7 @@ int main(int argc, char **argv)
 		}
 	}
 	if(argc != 4){
-		printf("calcul depuis le debut\n");
+		// printf("calcul depuis le debut\n");
 		rz_part = dot_part(r, z, i_ini, n_part);
 		MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)
 	}
@@ -665,7 +662,7 @@ int main(int argc, char **argv)
 		iter++;
 		double t = wtime();
 
-		double epsilon = 0.05; // epsilon plus grand que le saut d'incrément de t qui vaut environ 0.002
+		double epsilon = 0.09; // epsilon plus grand que le saut d'incrément de t qui vaut environ 0.002
 		if(my_rank == 0){
 			double* modulo = malloc(sizeof(double)); 
 			*modulo = fmod(t - start, 60.0);
