@@ -126,7 +126,7 @@ void init_from_checkpoint(int n, double* x, double* z, double* r, double* q, dou
 	// }
 	// fclose(file);
 
-	int n_vecteurs = 5;
+	// int n_vecteurs = 5;
 	FILE *file;
 	file = fopen("checkpoint.txt", "r");
 	if(file != NULL){
