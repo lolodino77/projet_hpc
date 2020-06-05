@@ -256,11 +256,23 @@ struct csr_matrix_t *load_mm(FILE * f, int *nnz2)//construct
 		int j = Tj[u];
 		#pragma omp critical
 		{
-		w[i]++;
-		if (i != j)	/* the file contains only the lower triangular part */
-			w[j]++;
+			w[i]++;
+			if (i != j)	/* the file contains only the lower triangular part */
+				w[j]++;
 		}
 	}
+
+	//struct...
+	#pragma omp parallel
+	{
+		a = b;
+		#pragma omp critical
+		{
+
+		}
+	}
+
+
 
 	/* Compute row pointers (prefix-sum) */
 	int sum = 0;
@@ -621,21 +633,6 @@ int main(int argc, char **argv)
 
 	// /*Algorithme du gradient conjugué */	
 	// printf("r au debussst :\n");
-
-	// #pragma omp for simd
-	// for (int i = 0; i < n; i++)
-	// 	x[i] = 0.0;
-	// #pragma omp for simd
-	// for (int i = 0; i < n; i++)	// r <-- b - Ax == b
-	// 	r[i] = b[i];
-	// #pragma omp for simd
-	// for (int i = 0; i < n; i++)	// z <-- M^(-1).r
-	// 	z[i] = r[i] / d[i];
-	// #pragma omp for simd
-	// for (int i = 0; i < n; i++)	// p <-- z
-	// 	p[i] = z[i];
-	// rz_part = dot_part(r, z, i_ini, n_part);
-	// MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)
 
 	// printf("\n");
 	while (norm(n, r) > THRESHOLD){ 
