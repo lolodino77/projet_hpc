@@ -640,7 +640,6 @@ int main(int argc, char **argv)
 			tmp_x = alpha * p[i];
 			x[i] += tmp_x;
 		}
-		// printf("calcul de r\n");
 		#pragma omp parallel for reduction(-:r[0:n])
 		for (int i = 0; i < n; i++){	// r <-- r - alpha*q
 			tmp_r = alpha * q[i];
