@@ -665,7 +665,7 @@ int main(int argc, char **argv)
 		iter++;
 		double t = wtime();
 
-		double epsilon = 0.001; // epsilon plus grand que le saut d'incrément de t qui vaut environ 0.002
+		double epsilon = 0.05; // epsilon plus grand que le saut d'incrément de t qui vaut environ 0.002
 		if(my_rank == 0){
 			double* modulo = malloc(sizeof(double)); 
 			*modulo = fmod(t - start, 60.0);
