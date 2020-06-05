@@ -97,6 +97,7 @@ void init_from_checkpoint(int n, double* x, double* z, double* r, double* q, dou
 	FILE *file;
 	file = fopen("checkpoint.txt", "r");
 	if(file != NULL){
+		printf("testtl\n");
 		for (int i = 0; i < n_vecteurs; ++i){
 			for (int j = 0; j < n; ++j){
 				fscanf(file, "%lf", &array[i][j]);
@@ -106,8 +107,10 @@ void init_from_checkpoint(int n, double* x, double* z, double* r, double* q, dou
 			// printf("\n");
 		}
 		fscanf(file, "%lf", rz);
+		printf("testtl\n");
 		// printf("rz dans la fonction extraction = %lf\n", *rz);
 	}
+	printf("testtl\n");
 	for (int i = 0; i < n; ++i)
 	{
 		x[i] = array[0][i];
