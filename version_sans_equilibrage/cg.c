@@ -425,7 +425,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	printf("hello i am process %s number %d\n", processor_name, my_rank);
+	// printf("hello i am process %s number %d\n", processor_name, my_rank);
 
 /* Broadcast de la matrice A */
 	int n = 0;
