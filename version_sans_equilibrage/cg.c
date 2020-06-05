@@ -133,6 +133,7 @@ void init_from_checkpoint(int n, double* x, double* z, double* r, double* q, dou
 	for (int i = 0; i < 5; ++i){
 		tab[i] = malloc(n*sizeof(double));
 	}
+	//tyujbvbn
 	tab[0] = x;
 	tab[1] = r;
 	tab[2] = z;
