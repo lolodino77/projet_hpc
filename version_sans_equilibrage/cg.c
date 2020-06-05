@@ -60,31 +60,27 @@ void create_checkpoint(int n, double* x, double* z, double* r, double* q, double
 	int n_vecteurs = 5;
 	file = fopen("checkpoint.txt", "w");
 	if(file != NULL){
+		#pragma omp for simd
 		for (int i = 0; i < n-1; ++i){
 			fprintf(file, "%lf ", x[i]);
 		}
 		fprintf(file, "%lf\n", x[n-1]);
 		#pragma omp for simd
 		for (int i = 0; i < n-1; ++i){
-			fprintf(file, "%lf ", x[i]);
-		}
-		fprintf(file, "%lf\n", x[n-1]);
-
-		for (int i = 0; i < n-1; ++i){
 			fprintf(file, "%lf ", r[i]);
 		}
 		fprintf(file, "%lf\n", r[n-1]);
-		
+		#pragma omp for simd		
 		for (int i = 0; i < n-1; ++i){
 			fprintf(file, "%lf ", z[i]);
 		}
 		fprintf(file, "%lf\n", z[n-1]);
-
+		#pragma omp for simd
 		for (int i = 0; i < n-1; ++i){
 			fprintf(file, "%lf ", p[i]);
 		}
 		fprintf(file, "%lf\n", p[n-1]);
-		
+		#pragma omp for simd		
 		for (int i = 0; i < n-1; ++i){
 			fprintf(file, "%lf ", q[i]);
 		}
@@ -585,22 +581,25 @@ int main(int argc, char **argv)
 		    printf("rz = %lf\n", rz);
 		}
 	}
-	// if(argc != 4){
-	// 	printf("calcul depuis le debut\n");
-	// 	#pragma omp for simd
-	// 	for (int i = 0; i < n; i++)
-	// 		x[i] = 0.0;
-	// 	#pragma omp for simd
-	// 	for (int i = 0; i < n; i++)	// r <-- b - Ax == b
-	// 		r[i] = b[i];
-	// 	#pragma omp for simd
-	// 	for (int i = 0; i < n; i++)	// z <-- M^(-1).r
-	// 		z[i] = r[i] / d[i];
-	// 	#pragma omp for simd
-	// 	for (int i = 0; i < n; i++)	// p <-- z
-	// 		p[i] = z[i];
-	// 	rz_part = dot_part(r, z, i_ini, n_part);
-	// 	MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)
+	if(argc != 4){
+		if(strcmp(argv[3], "checkpoint") == 0){	    
+			printf("calcul depuis le debut\n");
+			#pragma omp for simd
+			for (int i = 0; i < n; i++)
+				x[i] = 0.0;
+			#pragma omp for simd
+			for (int i = 0; i < n; i++)	// r <-- b - Ax == b
+				r[i] = b[i];
+			#pragma omp for simd
+			for (int i = 0; i < n; i++)	// z <-- M^(-1).r
+				z[i] = r[i] / d[i];
+			#pragma omp for simd
+			for (int i = 0; i < n; i++)	// p <-- z
+				p[i] = z[i];
+			rz_part = dot_part(r, z, i_ini, n_part);
+			MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)
+		}
+	}
 	// 	printf("verif2\n");
 	// }
 	// printf("verif\n");
@@ -615,20 +614,20 @@ int main(int argc, char **argv)
 	// /*Algorithme du gradient conjugué */	
 	// printf("r au debussst :\n");
 
-	#pragma omp for simd
-	for (int i = 0; i < n; i++)
-		x[i] = 0.0;
-	#pragma omp for simd
-	for (int i = 0; i < n; i++)	// r <-- b - Ax == b
-		r[i] = b[i];
-	#pragma omp for simd
-	for (int i = 0; i < n; i++)	// z <-- M^(-1).r
-		z[i] = r[i] / d[i];
-	#pragma omp for simd
-	for (int i = 0; i < n; i++)	// p <-- z
-		p[i] = z[i];
-	rz_part = dot_part(r, z, i_ini, n_part);
-	MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)
+	// #pragma omp for simd
+	// for (int i = 0; i < n; i++)
+	// 	x[i] = 0.0;
+	// #pragma omp for simd
+	// for (int i = 0; i < n; i++)	// r <-- b - Ax == b
+	// 	r[i] = b[i];
+	// #pragma omp for simd
+	// for (int i = 0; i < n; i++)	// z <-- M^(-1).r
+	// 	z[i] = r[i] / d[i];
+	// #pragma omp for simd
+	// for (int i = 0; i < n; i++)	// p <-- z
+	// 	p[i] = z[i];
+	// rz_part = dot_part(r, z, i_ini, n_part);
+	// MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)
 
 	// printf("\n");
 	while (norm(n, r) > THRESHOLD){ 
