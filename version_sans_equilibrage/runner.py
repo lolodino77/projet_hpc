@@ -86,6 +86,8 @@ def do_computation():
         print()
         print("---------------------------------------------------------------")
         result = subprocess.run(cmd, shell=True, check=True, stdout=subprocess.PIPE)
+        print("resultat dans runner : ")
+        print(result)
         print("---------------------------------------------------------------")
         print()
     except subprocess.CalledProcessError as e:
