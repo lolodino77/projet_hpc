@@ -668,7 +668,6 @@ int main(int argc, char **argv)
 			*modulo = fmod(t - start, 60.0);
 			// printf("norme = %lf\n", norm(1, modulo));
 			if(norm(1, modulo)<epsilon){
-				printf("boum\n");
 				create_checkpoint(n, x, z, r, q, p, rz);
 			// printf("time = %lf\n", t - start);
 			}
