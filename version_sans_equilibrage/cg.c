@@ -574,15 +574,17 @@ int main(int argc, char **argv)
 	printf("verif\n");
 	printf("argv[3] = %s\n", argv[3]);
 	printf("argc[3] = %d\n", argc);
-	// if(strcmp(argv[3], "checkpoint") == 0 && argc == 4){
-	//     MPI_Bcast(&rz, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-	//     MPI_Bcast(x, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-	//     MPI_Bcast(z, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-	//     MPI_Bcast(r, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-	//     MPI_Bcast(q, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-	//     MPI_Bcast(p, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-	//     printf("rz = %lf\n", rz);
-	// }
+	if(argc == 4){
+		if(strcmp(argv[3], "checkpoint") == 0){	    
+			MPI_Bcast(&rz, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		    MPI_Bcast(x, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		    MPI_Bcast(z, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		    MPI_Bcast(r, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		    MPI_Bcast(q, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		    MPI_Bcast(p, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		    printf("rz = %lf\n", rz);
+		}
+	}
 	// if(argc != 4){
 	// 	printf("calcul depuis le debut\n");
 	// 	#pragma omp for simd
