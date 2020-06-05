@@ -561,14 +561,16 @@ int main(int argc, char **argv)
 
 	extract_diagonal(A, d);
 	
-	// if(my_rank == 0){ //si on reprend le calcul à partir d'un checkpoint
-	// 	if(strcmp(argv[3], "checkpoint") == 0 && argc == 4){
-	// 		printf("calcul a partir d'un checkpoint\n");
-	// 		init_from_checkpoint(n, x, z, r, q, p, rz2);
-	// 		rz = *rz2;	
-	// 		printf("rz extrait par P0 = %lf\n", *rz2);
-	// 	}
-	// }
+	if(my_rank == 0){ //si on reprend le calcul à partir d'un checkpoint
+		if(argc == 4){
+			if(strcmp(argv[3], "checkpoint") == 0){
+				printf("calcul a partir d'un checkpoint\n");
+				init_from_checkpoint(n, x, z, r, q, p, rz2);
+				rz = *rz2;	
+				printf("rz extrait par P0 = %lf\n", *rz2);
+			}
+		}
+	}
 	printf("verif\n");
 	printf("argv[3] = %s\n", argv[3]);
 	printf("argc[3] = %d\n", argc);
