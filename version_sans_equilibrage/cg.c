@@ -389,9 +389,10 @@ int main(int argc, char **argv)
 	MPI_Init(&argc,&argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &P);
-    // char processor_name[MPI_MAX_PROCESSOR_NAME];
-    // int name_len;
-    // MPI_Get_processor_name(processor_name, &name_len);
+    char processor_name[MPI_MAX_PROCESSOR_NAME];
+    int name_len;
+    MPI_Get_processor_name(processor_name, &name_len);
+    
 	// double debut, fin;
 	// debut = my_gettimeofday();
 
@@ -424,7 +425,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	// printf("hello i am process %s number %d\n", processor_name, my_rank);
+	printf("hello i am process %s number %d\n", processor_name, my_rank);
 
 /* Broadcast de la matrice A */
 	int n = 0;
@@ -569,7 +570,7 @@ int main(int argc, char **argv)
 	// 	MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)
 	// }
 	// printf("verif\n");
-	
+
 	// printf("r extrait! (%d) :\n", my_rank);
 	// 	for (int i = 0; i < 20; ++i)
 	// 	{
