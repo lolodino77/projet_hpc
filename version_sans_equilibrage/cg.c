@@ -133,12 +133,6 @@ void init_from_checkpoint(int n, double* x, double* z, double* r, double* q, dou
 	for (int i = 0; i < 5; ++i){
 		tab[i] = malloc(n*sizeof(double));
 	}
-	//tyujbvbn
-	tab[0] = x;
-	tab[1] = r;
-	tab[2] = z;
-	tab[3] = p;
-	tab[4] = q;
 	FILE *file;
 	file = fopen("checkpoint.txt", "r");
 	if(file != NULL){
@@ -151,8 +145,13 @@ void init_from_checkpoint(int n, double* x, double* z, double* r, double* q, dou
 				k++;
 			}
 		}
+		x = &tab[0];
+		r = &tab[1];
+		z = &tab[2];
+		p = &tab[3];
+		q = &tab[4];
 		fscanf(file,"%lf", rz);
-	}
+	}	
 	fclose(file);
 }
 
