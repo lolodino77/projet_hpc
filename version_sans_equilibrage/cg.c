@@ -124,11 +124,11 @@ void init_from_checkpoint(int n, double* x, double* z, double* r, double* q, dou
 
 	int n_vecteurs = 5;
 	double *tab = malloc(5*n*sizeof(double));
-	tab[0] = x;
-	tab[1] = r;
-	tab[2] = z;
-	tab[3] = p;
-	tab[4] = q;
+	tab[0] = &x;
+	tab[1] = &r;
+	tab[2] = &z;
+	tab[3] = &p;
+	tab[4] = &q;
 	FILE *file;
 	file = fopen("checkpoint.txt", "r");
 	if(file != NULL){
@@ -571,7 +571,7 @@ int main(int argc, char **argv)
 	}
 	printf("verif\n");
 	printf("argv[3] = %s\n", argv[3]);
-	printf("argc[3] = %s\n", argc;
+	printf("argc[3] = %s\n", argc);
 	if(strcmp(argv[3], "checkpoint") == 0 && argc == 4){
 	    MPI_Bcast(&rz, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	    MPI_Bcast(x, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
