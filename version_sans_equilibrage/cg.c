@@ -64,7 +64,12 @@ void create_checkpoint(int n, double* x, double* z, double* r, double* q, double
 			fprintf(file, "%lf ", x[i]);
 		}
 		fprintf(file, "%lf\n", x[n-1]);
-		
+		#pragma omp for simd
+		for (int i = 0; i < n-1; ++i){
+			fprintf(file, "%lf ", x[i]);
+		}
+		fprintf(file, "%lf\n", x[n-1]);
+
 		for (int i = 0; i < n-1; ++i){
 			fprintf(file, "%lf ", r[i]);
 		}
@@ -91,29 +96,52 @@ void create_checkpoint(int n, double* x, double* z, double* r, double* q, double
 }
 
 void init_from_checkpoint(int n, double* x, double* z, double* r, double* q, double* p, double *rz){
+	// int n_vecteurs = 5;
+	// double array[n_vecteurs][n];
+	// FILE *file;
+	// file = fopen("checkpoint.txt", "r");
+	// if(file != NULL){
+	// 	for (int i = 0; i < n_vecteurs; ++i){
+	// 		for (int j = 0; j < n; ++j){
+	// 			fscanf(file, "%lf", &array[i][j]);
+	// 			// printf("array[i][j] = %lf\n", array[i][j]);				
+	// 			if(j == n-1){printf("dernier element vecteur = %lf\n", array[i][j]);}
+	// 		}
+	// 		// printf("\n");
+	// 	}
+	// 	fscanf(file, "%lf", rz);
+	// 	// printf("rz dans la fonction extraction = %lf\n", *rz);
+	// }
+	// for (int i = 0; i < n; ++i)
+	// {
+	// 	x[i] = array[0][i];
+	// 	r[i] = array[1][i];
+	// 	z[i] = array[2][i];
+	// 	p[i] = array[3][i];
+	// 	q[i] = array[4][i];
+	// }
+	// fclose(file);
+
 	int n_vecteurs = 5;
-	double array[n_vecteurs][n];
+	double *tab = malloc(5*n*sizeof(double));
+	tab[0] = x;
+	tab[1] = r;
+	tab[2] = z;
+	tab[3] = p;
+	tab[4] = q;
 	FILE *file;
 	file = fopen("checkpoint.txt", "r");
 	if(file != NULL){
-		for (int i = 0; i < n_vecteurs; ++i){
-			for (int j = 0; j < n; ++j){
-				fscanf(file, "%lf", &array[i][j]);
-				// printf("array[i][j] = %lf\n", array[i][j]);				
-				if(j == n-1){printf("dernier element vecteur = %lf\n", array[i][j]);}
+		int k =0;
+		#pragma omp simd
+		for (int i = 0; i < n_vecteurs*n; ++i){
+			sscanf(file,"%lf ", &tab[k]);
+			if(k%(n-1) == 0){
+				sscanf(file,"%lf ", &tab[k]);
+				k++;
 			}
-			// printf("\n");
 		}
-		fscanf(file, "%lf", rz);
-		// printf("rz dans la fonction extraction = %lf\n", *rz);
-	}
-	for (int i = 0; i < n; ++i)
-	{
-		x[i] = array[0][i];
-		r[i] = array[1][i];
-		z[i] = array[2][i];
-		p[i] = array[3][i];
-		q[i] = array[4][i];
+		sscanf(file,"%lf", rz);
 	}
 	fclose(file);
 }
@@ -533,43 +561,43 @@ int main(int argc, char **argv)
 
 	extract_diagonal(A, d);
 	
-	// if(my_rank == 0){ //si on reprend le calcul à partir d'un checkpoint
-	// 	if(strcmp(argv[3], "checkpoint") == 0 && argc == 4){
-	// 		printf("calcul a partir d'un checkpoint\n");
-	// 		init_from_checkpoint(n, x, z, r, q, p, rz2);
-	// 		rz = *rz2;	
-	// 		printf("rz extrait par P0 = %lf\n", *rz2);
-	// 	}
-	// }
-	// printf("verif\n");
-	// printf("argv[3] = %s\n", argv[3]);
-	// printf("argc[3] = %s\n", argc;
-	// if(strcmp(argv[3], "checkpoint") == 0 && argc == 4){
-	//     MPI_Bcast(&rz, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-	//     MPI_Bcast(x, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-	//     MPI_Bcast(z, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-	//     MPI_Bcast(r, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-	//     MPI_Bcast(q, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-	//     MPI_Bcast(p, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-	//     printf("rz = %lf\n", rz);
-	// }
-	// else{
-	// 	printf("calcul depuis le debut\n");
-	// 	#pragma omp for simd
-	// 	for (int i = 0; i < n; i++)
-	// 		x[i] = 0.0;
-	// 	#pragma omp for simd
-	// 	for (int i = 0; i < n; i++)	// r <-- b - Ax == b
-	// 		r[i] = b[i];
-	// 	#pragma omp for simd
-	// 	for (int i = 0; i < n; i++)	// z <-- M^(-1).r
-	// 		z[i] = r[i] / d[i];
-	// 	#pragma omp for simd
-	// 	for (int i = 0; i < n; i++)	// p <-- z
-	// 		p[i] = z[i];
-	// 	rz_part = dot_part(r, z, i_ini, n_part);
-	// 	MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)
-	// }
+	if(my_rank == 0){ //si on reprend le calcul à partir d'un checkpoint
+		if(strcmp(argv[3], "checkpoint") == 0 && argc == 4){
+			printf("calcul a partir d'un checkpoint\n");
+			init_from_checkpoint(n, x, z, r, q, p, rz2);
+			rz = *rz2;	
+			printf("rz extrait par P0 = %lf\n", *rz2);
+		}
+	}
+	printf("verif\n");
+	printf("argv[3] = %s\n", argv[3]);
+	printf("argc[3] = %s\n", argc;
+	if(strcmp(argv[3], "checkpoint") == 0 && argc == 4){
+	    MPI_Bcast(&rz, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	    MPI_Bcast(x, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	    MPI_Bcast(z, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	    MPI_Bcast(r, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	    MPI_Bcast(q, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	    MPI_Bcast(p, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	    printf("rz = %lf\n", rz);
+	}
+	else{
+		printf("calcul depuis le debut\n");
+		#pragma omp for simd
+		for (int i = 0; i < n; i++)
+			x[i] = 0.0;
+		#pragma omp for simd
+		for (int i = 0; i < n; i++)	// r <-- b - Ax == b
+			r[i] = b[i];
+		#pragma omp for simd
+		for (int i = 0; i < n; i++)	// z <-- M^(-1).r
+			z[i] = r[i] / d[i];
+		#pragma omp for simd
+		for (int i = 0; i < n; i++)	// p <-- z
+			p[i] = z[i];
+		rz_part = dot_part(r, z, i_ini, n_part);
+		MPI_Allreduce(&rz_part, &rz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);// rz = dot(r,z)
+	}
 	// printf("verif\n");
 
 	// printf("r extrait! (%d) :\n", my_rank);
@@ -638,21 +666,10 @@ int main(int argc, char **argv)
 		iter++;
 		double t = wtime();
 
+		double epsilon = 0.01; // epsilon plus grand que le saut d'incrément de t qui vaut environ 0.002
 		if(my_rank == 0){
-			double* integer = malloc(sizeof(double));
-			double part_dec = modf(t - start, integer);
-			if(part_dec > 0.001959 && part_dec < 0.0040769){
-				printf("\npartie decimale de %lf = %lf\n", t - start, part_dec);
-				printf("(1 min passée), donc creation of a checkpoint\n");
-			 //    printf("rz enregistre = %lf\n", rz);
-				// printf("r enregistre :\n");
-				// for (int i = 0; i < 20; ++i)
-				// {
-				// 	printf("%lf ", r[i]);
-				// }
-				// printf("\n");
+			if(norm(t%60)<epsilon)
 				create_checkpoint(n, x, z, r, q, p, rz);
-			}
 			// printf("time = %lf\n", t - start);
 		}
 
@@ -685,17 +702,17 @@ int main(int argc, char **argv)
 
 	/* Dump the solution vector */
 
-	// if(my_rank == 0){
-	// 	FILE *f_x = stdout;
-	// 	if (solution_filename != NULL) {
-	// 		f_x = fopen(solution_filename, "w");
-	// 		if (f_x == NULL)
-	// 			err(1, "cannot open solution file %s", solution_filename);
-	// 		fprintf(stderr, "[IO] writing solution to %s\n", solution_filename);
-	// 	}
-	// 	for (int i = 0; i < n; i++)
-	// 		fprintf(f_x, "%a\n", x[i]);
-	// }
+	if(my_rank == 0){
+		FILE *f_x = stdout;
+		if (solution_filename != NULL) {
+			f_x = fopen(solution_filename, "w");
+			if (f_x == NULL)
+				err(1, "cannot open solution file %s", solution_filename);
+			fprintf(stderr, "[IO] writing solution to %s\n", solution_filename);
+		}
+		for (int i = 0; i < n; i++)
+			fprintf(f_x, "%a\n", x[i]);
+	}
 
 	// free(mem);
 	// free(q_part);
