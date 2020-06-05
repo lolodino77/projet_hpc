@@ -392,7 +392,7 @@ int main(int argc, char **argv)
     char processor_name[MPI_MAX_PROCESSOR_NAME];
     int name_len;
     MPI_Get_processor_name(processor_name, &name_len);
-    
+
 	// double debut, fin;
 	// debut = my_gettimeofday();
 
@@ -689,6 +689,8 @@ int main(int argc, char **argv)
 				err(1, "cannot open solution file %s", solution_filename);
 			fprintf(stderr, "[IO] writing solution to %s\n", solution_filename);
 		}
+		for (int i = 0; i < n; i++)
+			fprintf(f_x, "%a\n", x[i]);
 	}
 
 	free(mem);
