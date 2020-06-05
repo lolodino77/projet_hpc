@@ -96,7 +96,10 @@ void init_from_checkpoint(int n, double* x, double* z, double* r, double* q, dou
 	int n_vecteurs = 5;
 	double array[n_vecteurs][n];
 	FILE *file;
+	printf("testtl open\n");
 	file = fopen("checkpoint.txt", "r");
+	printf("testtl open\n");
+
 	if(file != NULL){
 		printf("testtl\n");
 		for (int i = 0; i < n_vecteurs; ++i){
