@@ -250,7 +250,7 @@ struct csr_matrix_t *load_mm(FILE * f, int *nnz2)//construct
 	#pragma omp for simd
 	for (int i = 0; i < n; i++)
 		w[i] = 0;
-	#pragma omp parallel for num_threads(4)
+	#pragma omp parallel for
 	for (int u = 0; u < nnz; u++){
 		int i = Ti[u];
 		int j = Tj[u];
@@ -679,7 +679,7 @@ int main(int argc, char **argv)
 		if (t - last_display > 0.5) {
 			double rate = iter / (t - start);	// iterations per s.
 			double GFLOPs = 1e-9 * rate * (2 * nz + 12 * n);
-			fprintf(stderr, "\r     ---> error : %2.2e, iter : %d (%.1f it/s, %.2f GFLOPs)", norm(n, r), iter, rate, GFLOPs);
+			fprintf(stderr, "\r  ---> error : %2.2e, time : %lf, iter : %d (%.1f it/s, %.2f GFLOPs)", norm(n, r), t - start, iter, rate, GFLOPs);
 			fflush(stdout);
 			last_display = t;
 		}
