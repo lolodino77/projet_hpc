@@ -16,7 +16,7 @@ params['version'] = 3
 params['proof'] = 0x65dec1542f679f51
 
 # Paramètres du calcul (à adapter)
-params['matrix'] = "cfd1"
+params['matrix'] = "cfd2"
 params['users'] = ["3800623"]
 
 # Description du code exécuté
