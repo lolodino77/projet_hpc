@@ -1,6 +1,6 @@
-# Projet de Calcul haute performance en première année d'école d'ingénieur (résolution de système linéaire avec matrices creuses)
+# Projet de Calcul haute performance en première année d'école d'ingénieur
 
-## Principe
+## Problème : résolution de système linéaire avec matrices creuses)
 Appliquer les outils de calcul parallèle (OpenMPI et OpenMP) vu en cours de calcul haute performance (HPC) à un projet de résolution de système linéaire (avec des matrices creuses) dans le cadre d'un projet scolaire en binôme.
 Explication du code dans le PDF des consignes du projet.
 
