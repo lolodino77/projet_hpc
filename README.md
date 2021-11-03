@@ -1,5 +1,5 @@
 ## Principe
-Appliquer les outils de calcul parallèle vu en cours (OpenMPI et OpenMP) sur à un projet de résolution de système linéaire (avec des matrices creuses) dans le cadre d'un projet scolaire en binôme.
+Appliquer les outils de calcul parallèle (OpenMPI et OpenMP) vu en cours de calcul haute performance (HPC) à un projet de résolution de système linéaire (avec des matrices creuses) dans le cadre d'un projet scolaire en binôme.
 Explication du code dans le PDF des consignes du projet.
 
 ## Dossiers
